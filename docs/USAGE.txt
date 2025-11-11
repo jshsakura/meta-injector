@@ -1,0 +1,40 @@
+============================================
+WiiU Expedition VC Injector
+(위유 원정대 VC 인젝터)
+============================================
+
+빠른 사용법:
+
+1. 개발 모드 (소스 실행)
+   python run.py
+
+2. 빌드 (EXE 생성)
+   python build.py
+
+   결과: release\WiiU-Expedition-VC-Injector.exe
+
+3. 실행
+   release\WiiU-Expedition-VC-Injector.exe
+
+============================================
+
+상세 가이드:
+- README.md - 프로젝트 전체 설명
+- QUICK_START.md - 빠른 시작
+- BUILD_INSTRUCTIONS.md - 빌드 상세
+- TEST_GUIDE.md - 테스트 체크리스트
+
+문제 발생 시:
+1. Python 3.8+ 설치 확인
+2. pip install -r requirements.txt
+3. python build.py
+
+============================================
+
+프로젝트 이름:
+"위유 원정대 (WiiU Expedition)"는
+Wii U 게임을 Virtual Console로
+여행(탐험)한다는 의미입니다.
+
+Based on TeconMoon's WiiVC Injector
+============================================

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(python:*)",
+      "Bash(tree:*)",
+      "Bash(cmd /c:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(dir /B:*)",
+      "Bash(dir:*)",
+      "Bash(WiiU-Expedition-VC-Injector.exe --help)",
+      "Bash(echo:*)",
+      "Bash(move build.py standalonebuild.py)",
+      "Bash(unzip:*)",
+      "Bash(pyinstaller:*)",
+      "WebFetch(domain:wiki.gbatemp.net)",
+      "Bash(del C:UsersWIN11.wiivc_injector_compatibility.db)",
+      "Bash(del \"C:\\Users\\WIN11\\.wiivc_injector_compatibility.db\")",
+      "Bash(nul)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
