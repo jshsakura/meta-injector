@@ -20,6 +20,8 @@ class BatchBuildJob:
         self.title_id = ""
         self.icon_path: Optional[Path] = None
         self.banner_path: Optional[Path] = None
+        self.gamepad_compatibility = ""  # Gamepad support info from DB
+        self.host_game = ""  # Host game name from DB
 
 
 class BatchBuilder(QThread):
@@ -31,12 +33,12 @@ class BatchBuilder(QThread):
     job_finished = pyqtSignal(int, bool, str)  # index, success, message
     all_finished = pyqtSignal(int, int)  # success_count, total_count
 
-    def __init__(self, jobs: List[BatchBuildJob], common_key: str, title_key: str,
+    def __init__(self, jobs: List[BatchBuildJob], common_key: str, title_keys: Dict[str, str],
                  output_dir: Path, auto_icons: bool = True):
         super().__init__()
         self.jobs = jobs
         self.common_key = common_key
-        self.title_key = title_key
+        self.title_keys = title_keys  # Dict mapping host game name to title key
         self.output_dir = output_dir
         self.auto_icons = auto_icons
         self.should_stop = False
@@ -123,17 +125,33 @@ class BatchBuilder(QThread):
 
             engine = BuildEngine(paths, progress_callback)
 
+            # Set options based on gamepad compatibility from DB
             options = {
                 "disable_passthrough": False,
                 "lr_patch": False,
             }
+
+            # Check gamepad compatibility and set options accordingly
+            gamepad_compat = job.gamepad_compatibility.lower()
+            if 'gamepad works' in gamepad_compat or 'works' in gamepad_compat:
+                # Enable gamepad support
+                options["disable_passthrough"] = True
+            elif 'classic controller' in gamepad_compat or 'lr patch' in gamepad_compat:
+                # Enable LR patch for classic controller only games
+                options["lr_patch"] = True
+
+            # Select appropriate title key based on host game
+            title_key = self.title_keys.get(job.host_game, '')
+            if not title_key:
+                # Fallback: use any available key
+                title_key = next((key for key in self.title_keys.values() if key), '')
 
             success = engine.build(
                 game_path=job.game_path,
                 system_type=job.game_info.get('system', 'wii'),
                 output_dir=self.output_dir,
                 common_key=self.common_key,
-                title_key=self.title_key,
+                title_key=title_key,
                 title_name=job.title_name,
                 title_id=job.title_id,
                 options=options

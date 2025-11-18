@@ -1,350 +1,213 @@
 #!/usr/bin/env python3
-"""
-WiiVC Injector - Standalone Builder
-Builds a standalone executable using PyInstaller
-"""
-
+"""Build standalone executable for WiiVC Injector."""
 import os
 import sys
 import shutil
 import subprocess
 from pathlib import Path
 
+# Project root
+PROJECT_ROOT = Path(__file__).parent.parent
+STANDALONE_DIR = PROJECT_ROOT / "standalone"
 
-class Color:
-    """Terminal colors for output."""
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-
-    @staticmethod
-    def disable():
-        """Disable colors on Windows if not supported."""
-        Color.HEADER = ''
-        Color.OKBLUE = ''
-        Color.OKCYAN = ''
-        Color.OKGREEN = ''
-        Color.WARNING = ''
-        Color.FAIL = ''
-        Color.ENDC = ''
-        Color.BOLD = ''
-
-
-# Disable colors on Windows
-if sys.platform == 'win32':
-    try:
-        import ctypes
-        kernel32 = ctypes.windll.kernel32
-        kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-    except:
-        Color.disable()
-
-
-def print_header(text):
-    """Print colored header."""
-    print(f"\n{Color.HEADER}{Color.BOLD}{'='*50}{Color.ENDC}")
-    print(f"{Color.HEADER}{Color.BOLD}{text.center(50)}{Color.ENDC}")
-    print(f"{Color.HEADER}{Color.BOLD}{'='*50}{Color.ENDC}\n")
-
-
-def print_step(step, text):
-    """Print build step."""
-    print(f"{Color.OKCYAN}[{step}]{Color.ENDC} {text}")
-
-
-def print_success(text):
-    """Print success message."""
-    try:
-        print(f"{Color.OKGREEN}✓ {text}{Color.ENDC}")
-    except UnicodeEncodeError:
-        print(f"{Color.OKGREEN}[OK] {text}{Color.ENDC}")
-
-
-def print_error(text):
-    """Print error message."""
-    try:
-        print(f"{Color.FAIL}✗ {text}{Color.ENDC}")
-    except UnicodeEncodeError:
-        print(f"{Color.FAIL}[ERROR] {text}{Color.ENDC}")
-
-
-def print_warning(text):
-    """Print warning message."""
-    try:
-        print(f"{Color.WARNING}⚠ {text}{Color.ENDC}")
-    except UnicodeEncodeError:
-        print(f"{Color.WARNING}[WARNING] {text}{Color.ENDC}")
-
-
-def run_command(cmd, cwd=None):
-    """Run a shell command and return success status."""
-    try:
-        result = subprocess.run(
-            cmd,
-            cwd=cwd,
-            shell=True,
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        return True, result.stdout
-    except subprocess.CalledProcessError as e:
-        return False, e.stderr
-
-
-def check_pyinstaller():
-    """Check if PyInstaller is installed, install if not."""
-    print_step("1/6", "Checking PyInstaller...")
-
-    try:
-        import PyInstaller
-        print_success(f"PyInstaller {PyInstaller.__version__} found")
-        return True
-    except ImportError:
-        print_warning("PyInstaller not found. Installing...")
-        success, output = run_command(f"{sys.executable} -m pip install pyinstaller")
-
-        if success:
-            print_success("PyInstaller installed successfully")
-            return True
-        else:
-            print_error("Failed to install PyInstaller")
-            print(output)
-            return False
-
-
-def check_dependencies():
-    """Check if all dependencies are installed."""
-    print_step("2/6", "Checking dependencies...")
-
-    required = ['PyQt5', 'Pillow']
-    missing = []
-
-    for package in required:
-        try:
-            __import__(package)
-            print_success(f"{package} found")
-        except ImportError:
-            missing.append(package)
-            print_warning(f"{package} not found")
-
-    if missing:
-        print_warning(f"Installing missing packages: {', '.join(missing)}")
-        success, output = run_command(f"{sys.executable} -m pip install {' '.join(missing)}")
-
-        if not success:
-            print_error("Failed to install dependencies")
-            print(output)
-            return False
-
-    print_success("All dependencies satisfied")
-    return True
-
-
-def clean_build_files():
+def clean_build():
     """Clean previous build artifacts."""
-    print_step("3/6", "Cleaning previous builds...")
+    print("[*] Cleaning previous build...")
 
-    dirs_to_clean = ['build', 'dist', 'standalone/build', 'standalone/dist']
-    files_to_clean = ['*.spec', 'standalone/*.spec']
-
-    for dir_path in dirs_to_clean:
-        if os.path.exists(dir_path):
-            shutil.rmtree(dir_path)
-            print_success(f"Removed {dir_path}/")
-
-    # Clean spec files
-    for pattern in files_to_clean:
-        import glob
-        for file in glob.glob(pattern):
-            os.remove(file)
-            print_success(f"Removed {file}")
-
-    print_success("Build directory cleaned")
-    return True
-
-
-def check_resources():
-    """Check if required resources exist."""
-    print_step("4/6", "Checking resources...")
-
-    resources = {
-        'resources/icon.ico': 'Application icon',
-        'resources/wiitdb.txt': 'Game database',
-    }
-
-    all_exist = True
-    for path, desc in resources.items():
-        if os.path.exists(path):
-            size = os.path.getsize(path)
-            print_success(f"{desc}: {path} ({size:,} bytes)")
-        else:
-            print_warning(f"{desc} not found: {path}")
-            all_exist = False
-
-    return all_exist
-
-
-def build_executable():
-    """Build the executable using PyInstaller."""
-    print_step("5/6", "Building executable...")
-
-    # Determine paths
-    project_root = Path.cwd()
-    src_path = project_root / 'src' / 'wiivc_injector' / 'main.py'
-    resources_path = project_root / 'resources'
-    icon_path = resources_path / 'icon.ico'
-
-    # Build command
-    cmd = [
-        sys.executable, '-m', 'PyInstaller',
-        '--clean',
-        '--noconfirm',
-        '--onefile',
-        '--windowed',
-        '--name', 'WiiU-Expedition-VC-Injector',
+    dirs_to_clean = [
+        PROJECT_ROOT / "build",
+        PROJECT_ROOT / "dist",
+        STANDALONE_DIR / "build",
+        STANDALONE_DIR / "dist",
     ]
 
-    # Add icon if exists
-    if icon_path.exists():
-        cmd.extend(['--icon', str(icon_path)])
+    for dir_path in dirs_to_clean:
+        if dir_path.exists():
+            shutil.rmtree(dir_path)
+            print(f"   Removed: {dir_path}")
 
-    # Add resources
-    cmd.extend([
-        '--add-data', f'{resources_path}{os.pathsep}resources',
-        '--hidden-import', 'PyQt5',
-        '--hidden-import', 'PIL',
-        '--hidden-import', 'PIL._tkinter_finder',
-        str(src_path)
-    ])
+    # Remove spec files
+    for spec_file in PROJECT_ROOT.glob("*.spec"):
+        spec_file.unlink()
+        print(f"   Removed: {spec_file}")
 
-    print(f"Running: {' '.join(cmd)}")
+def install_dependencies():
+    """Ensure PyInstaller is installed."""
+    print("\n[*] Checking dependencies...")
+    try:
+        import PyInstaller
+        print(f"   OK PyInstaller {PyInstaller.__version__} found")
+    except ImportError:
+        print("   Installing PyInstaller...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
+        print("   OK PyInstaller installed")
 
-    # Run PyInstaller
-    result = subprocess.run(cmd, capture_output=True, text=True)
+def build_exe():
+    """Build standalone executable using PyInstaller."""
+    print("\n[*] Building executable...")
 
-    if result.returncode == 0:
-        print_success("Build completed successfully!")
-        return True
-    else:
-        print_error("Build failed!")
-        print(result.stderr)
+    # Paths
+    icon_path = PROJECT_ROOT / "resources" / "images" / "icon.ico"
+    main_script = PROJECT_ROOT / "run.py"
+
+    # PyInstaller command - use python -m to avoid venv issues
+    cmd = [
+        sys.executable,
+        "-m", "PyInstaller",
+        "--name=WiiVC-Injector",
+        "--onefile",  # Single executable
+        "--windowed",  # No console window
+        f"--icon={icon_path}",
+
+        # Add data files
+        f"--add-data={PROJECT_ROOT / 'resources'};resources",
+        f"--add-data={PROJECT_ROOT / 'core'};core",
+        f"--add-data={PROJECT_ROOT / 'src' / 'wiivc_injector'};wiivc_injector",
+
+        # Hidden imports
+        "--hidden-import=PyQt5",
+        "--hidden-import=PyQt5.QtCore",
+        "--hidden-import=PyQt5.QtGui",
+        "--hidden-import=PyQt5.QtWidgets",
+        "--hidden-import=PIL",
+        "--hidden-import=PIL.Image",
+        "--hidden-import=requests",
+        "--hidden-import=sqlite3",
+        "--hidden-import=json",
+        "--hidden-import=ssl",
+        "--hidden-import=urllib",
+        "--hidden-import=urllib.request",
+
+        # Exclude unnecessary modules to reduce size
+        "--exclude-module=matplotlib",
+        "--exclude-module=numpy",
+        "--exclude-module=pandas",
+        "--exclude-module=scipy",
+        "--exclude-module=tkinter",
+
+        # Working directory
+        f"--workpath={STANDALONE_DIR / 'build'}",
+        f"--distpath={STANDALONE_DIR / 'dist'}",
+        f"--specpath={STANDALONE_DIR}",
+
+        str(main_script)
+    ]
+
+    print(f"   Running: {' '.join(cmd[:5])}...")
+    result = subprocess.run(cmd, cwd=PROJECT_ROOT)
+
+    if result.returncode != 0:
+        print("   [FAILED] Build failed!")
         return False
 
-
-def create_release_package():
-    """Create release package."""
-    print_step("6/6", "Creating release package...")
-
-    # Create release directory
-    release_dir = Path('release')
-    release_dir.mkdir(exist_ok=True)
-
-    # Copy executable
-    exe_name = 'WiiU-Expedition-VC-Injector.exe' if sys.platform == 'win32' else 'WiiU-Expedition-VC-Injector'
-    src_exe = Path('dist') / exe_name
-
-    if not src_exe.exists():
-        print_error(f"Executable not found: {src_exe}")
-        return False
-
-    dst_exe = release_dir / exe_name
-    shutil.copy2(src_exe, dst_exe)
-
-    exe_size = dst_exe.stat().st_size
-    print_success(f"Copied executable: {exe_name} ({exe_size:,} bytes / {exe_size/1024/1024:.1f} MB)")
-
-    # Create README
-    readme_content = """WiiU Expedition VC Injector (위유 원정대 VC 인젝터)
-
-Simply run WiiU-Expedition-VC-Injector.exe to start the application.
-
-System Requirements:
-- Windows 7 or higher (for .exe)
-- Linux/macOS (for standalone binary)
-- No Python installation required
-- All dependencies included
-
-Features:
-- Support for Wii Retail, Wii Homebrew, Wii NAND, and GC Retail
-- Custom icon, banner, DRC, and logo images
-- Automatic game info extraction
-- GamePad emulation options
-- Advanced patching options
-- SD Card utilities
-
-Based on TeconMoon's WiiVC Injector
-Python Edition: WiiU Expedition (위유 원정대)
-
-For issues and updates, visit:
-https://github.com/yourusername/WiiU-Expedition-VC-Injector
-"""
-
-    readme_path = release_dir / 'README.txt'
-    readme_path.write_text(readme_content, encoding='utf-8')
-    print_success("Created README.txt")
-
-    print_success(f"Release package created in '{release_dir}/'")
+    print("   OK Build completed successfully!")
     return True
 
+def create_release_package():
+    """Create release package with necessary files."""
+    print("\n[*] Creating release package...")
+
+    dist_dir = STANDALONE_DIR / "dist"
+    release_dir = STANDALONE_DIR / "release"
+
+    # Clean release directory
+    if release_dir.exists():
+        shutil.rmtree(release_dir)
+    release_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy executable
+    exe_name = "WiiVC-Injector.exe"
+    exe_path = dist_dir / exe_name
+
+    if exe_path.exists():
+        shutil.copy2(exe_path, release_dir / exe_name)
+        print(f"   OK Copied: {exe_name}")
+    else:
+        print(f"   [FAILED] Executable not found: {exe_path}")
+        return False
+
+    # Copy core tools
+    core_src = PROJECT_ROOT / "core"
+    core_dst = release_dir / "core"
+
+    if core_src.exists():
+        shutil.copytree(core_src, core_dst, dirs_exist_ok=True)
+        print(f"   OK Copied: core/")
+
+    # Copy resources
+    resources_src = PROJECT_ROOT / "resources"
+    resources_dst = release_dir / "resources"
+
+    if resources_src.exists():
+        shutil.copytree(resources_src, resources_dst, dirs_exist_ok=True)
+        print(f"   OK Copied: resources/")
+
+    # Create README
+    readme_path = release_dir / "README.txt"
+    readme_content = """WiiVC Injector - Batch Mode
+=============================
+
+이 프로그램은 Wii와 GameCube 게임을 WiiU VC로 변환하는 배치 변환 도구입니다.
+
+사용 방법:
+1. WiiVC-Injector.exe를 실행합니다
+2. "설정" 버튼을 눌러 암호화 키를 입력합니다
+   - Wii U Common Key (필수)
+   - Rhythm Heaven Fever Title Key (필수)
+   - Xenoblade Chronicles Title Key (선택)
+   - Super Mario Galaxy 2 Title Key (선택)
+3. "파일 추가" 버튼으로 게임 ISO/WBFS 파일을 추가합니다
+4. "빌드 시작" 버튼을 눌러 변환을 시작합니다
+
+출력 파일:
+- 빌드 결과는 "빌드결과" 폴더에 저장됩니다
+
+주의사항:
+- 첫 실행 시 Nintendo CDN에서 베이스 파일을 다운로드합니다 (인터넷 연결 필요)
+- 다운로드한 파일은 base_files/ 폴더에 캐시되어 재사용됩니다
+
+문의: https://github.com/TeconMoon/WiiU-Expedition-VC-Injector
+"""
+
+    readme_path.write_text(readme_content, encoding='utf-8')
+    print(f"   OK Created: README.txt")
+
+    # Show final size
+    exe_size = exe_path.stat().st_size / (1024 * 1024)
+    print(f"\n   [*] Executable size: {exe_size:.2f} MB")
+    print(f"   [*] Release package: {release_dir}")
+
+    return True
 
 def main():
     """Main build process."""
-    print_header("WiiU Expedition VC Injector - Builder")
+    print("=" * 60)
+    print("WiiVC Injector - Standalone Build Script")
+    print("=" * 60)
 
-    # Check if running from project root
-    if not os.path.exists('src/wiivc_injector'):
-        print_error("Error: Must run from project root directory")
-        print("Current directory:", os.getcwd())
+    # Step 1: Clean
+    clean_build()
+
+    # Step 2: Install dependencies
+    install_dependencies()
+
+    # Step 3: Build executable
+    if not build_exe():
+        print("\n[FAILED] Build failed!")
         return 1
 
-    # Build steps
-    steps = [
-        ("Check PyInstaller", check_pyinstaller),
-        ("Check dependencies", check_dependencies),
-        ("Clean build files", clean_build_files),
-        ("Check resources", check_resources),
-        ("Build executable", build_executable),
-        ("Create release package", create_release_package),
-    ]
+    # Step 4: Create release package
+    if not create_release_package():
+        print("\n[FAILED] Failed to create release package!")
+        return 1
 
-    for i, (name, func) in enumerate(steps, 1):
-        if not func():
-            print_error(f"\nBuild failed at step {i}: {name}")
-            return 1
+    print("\n" + "=" * 60)
+    print("[SUCCESS] Build completed successfully!")
+    print("=" * 60)
+    print(f"\n[*] Release package: {STANDALONE_DIR / 'release'}")
+    print(f"[*] Ready to distribute!\n")
 
-    # Success summary
-    print_header("Build Complete!")
-    try:
-        print(f"{Color.OKGREEN}✓ Executable: dist/WiiU-Expedition-VC-Injector.exe{Color.ENDC}")
-        print(f"{Color.OKGREEN}✓ Release package: release/{Color.ENDC}")
-    except UnicodeEncodeError:
-        print(f"{Color.OKGREEN}[OK] Executable: dist/WiiU-Expedition-VC-Injector.exe{Color.ENDC}")
-        print(f"{Color.OKGREEN}[OK] Release package: release/{Color.ENDC}")
-    print(f"\n{Color.BOLD}Run the application:{Color.ENDC}")
-
-    if sys.platform == 'win32':
-        print(f"  {Color.OKCYAN}release\\WiiU-Expedition-VC-Injector.exe{Color.ENDC}")
-    else:
-        print(f"  {Color.OKCYAN}./release/WiiU-Expedition-VC-Injector{Color.ENDC}")
-
-    print()
     return 0
 
-
-if __name__ == '__main__':
-    try:
-        sys.exit(main())
-    except KeyboardInterrupt:
-        print_error("\n\nBuild cancelled by user")
-        sys.exit(1)
-    except Exception as e:
-        print_error(f"\n\nUnexpected error: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+if __name__ == "__main__":
+    sys.exit(main())

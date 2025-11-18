@@ -174,25 +174,54 @@ class BuildEngine:
         """
         self.update_progress(10, "Checking base files...")
 
-        # Check if files already exist in JNUSToolDownloads cache
-        cache_dir = self.paths.jnustool_downloads
-
-        # Check critical files
-        critical_files = [
-            cache_dir / "0005001010004000" / "deint.txt",
-            cache_dir / "0005001010004001" / "boot.bin",
-            cache_dir / "00050000101b0700" / "frisbiiU.rpx",
+        # Define critical files (relative paths)
+        critical_file_paths = [
+            # vWii system files
+            ("0005001010004000", "deint.txt"),
+            ("0005001010004000", "font.bin"),
+            ("0005001010004001", "c2w.img"),
+            ("0005001010004001", "boot.bin"),
+            ("0005001010004001", "dmcu.d.hex"),
+            # Rhythm Heaven base files
+            ("00050000101b0700", "cos.xml"),
+            ("00050000101b0700", "frisbiiU.rpx"),
+            ("00050000101b0700", "fw.img"),
+            ("00050000101b0700", "fw.tmd"),
+            ("00050000101b0700", "htk.bin"),
+            ("00050000101b0700", "nn_hai_user.rpl"),
+            ("00050000101b0700", "bootMovie.h264"),
+            ("00050000101b0700", "bootLogoTex.tga"),
+            ("00050000101b0700", "bootSound.btsnd"),
         ]
 
-        all_exist = all(f.exists() for f in critical_files)
+        # Check project-local cache first (most reliable)
+        local_cache = self.paths.base_files_cache
+        local_files = [(local_cache / title_id / filename) for title_id, filename in critical_file_paths]
+        local_missing = [f for f in local_files if not f.exists()]
 
-        if all_exist:
-            print("✓ Base files already cached, skipping download")
+        if not local_missing:
+            print(f"✓ Base files found in project cache: {local_cache}")
+            print(f"✓ Verified {len(local_files)} files")
             self.update_progress(40, "Base files ready (cached)")
             return True
 
-        print("Downloading base files from Nintendo CDN...")
-        self.update_progress(10, "Downloading base files from Nintendo CDN...")
+        # Check JNUSTool downloads directory
+        jnustool_cache = self.paths.jnustool_downloads
+        jnustool_files = [(jnustool_cache / title_id / filename) for title_id, filename in critical_file_paths]
+        jnustool_missing = [f for f in jnustool_files if not f.exists()]
+
+        # If files exist in JNUSTool cache but not in local cache, copy them
+        if not jnustool_missing:
+            print(f"✓ Found files in JNUSTool cache, copying to project cache...")
+            for src, dst in zip(jnustool_files, local_files):
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+            print(f"✓ Copied {len(local_files)} files to project cache")
+            self.update_progress(40, "Base files ready (cached)")
+            return True
+
+        print(f"⚠ Missing {len(jnustool_missing)} base files, downloading from Nintendo CDN...")
+        self.update_progress(10, f"Downloading {len(jnustool_missing)} files...")
 
         # Create JNUSTool config
         jnustool_dir = self.paths.temp_tools / "JAR"
@@ -228,6 +257,8 @@ class BuildEngine:
             print(f"ERROR: jnustool.exe not found at {jnustool_exe}")
             return False
 
+        # Only download missing files
+        downloaded_count = 0
         for title_id, key, file_path in downloads:
             args = f"{title_id}"
             if key:
@@ -237,6 +268,25 @@ class BuildEngine:
             if not self.run_tool(jnustool_exe, args, cwd=jnustool_dir):
                 print(f"Failed to download {file_path}")
                 # Continue anyway - files may already exist
+            else:
+                downloaded_count += 1
+
+        # Verify download was successful
+        jnustool_missing_after = [f for f in jnustool_files if not f.exists()]
+        if jnustool_missing_after:
+            print(f"⚠ Warning: {len(jnustool_missing_after)} files still missing after download")
+            for f in jnustool_missing_after[:5]:  # Show first 5
+                print(f"  - {f}")
+            return False
+
+        print(f"✓ Downloaded {downloaded_count} new files to JNUSTool cache")
+
+        # Copy to project-local cache for faster future access
+        print(f"✓ Copying to project cache: {local_cache}")
+        for src, dst in zip(jnustool_files, local_files):
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+        print(f"✓ Cached {len(local_files)} files in project directory")
 
         return True
 
@@ -279,6 +329,113 @@ class BuildEngine:
 
         return self.run_tool(nfs_tool, args, cwd=output_dir)
 
+    def convert_images_to_tga(self) -> bool:
+        """
+        Convert PNG images to TGA format for meta files.
+
+        Returns:
+            True if successful
+        """
+        try:
+            from PIL import Image
+
+            meta_dir = self.paths.temp_build / "meta"
+            meta_dir.mkdir(parents=True, exist_ok=True)
+
+            # Convert icon if exists
+            if self.paths.temp_icon.exists():
+                with Image.open(self.paths.temp_icon) as img:
+                    icon_tga = meta_dir / "iconTex.tga"
+                    img.save(icon_tga, 'TGA')
+                    print(f"✓ Converted icon to TGA: {icon_tga}")
+
+            # Convert banner if exists
+            if self.paths.temp_banner.exists():
+                with Image.open(self.paths.temp_banner) as img:
+                    banner_tga = meta_dir / "bootTvTex.tga"
+                    img.save(banner_tga, 'TGA')
+                    print(f"✓ Converted banner to TGA: {banner_tga}")
+
+            # Convert DRC if exists
+            if self.paths.temp_drc.exists():
+                with Image.open(self.paths.temp_drc) as img:
+                    drc_tga = meta_dir / "bootDrcTex.tga"
+                    img.save(drc_tga, 'TGA')
+                    print(f"✓ Converted DRC to TGA: {drc_tga}")
+
+            # Convert logo if exists
+            if self.paths.temp_logo.exists():
+                with Image.open(self.paths.temp_logo) as img:
+                    logo_tga = meta_dir / "bootLogoTex.tga"
+                    img.save(logo_tga, 'TGA')
+                    print(f"✓ Converted logo to TGA: {logo_tga}")
+
+            return True
+
+        except Exception as e:
+            print(f"Error converting images to TGA: {e}")
+            return False
+
+    def copy_base_files(self) -> bool:
+        """
+        Copy base files from project cache to build directory.
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Use project-local cache (more reliable than JNUSTool cache)
+            cache_dir = self.paths.base_files_cache
+            build_code = self.paths.temp_build / "code"
+            build_meta = self.paths.temp_build / "meta"
+
+            build_code.mkdir(parents=True, exist_ok=True)
+            build_meta.mkdir(parents=True, exist_ok=True)
+
+            # Copy code files
+            code_files = [
+                (cache_dir / "0005001010004000" / "deint.txt", build_code / "deint.txt"),
+                (cache_dir / "0005001010004000" / "font.bin", build_code / "font.bin"),
+                (cache_dir / "0005001010004001" / "c2w.img", build_code / "c2w.img"),
+                (cache_dir / "0005001010004001" / "boot.bin", build_code / "boot.bin"),
+                (cache_dir / "0005001010004001" / "dmcu.d.hex", build_code / "dmcu.d.hex"),
+                (cache_dir / "00050000101b0700" / "cos.xml", build_code / "cos.xml"),
+                (cache_dir / "00050000101b0700" / "frisbiiU.rpx", build_code / "frisbiiU.rpx"),
+                (cache_dir / "00050000101b0700" / "fw.img", build_code / "fw.img"),
+                (cache_dir / "00050000101b0700" / "fw.tmd", build_code / "fw.tmd"),
+                (cache_dir / "00050000101b0700" / "htk.bin", build_code / "htk.bin"),
+                (cache_dir / "00050000101b0700" / "nn_hai_user.rpl", build_code / "nn_hai_user.rpl"),
+            ]
+
+            copied = 0
+            for src, dst in code_files:
+                if src.exists():
+                    shutil.copy2(src, dst)
+                    copied += 1
+                else:
+                    print(f"⚠ Missing: {src}")
+
+            # Copy meta files
+            meta_files = [
+                (cache_dir / "00050000101b0700" / "bootMovie.h264", build_meta / "bootMovie.h264"),
+                (cache_dir / "00050000101b0700" / "bootLogoTex.tga", build_meta / "bootLogoTex.tga"),
+                (cache_dir / "00050000101b0700" / "bootSound.btsnd", build_meta / "bootSound.btsnd"),
+            ]
+
+            for src, dst in meta_files:
+                if src.exists():
+                    shutil.copy2(src, dst)
+                    copied += 1
+
+            print(f"✓ Copied {copied} base files from cache to build directory")
+            return True
+
+        except Exception as e:
+            print(f"Error copying base files: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
     def pack_final(self, output_path: Path, common_key: str, title_name: str, title_id: str) -> bool:
         """
         Pack final WUP package using NUSPacker.
@@ -300,13 +457,30 @@ class BuildEngine:
         safe_name = "".join(c if c.isalnum() or c in " -_()" else "_" for c in title_name)
         final_output = output_path / f"{safe_name}_WUP-N-{title_id}"
 
+        # Create output directory
+        output_path.mkdir(parents=True, exist_ok=True)
+
         args = f'-in "{self.paths.temp_build}" -out "{final_output}" -encryptKeyWith {common_key}'
 
-        if self.run_tool(nuspacker_exe, args, cwd=self.paths.temp_root):
-            self.update_progress(100, "Build complete!")
-            return True
+        if not self.run_tool(nuspacker_exe, args, cwd=self.paths.temp_root):
+            print("❌ NUSPacker failed")
+            return False
 
-        return False
+        # Verify output files were created
+        if not final_output.exists():
+            print(f"❌ Output directory not created: {final_output}")
+            return False
+
+        # Check for essential files
+        output_files = list(final_output.rglob("*"))
+        if len(output_files) == 0:
+            print(f"❌ No files generated in output: {final_output}")
+            return False
+
+        print(f"✓ Build complete! Generated {len(output_files)} files")
+        print(f"✓ Output location: {final_output}")
+        self.update_progress(100, f"Build complete! Output: {final_output.name}")
+        return True
 
     def build(self, game_path: Path, system_type: str, output_dir: Path,
               common_key: str, title_key: str,
@@ -341,14 +515,15 @@ class BuildEngine:
             if not self.download_base_files(common_key, title_key):
                 raise RuntimeError("Failed to download base files")
 
-            # For now, just show a message that more implementation is needed
-            self.update_progress(50, "Processing game files...")
+            # Copy base files to build directory
+            self.update_progress(50, "Copying base files...")
+            if not self.copy_base_files():
+                raise RuntimeError("Failed to copy base files")
 
-            # TODO: Implement full build process:
-            # 1. Extract/rebuild ISO with WIT if needed
-            # 2. Convert images to TGA
-            # 3. Convert ISO to NFS
-            # 4. Pack final package
+            # Convert images to TGA
+            self.update_progress(60, "Converting images to TGA...")
+            if not self.convert_images_to_tga():
+                raise RuntimeError("Failed to convert images")
 
             # Convert ISO to NFS
             if not self.convert_iso_to_nfs(game_path, system_type, options):

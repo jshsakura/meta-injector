@@ -110,35 +110,3 @@ def ensure_directory(path: Path) -> Path:
     """
     path.mkdir(parents=True, exist_ok=True)
     return path
-
-
-def get_short_path_name(long_path: str) -> str:
-    """
-    Get Windows short path name (8.3 format).
-
-    Args:
-        long_path: Long path with spaces
-
-    Returns:
-        Short path name
-    """
-    try:
-        if subprocess.sys.platform == 'win32':
-            import ctypes
-            from ctypes import wintypes
-
-            _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
-            _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
-            _GetShortPathNameW.restype = wintypes.DWORD
-
-            output_buf = ctypes.create_unicode_buffer(1000)
-            result = _GetShortPathNameW(long_path, output_buf, 1000)
-
-            if result:
-                return output_buf.value
-            else:
-                return long_path
-        else:
-            return long_path
-    except Exception:
-        return long_path

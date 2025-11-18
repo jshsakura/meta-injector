@@ -17,7 +17,15 @@
       "WebFetch(domain:wiki.gbatemp.net)",
       "Bash(del C:UsersWIN11.wiivc_injector_compatibility.db)",
       "Bash(del \"C:\\Users\\WIN11\\.wiivc_injector_compatibility.db\")",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(del EXTRACT_GAME_IDS_README.md auto_import_korean_games.py desktop_wii_scan.json extract_game_ids.py korean_games.json update_game_ids_to_db.py)",
+      "Bash(rm:*)",
+      "Bash(iconv:*)",
+      "Bash(git restore:*)",
+      "Bash(del check_db_titles.py create_manual_mapping.py manual_mappings.py package-lock.json rename_wii_images.py)",
+      "Bash(del srcwiivc_injectorsimple_batch_window.py)",
+      "Bash(src/wiivc_injector/translations.py)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

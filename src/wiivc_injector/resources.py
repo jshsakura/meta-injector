@@ -1,5 +1,6 @@
 """Resource handler for WiiVC Injector."""
 import os
+import sys
 import zipfile
 from pathlib import Path
 from typing import Optional
@@ -27,7 +28,7 @@ class ResourceManager:
             # When installed as package
             Path(__file__).parent / "resources",
             # When packaged with PyInstaller
-            Path(getattr(os.sys, '_MEIPASS', '.')) / "resources",
+            Path(getattr(sys, '_MEIPASS', '.')) / "resources",
         ]
 
         for path in possible_paths:
@@ -56,7 +57,7 @@ class ResourceManager:
 
     def extract_tools(self, destination: Path) -> bool:
         """
-        Extract TOOLDIR.zip to destination.
+        Extract core.zip to destination.
 
         Args:
             destination: Directory to extract tools to
@@ -64,10 +65,10 @@ class ResourceManager:
         Returns:
             True if successful, False otherwise
         """
-        tools_zip = self.get_resource_path("TOOLDIR.zip")
+        tools_zip = self.get_resource_path("core.zip")
 
         if not tools_zip or not tools_zip.exists():
-            print("Warning: TOOLDIR.zip not found in resources")
+            print("Warning: core.zip not found in resources")
             return False
 
         try:

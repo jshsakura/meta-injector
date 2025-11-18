@@ -1,6 +1,7 @@
 """Path constants and utilities for WiiVC Injector."""
 from pathlib import Path
 import os
+import sys
 
 
 class PathManager:
@@ -8,8 +9,13 @@ class PathManager:
 
     def __init__(self):
         """Initialize path manager."""
-        # Project root directory
-        self.project_root = Path(__file__).parent.parent.parent
+        # Project root directory (handle PyInstaller frozen state)
+        if getattr(sys, 'frozen', False):
+            # Running as compiled exe
+            self.project_root = Path(sys.executable).parent
+        else:
+            # Running as script
+            self.project_root = Path(__file__).parent.parent.parent
 
         # Base temp directory
         self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiVCInjector"
@@ -21,7 +27,7 @@ class PathManager:
         self.temp_build = self.temp_root / "BUILDDIR"
 
         # Tools directory - use project folder instead of temp
-        self.temp_tools = self.project_root / "TOOLDIR"
+        self.temp_tools = self.project_root / "core"
 
         # Specific source file paths
         self.temp_icon = self.temp_source / "iconTex.png"
@@ -30,13 +36,16 @@ class PathManager:
         self.temp_logo = self.temp_source / "bootLogoTex.png"
         self.temp_sound = self.temp_source / "bootSound.wav"
 
-        # JNUSTool downloads
+        # JNUSTool downloads - try multiple locations
         if os.name == 'nt':
             # Windows: CommonApplicationData
             self.jnustool_downloads = Path(os.environ.get('PROGRAMDATA', 'C:\\ProgramData')) / "JNUSToolDownloads"
         else:
             # Linux/Mac: user's home
             self.jnustool_downloads = Path.home() / ".JNUSToolDownloads"
+
+        # Project-local base files cache (more reliable)
+        self.base_files_cache = self.project_root / "base_files"
 
     def create_temp_directories(self):
         """Create all necessary temporary directories."""

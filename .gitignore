@@ -69,5 +69,14 @@ Thumbs.db
 # Settings
 .wiivc_injector_settings.json
 
+# Base files cache (downloaded from Nintendo CDN)
+base_files/
+
+# Standalone build artifacts
+standalone/build/
+standalone/dist/
+standalone/release/
+standalone/*.spec
+
 # Old C# project
 OLD/
