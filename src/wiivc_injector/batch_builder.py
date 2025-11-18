@@ -56,12 +56,17 @@ class BatchBuilder(QThread):
             if self.should_stop:
                 break
 
+            # Skip duplicate jobs
+            if job.status == "duplicate":
+                self.job_finished.emit(idx, False, "Skipped (duplicate)")
+                continue
+
             # Emit job started
             self.job_started.emit(idx, job.title_name)
             job.status = "processing"
 
-            # Download icons if needed
-            if self.auto_icons:
+            # Download icons only if not already downloaded
+            if self.auto_icons and not job.icon_path:
                 self.download_icons(job, job.game_info.get('game_id', ''))
 
             # Build
@@ -79,7 +84,11 @@ class BatchBuilder(QThread):
 
     def download_icons(self, job: BatchBuildJob, game_id: str):
         """Download icon and banner for game."""
-        cucholix_id = game_id[:4] if len(game_id) >= 4 else game_id
+        from .resources import resources
+        import shutil
+
+        if not game_id or len(game_id) < 4:
+            return
 
         # Try different ID variations
         id_variations = [
@@ -87,6 +96,7 @@ class BatchBuilder(QThread):
             game_id,      # RMGE01
         ]
 
+        download_success = False
         for try_id in id_variations:
             icon_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/wii/{try_id}/iconTex.png"
             banner_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/wii/{try_id}/bootTvTex.png"
@@ -106,9 +116,25 @@ class BatchBuilder(QThread):
                         banner_path.write_bytes(banner_response.content)
                         job.banner_path = banner_path
 
+                    download_success = True
                     break  # Found icons, stop trying
             except:
                 continue
+
+        # Use default images if download failed
+        if not download_success:
+            default_icon = resources.resources_dir / "images" / "default_icon.png"
+            default_banner = resources.resources_dir / "images" / "default_banner.png"
+
+            if default_icon.exists():
+                icon_path = paths.temp_source / f"icon_{game_id}.png"
+                shutil.copy(default_icon, icon_path)
+                job.icon_path = icon_path
+
+            if default_banner.exists():
+                banner_path = paths.temp_source / f"banner_{game_id}.png"
+                shutil.copy(default_banner, banner_path)
+                job.banner_path = banner_path
 
     def build_job(self, job: BatchBuildJob, idx: int, total: int) -> bool:
         """Build single job."""

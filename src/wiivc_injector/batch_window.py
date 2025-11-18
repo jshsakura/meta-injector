@@ -161,52 +161,69 @@ class GameLoaderThread(QThread):
 
                 return True
 
-        # If not found locally, try remote download
+        # If not found locally, try remote download from multiple sources
         ssl_context = ssl.create_default_context()
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
 
         alternative_ids = list(GameTdb.get_alternative_ids(repo_id))
+        paths.temp_source.mkdir(parents=True, exist_ok=True)
 
+        # Try multiple image sources
         for try_id in alternative_ids:
-            icon_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/iconTex.png"
-            banner_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/bootTvTex.png"
+            # Source 1: UWUVCI-IMAGES (6-char ID like RMGE01)
+            if len(try_id) == 6:
+                sources = [
+                    (f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/iconTex.png",
+                     f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/bootTvTex.png"),
+                ]
+            else:
+                sources = []
 
-            try:
-                paths.temp_source.mkdir(parents=True, exist_ok=True)
-
-                # Download icon
-                req = urllib.request.Request(
-                    icon_url,
-                    headers={'User-Agent': 'WiiVC-Injector/1.0'}
+            # Source 2: GameTDB (4-char ID like RMGE)
+            if len(try_id) == 4:
+                region_code = try_id[3] if len(try_id) >= 4 else 'E'
+                region_map = {'E': 'US', 'P': 'EN', 'J': 'JA', 'K': 'KO'}
+                region = region_map.get(region_code, 'US')
+                sources.append(
+                    (f"https://art.gametdb.com/wii/cover/{region}/{try_id}.png",
+                     f"https://art.gametdb.com/wii/coverfull/{region}/{try_id}.png")
                 )
-                with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
-                    icon_data = response.read()
-                    icon_path = paths.temp_source / f"icon_{game_id}.png"
-                    icon_path.write_bytes(icon_data)
-                    job.icon_path = icon_path
 
-                # Download banner
-                req = urllib.request.Request(
-                    banner_url,
-                    headers={'User-Agent': 'WiiVC-Injector/1.0'}
-                )
-                with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
-                    banner_data = response.read()
-                    banner_path = paths.temp_source / f"banner_{game_id}.png"
-                    banner_path.write_bytes(banner_data)
-                    job.banner_path = banner_path
+            for icon_url, banner_url in sources:
+                try:
+                    # Download icon
+                    req = urllib.request.Request(icon_url, headers={'User-Agent': 'WiiVC-Injector/1.0'})
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+                        icon_data = response.read()
+                        icon_path = paths.temp_source / f"icon_{game_id}.png"
+                        icon_path.write_bytes(icon_data)
+                        job.icon_path = icon_path
 
-                print(f"  [OK] Downloaded icon+banner for {try_id}")
-                return True
+                    # Download banner
+                    req = urllib.request.Request(banner_url, headers={'User-Agent': 'WiiVC-Injector/1.0'})
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+                        banner_data = response.read()
+                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_path.write_bytes(banner_data)
+                        job.banner_path = banner_path
 
-            except:
-                continue
+                    print(f"  [OK] Downloaded icon+banner for {try_id}")
+                    return True
+
+                except Exception as e:
+                    continue
 
         # If download failed, use default images
         print(f"  [DEFAULT] Using default images for {game_id}")
-        default_icon = resources.resources_dir / "images" / "logo.png"
-        default_banner = resources.resources_dir / "images" / "logo.png"
+        default_icon = resources.resources_dir / "images" / "default_icon.png"
+        default_banner = resources.resources_dir / "images" / "default_banner.png"
+
+        # Fallback to logo.png if default images don't exist
+        if not default_icon.exists():
+            default_icon = resources.resources_dir / "images" / "logo.png"
+        if not default_banner.exists():
+            default_banner = resources.resources_dir / "images" / "logo.png"
 
         if default_icon.exists():
             icon_path = paths.temp_source / f"icon_{game_id}.png"
@@ -535,9 +552,8 @@ class BatchWindow(QMainWindow):
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
 
-        build_text = "빌드 시작" if tr.current_language == "ko" else "Start Batch Build"
+        build_text = "▶ 빌드 시작" if tr.current_language == "ko" else "▶ Start Batch Build"
         self.build_btn = QPushButton(build_text)
-        self.build_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.build_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -566,9 +582,8 @@ class BatchWindow(QMainWindow):
         self.build_btn.setEnabled(False)
         bottom_layout.addWidget(self.build_btn)
 
-        stop_text = "중지" if tr.current_language == "ko" else "Stop"
+        stop_text = "⏹ 중지" if tr.current_language == "ko" else "⏹ Stop"
         self.stop_btn = QPushButton(stop_text)
-        self.stop_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
         self.stop_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -702,11 +717,23 @@ class BatchWindow(QMainWindow):
 
     def on_game_loaded(self, job: BatchBuildJob):
         """Handle when a game is loaded (called for each game as it finishes)."""
+        # Check for duplicate game_id
+        game_id = job.game_info.get('game_id', '') if job.game_info else ''
+        is_duplicate = False
+
+        if game_id:
+            for existing_job in self.jobs:
+                existing_game_id = existing_job.game_info.get('game_id', '') if existing_job.game_info else ''
+                if existing_game_id and existing_game_id == game_id:
+                    is_duplicate = True
+                    job.status = "duplicate"
+                    break
+
         # Add job to list
         self.jobs.append(job)
 
         # Add to table immediately
-        row_index = self.add_job_to_table(job)
+        row_index = self.add_job_to_table(job, is_duplicate)
 
         # Update icon if already downloaded
         self.update_icon_preview(row_index, job)
@@ -774,7 +801,7 @@ class BatchWindow(QMainWindow):
             banner_item.setBackground(QColor(255, 240, 240))
             self.table.setItem(row, 2, banner_item)
 
-    def add_job_to_table(self, job: BatchBuildJob):
+    def add_job_to_table(self, job: BatchBuildJob, is_duplicate: bool = False):
         """Add job to table and return row index."""
         row = self.table.rowCount()
         self.table.insertRow(row)
@@ -815,9 +842,14 @@ class BatchWindow(QMainWindow):
         self.table.setItem(row, 5, gamepad_item)
 
         # Column 6: Status
-        status_text = "대기 중" if tr.current_language == "ko" else "Pending"
-        status_item = QTableWidgetItem(status_text)
-        status_item.setBackground(QColor(255, 249, 196))  # Yellow
+        if is_duplicate:
+            status_text = "중복" if tr.current_language == "ko" else "Duplicate"
+            status_item = QTableWidgetItem(status_text)
+            status_item.setBackground(QColor(255, 182, 193))  # Light pink for duplicate
+        else:
+            status_text = "대기 중" if tr.current_language == "ko" else "Pending"
+            status_item = QTableWidgetItem(status_text)
+            status_item.setBackground(QColor(255, 249, 196))  # Yellow
         self.table.setItem(row, 6, status_item)
 
         # Column 7: Edit button
