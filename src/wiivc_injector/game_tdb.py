@@ -102,6 +102,27 @@ class GameTdb:
         return result
 
     @classmethod
+    def search_by_name(cls, search_name: str) -> List[tuple]:
+        """
+        Search for games by partial name match.
+
+        Args:
+            search_name: Name to search for (case-insensitive)
+
+        Returns:
+            List of (game_id, game_name) tuples
+        """
+        db = cls._load_database()
+        search_lower = search_name.lower()
+        results = []
+
+        for game_id, game_name in db.items():
+            if search_lower in game_name.lower():
+                results.append((game_id, game_name))
+
+        return results
+
+    @classmethod
     def get_alternative_ids(cls, initial_id: str) -> Iterator[str]:
         """
         Get alternative game IDs for region variants.

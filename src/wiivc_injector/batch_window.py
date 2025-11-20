@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTableWidget, QTableWidgetItem, QHeaderView, QProgressBar,
     QLabel, QCheckBox, QFileDialog, QMessageBox, QLineEdit, QDialog,
-    QFormLayout, QStyle, QProgressDialog
+    QFormLayout, QStyle, QProgressDialog, QComboBox
 )
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
 from PyQt5.QtGui import QColor, QPixmap, QIcon, QFont
 from .batch_builder import BatchBuilder, BatchBuildJob
 from .game_info import game_info_extractor
@@ -15,8 +15,28 @@ from .paths import paths
 from .translations import tr
 
 
+def show_message(parent, msg_type, title, text, min_width=550):
+    """Show message box without help button and with minimum width."""
+    msg_box = QMessageBox(parent)
+    msg_box.setWindowTitle(title)
+    msg_box.setText(text)
+    msg_box.setMinimumWidth(min_width)
+    msg_box.setWindowFlags(msg_box.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+
+    if msg_type == "info":
+        msg_box.setIcon(QMessageBox.Information)
+    elif msg_type == "warning":
+        msg_box.setIcon(QMessageBox.Warning)
+    elif msg_type == "question":
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        return msg_box.exec_()
+
+    msg_box.exec_()
+
+
 class GameLoaderThread(QThread):
-    """Background thread for loading game files one by one."""
+    """Background thread for loading game files with parallel downloads."""
 
     # Signals
     game_loaded = pyqtSignal(object)  # Emits BatchBuildJob when ready
@@ -34,48 +54,83 @@ class GameLoaderThread(QThread):
         self.should_stop = True
 
     def run(self):
-        """Load games in background."""
-        loaded_count = 0
-        total = len(self.file_paths)
+        """Load games in background with parallel downloads."""
+        try:
+            from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        for idx, file_path in enumerate(self.file_paths):
-            # Check if stop requested
-            if self.should_stop:
-                print(f"[INFO] Loading stopped by user at {idx+1}/{total}")
-                break
+            loaded_count = 0
+            total = len(self.file_paths)
 
-            self.progress_updated.emit(idx + 1, total)
+            # First pass: Extract game info (fast, sequential)
+            jobs_to_process = []
+            for idx, file_path in enumerate(self.file_paths):
+                if self.should_stop:
+                    break
 
-            try:
-                game_path = Path(file_path)
+                try:
+                    game_path = Path(file_path)
+                    game_info = game_info_extractor.extract_game_info(game_path)
 
-                # Extract game info
-                game_info = game_info_extractor.extract_game_info(game_path)
+                    if not game_info:
+                        print(f"[WARN] Failed to extract info from {game_path.name}")
+                        continue
 
-                if not game_info:
-                    print(f"[WARN] Failed to extract info from {game_path.name}")
-                    continue
+                    job = BatchBuildJob(game_path, game_info)
+                    self.prepare_job_metadata(job)
+                    jobs_to_process.append((idx, job))
 
-                # Create job
-                job = BatchBuildJob(game_path, game_info)
+                except Exception as e:
+                    print(f"[ERROR] Failed to load {file_path}: {e}")
+                    import traceback
+                    traceback.print_exc()
 
-                # Prepare metadata (quick operation)
-                self.prepare_job_metadata(job)
+            # Second pass: Download icons in parallel
+            if self.auto_download_icons and jobs_to_process:
+                completed = 0
 
-                # Download icon if enabled
-                if self.auto_download_icons:
-                    self.download_icon_for_job(job)
+                with ThreadPoolExecutor(max_workers=8) as executor:
+                    # Submit all download tasks
+                    future_to_job = {
+                        executor.submit(self.download_icon_for_job, job): (idx, job)
+                        for idx, job in jobs_to_process
+                    }
 
-                # Emit signal with completed job
-                self.game_loaded.emit(job)
-                loaded_count += 1
+                    # Process completed tasks
+                    for future in as_completed(future_to_job):
+                        if self.should_stop:
+                            executor.shutdown(wait=False, cancel_futures=True)
+                            break
 
-            except Exception as e:
-                print(f"[ERROR] Failed to load {file_path}: {e}")
-                import traceback
-                traceback.print_exc()
+                        idx, job = future_to_job[future]
+                        completed += 1
+                        self.progress_updated.emit(completed, len(jobs_to_process))
 
-        self.loading_finished.emit(loaded_count)
+                        try:
+                            future.result()  # Get result to catch exceptions
+                            self.game_loaded.emit(job)
+                            loaded_count += 1
+                        except Exception as e:
+                            print(f"[ERROR] Download failed for {job.game_path.name}: {e}")
+                            # Still emit job even if download failed
+                            self.game_loaded.emit(job)
+                            loaded_count += 1
+            else:
+                # No icon download, just emit jobs
+                for idx, job in jobs_to_process:
+                    if self.should_stop:
+                        break
+                    self.progress_updated.emit(idx + 1, total)
+                    self.game_loaded.emit(job)
+                    loaded_count += 1
+
+            self.loading_finished.emit(loaded_count)
+
+        except Exception as e:
+            print(f"[CRITICAL ERROR] GameLoaderThread crashed: {e}")
+            import traceback
+            traceback.print_exc()
+            # Emit finished signal even on error to prevent UI freeze
+            self.loading_finished.emit(0)
 
     def prepare_job_metadata(self, job: BatchBuildJob):
         """Prepare job metadata from game info and DB."""
@@ -98,12 +153,15 @@ class GameLoaderThread(QThread):
             if games:
                 found_game = games[0]
 
-        # Set title name (Korean from DB if available)
+        # Set title name - will be updated from GameTDB later if available
+        # For now, use DB title or game_info title as fallback
         if found_game and found_game['title']:
-            korean_title = found_game['title'].split('(')[0].strip()
-            job.title_name = korean_title
+            db_title = found_game['title'].split('(')[0].strip()
+            job.title_name = db_title
+            job.db_title = db_title  # Save for fallback
         else:
             job.title_name = game_title
+            job.db_title = game_title
 
         # Get gamepad compatibility and host game from DB
         if found_game:
@@ -137,7 +195,24 @@ class GameLoaderThread(QThread):
             return False
 
         repo_id = game_id[:4]
+        full_id = game_id[:6] if len(game_id) >= 6 else game_id
         system_type = job.game_info.get('system', 'wii')
+
+        # Check image cache first
+        cache_dir = paths.base_files_cache / "images" / repo_id
+        cached_icon = cache_dir / "icon.png"
+        cached_banner = cache_dir / "banner.png"
+        cached_drc = cache_dir / "drc.png"
+
+        if cached_icon.exists() and cached_banner.exists():
+            print(f"  [CACHE] Found cached images for {repo_id}")
+            job.icon_path = cached_icon
+            job.banner_path = cached_banner
+            if cached_drc.exists():
+                job.drc_path = cached_drc
+            else:
+                job.drc_path = cached_banner  # Use banner as DRC
+            return True
 
         # First check local resources/wii/ directory
         local_wii_dir = resources.resources_dir / "wii"
@@ -166,59 +241,252 @@ class GameLoaderThread(QThread):
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
 
-        alternative_ids = list(GameTdb.get_alternative_ids(repo_id))
+        # Try full ID first, then 4-char alternatives
+        alternative_ids = [full_id] if full_id != repo_id else []
+        alternative_ids.extend(list(GameTdb.get_alternative_ids(repo_id)))
+
+        download_success = False
+        from PIL import Image
+        import io
+
+        paths.temp_source.mkdir(parents=True, exist_ok=True)
+
+        # Try GameTDB first (coverfullHQ for banner, cover for icon crop)
+        # Prioritize by region code in game ID
+        region_char = game_id[3] if len(game_id) >= 4 else 'E'
+        if region_char == 'K':
+            region_codes = ['KO', 'EN', 'US', 'JA']
+        elif region_char == 'J':
+            region_codes = ['JA', 'EN', 'US', 'KO']
+        elif region_char == 'P':
+            region_codes = ['EN', 'US', 'JA', 'KO']
+        else:  # E or others
+            region_codes = ['US', 'EN', 'JA', 'KO']
 
         for try_id in alternative_ids:
-            icon_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/iconTex.png"
-            banner_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/bootTvTex.png"
+            for region in region_codes:
+                # Full cover for banner (front+back+spine)
+                fullcover_url = f"https://art.gametdb.com/wii/coverfullHQ/{region}/{try_id}.png"
+                # Regular cover for icon (just front)
+                cover_url = f"https://art.gametdb.com/wii/cover/{region}/{try_id}.png"
 
-            try:
-                paths.temp_source.mkdir(parents=True, exist_ok=True)
+                try:
+                    # Download full cover for banner and DRC
+                    req = urllib.request.Request(
+                        fullcover_url,
+                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                    )
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                        banner_data = response.read()
 
-                # Download icon
-                req = urllib.request.Request(
-                    icon_url,
-                    headers={'User-Agent': 'WiiVC-Injector/1.0'}
-                )
-                with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
-                    icon_data = response.read()
-                    icon_path = paths.temp_source / f"icon_{game_id}.png"
-                    icon_path.write_bytes(icon_data)
-                    job.icon_path = icon_path
+                        # Resize for banner (1280x720)
+                        img = Image.open(io.BytesIO(banner_data))
+                        banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
+                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_img.save(banner_path)
+                        job.banner_path = banner_path
 
-                # Download banner
-                req = urllib.request.Request(
-                    banner_url,
-                    headers={'User-Agent': 'WiiVC-Injector/1.0'}
-                )
-                with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
-                    banner_data = response.read()
-                    banner_path = paths.temp_source / f"banner_{game_id}.png"
-                    banner_path.write_bytes(banner_data)
-                    job.banner_path = banner_path
+                        # Resize for DRC (854x480)
+                        drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
+                        drc_path = paths.temp_source / f"drc_{game_id}.png"
+                        drc_img.save(drc_path)
+                        job.drc_path = drc_path
 
-                print(f"  [OK] Downloaded icon+banner for {try_id}")
-                return True
+                    # Download cover and crop top portion for icon
+                    req = urllib.request.Request(
+                        cover_url,
+                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                    )
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                        cover_data = response.read()
 
-            except:
-                continue
+                        # Crop top portion of cover for icon
+                        img = Image.open(io.BytesIO(cover_data))
+                        width, height = img.size
+
+                        # Crop top square portion (width x width from top)
+                        crop_size = min(width, height)
+                        cropped = img.crop((0, 0, width, crop_size))
+
+                        # Resize to icon size (128x128)
+                        icon_img = cropped.resize((128, 128), Image.Resampling.LANCZOS)
+
+                        icon_path = paths.temp_source / f"icon_{game_id}.png"
+                        icon_img.save(icon_path)
+                        job.icon_path = icon_path
+
+                    print(f"  [OK] Downloaded from GameTDB for {try_id} ({region})")
+                    download_success = True
+
+                    # Try to get Korean title from GameTDB
+                    self.fetch_gametdb_title(job, try_id, ssl_context)
+                    return True
+
+                except Exception as e:
+                    # Try just cover if fullcover fails
+                    try:
+                        req = urllib.request.Request(
+                            cover_url,
+                            headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                        )
+                        with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                            cover_data = response.read()
+
+                            # Use cover for both
+                            img = Image.open(io.BytesIO(cover_data))
+                            width, height = img.size
+
+                            # Crop top for icon
+                            crop_size = min(width, height)
+                            cropped = img.crop((0, 0, width, crop_size))
+                            icon_img = cropped.resize((128, 128), Image.Resampling.LANCZOS)
+                            icon_path = paths.temp_source / f"icon_{game_id}.png"
+                            icon_img.save(icon_path)
+                            job.icon_path = icon_path
+
+                            # Resize for banner (1280x720)
+                            banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
+                            banner_path = paths.temp_source / f"banner_{game_id}.png"
+                            banner_img.save(banner_path)
+                            job.banner_path = banner_path
+
+                            # Resize for DRC (854x480)
+                            drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
+                            drc_path = paths.temp_source / f"drc_{game_id}.png"
+                            drc_img.save(drc_path)
+                            job.drc_path = drc_path
+
+                            print(f"  [OK] Downloaded cover from GameTDB for {try_id} ({region})")
+                            download_success = True
+
+                            # Try to get Korean title from GameTDB
+                            self.fetch_gametdb_title(job, try_id, ssl_context)
+                            return True
+                    except:
+                        continue
+
+        # Fallback to UWUVCI-IMAGES
+        if not download_success:
+            for try_id in alternative_ids:
+                icon_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/iconTex.png"
+                banner_url = f"https://raw.githubusercontent.com/UWUVCI-PRIME/UWUVCI-IMAGES/master/{system_type}/{try_id}/bootTvTex.png"
+
+                try:
+                    # Download icon
+                    req = urllib.request.Request(
+                        icon_url,
+                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                    )
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                        icon_data = response.read()
+                        icon_path = paths.temp_source / f"icon_{game_id}.png"
+                        icon_path.write_bytes(icon_data)
+                        job.icon_path = icon_path
+
+                    # Download banner
+                    req = urllib.request.Request(
+                        banner_url,
+                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                    )
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                        banner_data = response.read()
+                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_path.write_bytes(banner_data)
+                        job.banner_path = banner_path
+
+                        # Resize banner for DRC (854x480)
+                        banner_img = Image.open(io.BytesIO(banner_data))
+                        drc_img = banner_img.resize((854, 480), Image.Resampling.LANCZOS)
+                        drc_path = paths.temp_source / f"drc_{game_id}.png"
+                        drc_img.save(drc_path)
+                        job.drc_path = drc_path
+
+                    print(f"  [OK] Downloaded from UWUVCI for {try_id}")
+                    download_success = True
+                    return True
+
+                except:
+                    continue
 
         # If download failed, use default images
-        print(f"  [DEFAULT] Using default images for {game_id}")
-        default_icon = resources.resources_dir / "images" / "logo.png"
-        default_banner = resources.resources_dir / "images" / "logo.png"
+        if not download_success:
+            print(f"  [DEFAULT] Using default images for {game_id}")
+            default_icon = resources.resources_dir / "images" / "default_icon.png"
+            default_banner = resources.resources_dir / "images" / "default_banner.png"
+            default_drc = resources.resources_dir / "images" / "default_drc.png"
 
-        if default_icon.exists():
-            icon_path = paths.temp_source / f"icon_{game_id}.png"
-            shutil.copy(default_icon, icon_path)
-            job.icon_path = icon_path
+            paths.temp_source.mkdir(parents=True, exist_ok=True)
 
-        if default_banner.exists():
-            banner_path = paths.temp_source / f"banner_{game_id}.png"
-            shutil.copy(default_banner, banner_path)
-            job.banner_path = banner_path
+            if default_icon.exists():
+                icon_path = paths.temp_source / f"icon_{game_id}.png"
+                shutil.copy(default_icon, icon_path)
+                job.icon_path = icon_path
+
+            if default_banner.exists():
+                banner_path = paths.temp_source / f"banner_{game_id}.png"
+                shutil.copy(default_banner, banner_path)
+                job.banner_path = banner_path
+
+            if default_drc.exists():
+                drc_path = paths.temp_source / f"drc_{game_id}.png"
+                shutil.copy(default_drc, drc_path)
+                job.drc_path = drc_path
+        else:
+            # Save to cache for future use
+            try:
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                if job.icon_path and job.icon_path.exists():
+                    shutil.copy(job.icon_path, cached_icon)
+                if job.banner_path and job.banner_path.exists():
+                    shutil.copy(job.banner_path, cached_banner)
+                if job.drc_path and job.drc_path.exists():
+                    shutil.copy(job.drc_path, cached_drc)
+                print(f"  [CACHE] Saved images to cache for {repo_id}")
+            except Exception as e:
+                print(f"  [CACHE] Failed to cache images: {e}")
 
         return True
+
+    def fetch_gametdb_title(self, job: BatchBuildJob, game_id: str, ssl_context):
+        """Fetch Korean title from GameTDB. Falls back to DB title if not found."""
+        import urllib.request
+        import re
+
+        try:
+            # GameTDB game page
+            url = f"https://www.gametdb.com/Wii/{game_id}"
+            req = urllib.request.Request(
+                url,
+                headers={'User-Agent': 'WiiVC-Injector/1.0'}
+            )
+            with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                html = response.read().decode('utf-8', errors='ignore')
+
+                # Look for Korean title - pattern: title (KO)</td><td...>쿠킹 마마</td>
+                ko_match = re.search(r'title\s*\(KO\)</td><td[^>]*>([^<]+)</td>', html)
+                if ko_match:
+                    ko_title = ko_match.group(1).strip()
+                    if ko_title:
+                        job.title_name = ko_title
+                        print(f"  [TITLE] GameTDB Korean: {ko_title}")
+                        return
+
+                # Fallback to EN title - pattern: title (EN)</td><td...>Cooking Mama</td>
+                en_match = re.search(r'title\s*\(EN\)</td><td[^>]*>([^<]+)</td>', html)
+                if en_match:
+                    en_title = en_match.group(1).strip()
+                    if en_title:
+                        job.title_name = en_title
+                        print(f"  [TITLE] GameTDB English: {en_title}")
+                        return
+
+                # No title found on GameTDB, keep DB title
+                print(f"  [TITLE] No GameTDB title, using DB: {job.title_name}")
+
+        except Exception as e:
+            # Keep DB title if fetch fails
+            db_title = getattr(job, 'db_title', job.title_name)
+            print(f"  [TITLE] GameTDB failed ({e}), using DB: {db_title}")
 
 
 class SimpleKeysDialog(QDialog):
@@ -226,6 +494,8 @@ class SimpleKeysDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Remove ? button from title bar
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.init_ui()
         self.load_existing_settings()
 
@@ -284,7 +554,7 @@ class SimpleKeysDialog(QDialog):
         common_key = self.common_key_input.text().strip()
         if not common_key:
             error_msg = "Wii U Common Key가 필요합니다!" if tr.current_language == "ko" else "Wii U Common Key is required!"
-            QMessageBox.warning(self, tr.get("error"), error_msg)
+            show_message(self, "warning", tr.get("error"), error_msg)
             return
 
         # Check if at least Rhythm Heaven key is provided (required)
@@ -294,7 +564,7 @@ class SimpleKeysDialog(QDialog):
 
         if not rhythm_key:
             error_msg = "Rhythm Heaven Fever 타이틀 키는 필수입니다!" if tr.current_language == "ko" else "Rhythm Heaven Fever title key is required!"
-            QMessageBox.warning(self, tr.get("error"), error_msg)
+            show_message(self, "warning", tr.get("error"), error_msg)
             return
 
         # Save to settings file
@@ -318,7 +588,7 @@ class SimpleKeysDialog(QDialog):
             import traceback
             traceback.print_exc()
             error_msg = f"설정 저장 실패: {e}" if tr.current_language == "ko" else f"Failed to save settings: {e}"
-            QMessageBox.warning(self, tr.get("error"), error_msg)
+            show_message(self, "warning", tr.get("error"), error_msg)
             return
 
         self.accept()
@@ -362,6 +632,8 @@ class EditGameDialog(QDialog):
 
     def __init__(self, job: BatchBuildJob, parent=None):
         super().__init__(parent)
+        # Remove ? button from title bar
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.job = job
         self.init_ui()
 
@@ -369,9 +641,52 @@ class EditGameDialog(QDialog):
         """Initialize UI."""
         title_text = "게임 메타데이터 편집" if tr.current_language == "ko" else "Edit Game Metadata"
         self.setWindowTitle(title_text)
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(600)
 
         layout = QVBoxLayout(self)
+
+        # Image previews
+        images_layout = QHBoxLayout()
+
+        # Icon preview (128x128 original size, display larger)
+        icon_layout = QVBoxLayout()
+        icon_label_text = "아이콘 (클릭하여 변경)" if tr.current_language == "ko" else "Icon (Click to change)"
+        icon_layout.addWidget(QLabel(icon_label_text))
+        self.icon_preview = QLabel()
+        self.icon_preview.setFixedSize(192, 192)
+        self.icon_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0; cursor: pointer;")
+        self.icon_preview.setAlignment(Qt.AlignCenter)
+        if self.job.icon_path and self.job.icon_path.exists():
+            pixmap = QPixmap(str(self.job.icon_path))
+            self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
+            self.icon_preview.setText(no_image_text)
+        self.icon_preview.mousePressEvent = lambda e: self.change_icon()
+        self.icon_preview.setCursor(Qt.PointingHandCursor)
+        icon_layout.addWidget(self.icon_preview)
+        images_layout.addLayout(icon_layout)
+
+        # Banner preview (1280x720 original, display scaled)
+        banner_layout = QVBoxLayout()
+        banner_label_text = "배너 (클릭하여 변경)" if tr.current_language == "ko" else "Banner (Click to change)"
+        banner_layout.addWidget(QLabel(banner_label_text))
+        self.banner_preview = QLabel()
+        self.banner_preview.setFixedSize(384, 216)
+        self.banner_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0; cursor: pointer;")
+        self.banner_preview.setAlignment(Qt.AlignCenter)
+        if self.job.banner_path and self.job.banner_path.exists():
+            pixmap = QPixmap(str(self.job.banner_path))
+            self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        else:
+            no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
+            self.banner_preview.setText(no_image_text)
+        self.banner_preview.mousePressEvent = lambda e: self.change_banner()
+        self.banner_preview.setCursor(Qt.PointingHandCursor)
+        banner_layout.addWidget(self.banner_preview)
+        images_layout.addLayout(banner_layout)
+
+        layout.addLayout(images_layout)
 
         # Title
         title_layout = QHBoxLayout()
@@ -399,11 +714,185 @@ class EditGameDialog(QDialog):
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
 
+    def change_icon(self):
+        """Change icon image."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "아이콘 이미지 선택" if tr.current_language == "ko" else "Select Icon Image",
+            "",
+            "Images (*.png *.jpg *.jpeg);;All Files (*.*)"
+        )
+        if file_path:
+            self.job.icon_path = Path(file_path)
+            pixmap = QPixmap(file_path)
+            self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    def change_banner(self):
+        """Change banner image."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "배너 이미지 선택" if tr.current_language == "ko" else "Select Banner Image",
+            "",
+            "Images (*.png *.jpg *.jpeg);;All Files (*.*)"
+        )
+        if file_path:
+            self.job.banner_path = Path(file_path)
+            pixmap = QPixmap(file_path)
+            self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
     def save(self):
         """Save changes."""
         self.job.title_name = self.title_input.text()
         self.job.title_id = self.id_input.text()
         self.accept()
+
+
+class CompatibilityListDialog(QDialog):
+    """Dialog to show compatibility list from database."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Remove ? button from title bar
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.init_ui()
+        self.load_data()
+
+    def init_ui(self):
+        """Initialize UI."""
+        title_text = "호환성 목록" if tr.current_language == "ko" else "Compatibility List"
+        self.setWindowTitle(title_text)
+        self.setMinimumSize(1050, 700)
+
+        layout = QVBoxLayout(self)
+
+        # Search bar
+        search_layout = QHBoxLayout()
+        search_label = QLabel("검색:" if tr.current_language == "ko" else "Search:")
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("게임 이름 또는 ID 입력..." if tr.current_language == "ko" else "Enter game name or ID...")
+        self.search_input.textChanged.connect(self.filter_table)
+        search_layout.addWidget(search_label)
+        search_layout.addWidget(self.search_input)
+        layout.addLayout(search_layout)
+
+        # Table
+        self.table = QTableWidget()
+        self.table.setColumnCount(5)
+        if tr.current_language == "ko":
+            headers = ["게임 ID", "게임 제목", "지역", "게임패드 호환", "호스트 게임"]
+        else:
+            headers = ["Game ID", "Game Title", "Region", "Gamepad Compat", "Host Game"]
+        self.table.setHorizontalHeaderLabels(headers)
+        self.table.setColumnWidth(0, 80)
+        self.table.setColumnWidth(2, 60)
+        self.table.setColumnWidth(3, 150)  # Gamepad Compat - fixed size
+        self.table.setColumnWidth(4, 150)  # Host Game - fixed size
+        # Use stretch for title column only
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # Game Title
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        # Allow editing only game_id column (column 0)
+        self.table.setEditTriggers(QTableWidget.DoubleClicked)
+        self.table.itemChanged.connect(self.on_item_changed)
+        layout.addWidget(self.table)
+
+        # Buttons
+        btn_layout = QHBoxLayout()
+
+        save_btn = QPushButton("저장" if tr.current_language == "ko" else "Save")
+        save_btn.clicked.connect(self.save_changes)
+        btn_layout.addWidget(save_btn)
+
+        close_btn = QPushButton(tr.get("close") if tr.current_language == "ko" else "Close")
+        close_btn.clicked.connect(self.accept)
+        btn_layout.addWidget(close_btn)
+
+        layout.addLayout(btn_layout)
+
+        self.changes = {}  # Track changes: {(title, region): new_game_id}
+
+    def load_data(self):
+        """Load data from compatibility database."""
+        # Fill missing game IDs from GameTDB first
+        updated = compatibility_db.fill_missing_game_ids()
+        if updated > 0:
+            print(f"[DB] Updated {updated} missing game IDs from GameTDB")
+
+        games = compatibility_db.get_all_games()
+        self.all_games = games
+
+        self.table.setRowCount(len(games))
+        for row, game in enumerate(games):
+            self.table.setItem(row, 0, QTableWidgetItem(game.get('game_id', '')))
+            self.table.setItem(row, 1, QTableWidgetItem(game.get('title', '')))
+            self.table.setItem(row, 2, QTableWidgetItem(game.get('region', '')))
+
+            # Gamepad compatibility with color
+            gamepad = game.get('gamepad_compatibility', 'Unknown')
+            gamepad_item = QTableWidgetItem(gamepad)
+            if 'works' in gamepad.lower() and 'doesn\'t' not in gamepad.lower():
+                gamepad_item.setBackground(QColor(200, 255, 200))
+            elif 'unknown' in gamepad.lower():
+                gamepad_item.setBackground(QColor(220, 220, 220))
+            else:
+                gamepad_item.setBackground(QColor(255, 200, 200))
+            self.table.setItem(row, 3, gamepad_item)
+
+            self.table.setItem(row, 4, QTableWidgetItem(game.get('host_game', '')))
+
+    def on_item_changed(self, item):
+        """Track changes to game_id or title column."""
+        row = item.row()
+        if item.column() == 0:  # game_id column
+            title_item = self.table.item(row, 1)
+            region_item = self.table.item(row, 2)
+            if title_item and region_item:
+                # Use original title from all_games
+                orig_title = self.all_games[row]['title']
+                region = region_item.text()
+                key = ('game_id', orig_title, region)
+                self.changes[key] = item.text()
+        elif item.column() == 1:  # title column
+            region_item = self.table.item(row, 2)
+            if region_item:
+                orig_title = self.all_games[row]['title']
+                region = region_item.text()
+                key = ('title', orig_title, region)
+                self.changes[key] = item.text()
+
+    def save_changes(self):
+        """Save all changes to database."""
+        if not self.changes:
+            msg = "변경사항이 없습니다." if tr.current_language == "ko" else "No changes to save."
+            show_message(self, "info", "Info", msg)
+            return
+
+        for key, value in self.changes.items():
+            change_type, orig_title, region = key
+            if change_type == 'game_id':
+                compatibility_db.update_game_id(orig_title, region, value)
+            elif change_type == 'title':
+                compatibility_db.update_title(orig_title, region, value)
+
+        count = len(self.changes)
+        self.changes.clear()
+
+        # Reload data to reflect changes
+        self.load_data()
+
+        msg = f"{count}개 항목이 저장되었습니다." if tr.current_language == "ko" else f"{count} item(s) saved."
+        show_message(self, "info", "Info", msg)
+
+    def filter_table(self, text):
+        """Filter table by search text."""
+        text = text.lower()
+        for row in range(self.table.rowCount()):
+            match = False
+            for col in range(self.table.columnCount()):
+                item = self.table.item(row, col)
+                if item and text in item.text().lower():
+                    match = True
+                    break
+            self.table.setRowHidden(row, not match)
 
 
 class BatchWindow(QMainWindow):
@@ -478,10 +967,18 @@ class BatchWindow(QMainWindow):
         clear_btn.clicked.connect(self.clear_all)
         top_layout.addWidget(clear_btn)
 
+        # Compatibility list button
+        compat_text = "호환성 목록" if tr.current_language == "ko" else "Compatibility"
+        compat_btn = QPushButton(compat_text)
+        compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        compat_btn.setStyleSheet(btn_style)
+        compat_btn.clicked.connect(self.show_compatibility_list)
+        top_layout.addWidget(compat_btn)
+
         top_layout.addStretch()
 
         # Settings button
-        settings_text = "⚙ " + ("설정" if tr.current_language == "ko" else "Settings")
+        settings_text = "⚙ 설정" if tr.current_language == "ko" else "⚙ Settings"
         settings_btn = QPushButton(settings_text)
         settings_btn.setStyleSheet(btn_style)
         settings_btn.clicked.connect(self.show_settings)
@@ -496,24 +993,24 @@ class BatchWindow(QMainWindow):
 
         # Game list table
         self.table = QTableWidget()
-        self.table.setColumnCount(8)
+        self.table.setColumnCount(9)
 
         if tr.current_language == "ko":
-            headers = ["파일 이름", "아이콘", "배너", "게임 제목", "타이틀 ID", "게임패드", "상태", "작업"]
+            headers = ["파일 이름", "아이콘", "배너", "게임 제목", "타이틀 ID", "게임패드", "패드옵션", "상태", "작업"]
         else:
-            headers = ["File Name", "Icon", "Banner", "Game Title", "Title ID", "Gamepad", "Status", "Actions"]
+            headers = ["File Name", "Icon", "Banner", "Game Title", "Title ID", "Gamepad", "Pad Option", "Status", "Actions"]
 
         self.table.setHorizontalHeaderLabels(headers)
         # Set column widths
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # File Name
-        self.table.setColumnWidth(1, 80)  # Icon preview
-        self.table.setColumnWidth(2, 120)  # Banner preview (16:9 ratio)
+        self.table.setColumnWidth(1, 50)  # Icon preview
+        self.table.setColumnWidth(2, 80)  # Banner preview (16:9 ratio)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)  # Game Title
         self.table.setColumnWidth(4, 140)  # Title ID
         self.table.setColumnWidth(5, 100)  # Gamepad
-        self.table.setColumnWidth(6, 100)  # Status
-        self.table.setColumnWidth(7, 80)  # Actions
-        self.table.setRowHeight(0, 70)  # Taller rows for preview
+        self.table.setColumnWidth(6, 130)  # Pad Option
+        self.table.setColumnWidth(7, 100)  # Status
+        self.table.setColumnWidth(8, 80)  # Actions
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.cellDoubleClicked.connect(self.edit_game)
         self.table.cellClicked.connect(self.on_cell_clicked)
@@ -535,9 +1032,8 @@ class BatchWindow(QMainWindow):
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
 
-        build_text = "빌드 시작" if tr.current_language == "ko" else "Start Batch Build"
+        build_text = "빌드 시작" if tr.current_language == "ko" else "Start Build"
         self.build_btn = QPushButton(build_text)
-        self.build_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.build_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -566,9 +1062,8 @@ class BatchWindow(QMainWindow):
         self.build_btn.setEnabled(False)
         bottom_layout.addWidget(self.build_btn)
 
-        stop_text = "중지" if tr.current_language == "ko" else "Stop"
+        stop_text = "■ 중지" if tr.current_language == "ko" else "■ Stop"
         self.stop_btn = QPushButton(stop_text)
-        self.stop_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
         self.stop_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -642,7 +1137,7 @@ class BatchWindow(QMainWindow):
             else:
                 msg = f"{duplicate_count} duplicate files were skipped."
                 title = "Duplicates"
-            QMessageBox.information(self, title, msg)
+            show_message(self, "info", title, msg)
 
         if not new_file_paths:
             return
@@ -657,9 +1152,11 @@ class BatchWindow(QMainWindow):
         if tr.current_language == "ko":
             progress_label = "게임 추가 중..."
             cancel_label = "취소"
+            window_title = "잠시만 기다려주세요"
         else:
             progress_label = "Adding games..."
             cancel_label = "Cancel"
+            window_title = "Please wait"
 
         self.loading_progress = QProgressDialog(
             progress_label,
@@ -668,8 +1165,12 @@ class BatchWindow(QMainWindow):
             len(new_file_paths),
             self
         )
+        # Set window title and remove help button from title bar
+        self.loading_progress.setWindowTitle(window_title)
+        self.loading_progress.setWindowFlags(self.loading_progress.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.loading_progress.setWindowModality(Qt.WindowModal)
         self.loading_progress.setMinimumDuration(500)  # Show after 500ms
+        self.loading_progress.setMinimumWidth(500)  # Set wider progress bar
         self.loading_progress.canceled.connect(self.cancel_loading)
 
         # Start background loading thread
@@ -693,12 +1194,16 @@ class BatchWindow(QMainWindow):
 
     def on_loading_progress(self, current, total):
         """Update loading progress."""
-        if hasattr(self, 'loading_progress'):
-            self.loading_progress.setValue(current)
-            if tr.current_language == "ko":
-                self.loading_progress.setLabelText(f"게임 추가 중... ({current}/{total})")
-            else:
-                self.loading_progress.setLabelText(f"Adding games... ({current}/{total})")
+        if hasattr(self, 'loading_progress') and self.loading_progress is not None:
+            try:
+                self.loading_progress.setValue(current)
+                if tr.current_language == "ko":
+                    self.loading_progress.setLabelText(f"게임 추가 중... ({current}/{total})")
+                else:
+                    self.loading_progress.setLabelText(f"Adding games... ({current}/{total})")
+            except (AttributeError, RuntimeError) as e:
+                # Dialog might be closed/deleted - ignore
+                pass
 
     def on_game_loaded(self, job: BatchBuildJob):
         """Handle when a game is loaded (called for each game as it finishes)."""
@@ -737,7 +1242,7 @@ class BatchWindow(QMainWindow):
         # Update icon (Column 1)
         if job.icon_path and job.icon_path.exists():
             pixmap = QPixmap(str(job.icon_path))
-            scaled_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             icon_item = QTableWidgetItem()
             icon_item.setData(Qt.DecorationRole, scaled_pixmap)
             icon_item.setTextAlignment(Qt.AlignCenter)
@@ -757,7 +1262,7 @@ class BatchWindow(QMainWindow):
         # Update banner (Column 2)
         if job.banner_path and job.banner_path.exists():
             pixmap = QPixmap(str(job.banner_path))
-            scaled_pixmap = pixmap.scaled(120, 67, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(72, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             banner_item = QTableWidgetItem()
             banner_item.setData(Qt.DecorationRole, scaled_pixmap)
             banner_item.setTextAlignment(Qt.AlignCenter)
@@ -778,7 +1283,7 @@ class BatchWindow(QMainWindow):
         """Add job to table and return row index."""
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setRowHeight(row, 70)  # Taller rows for icon preview
+        self.table.setRowHeight(row, 50)  # Two lines height
 
         # Column 0: File name
         self.table.setItem(row, 0, QTableWidgetItem(job.game_path.name))
@@ -804,7 +1309,7 @@ class BatchWindow(QMainWindow):
         # Column 5: Gamepad compatibility
         gamepad_item = QTableWidgetItem(job.gamepad_compatibility)
         # Color code based on compatibility
-        if 'works' in job.gamepad_compatibility.lower():
+        if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
             gamepad_item.setBackground(QColor(200, 255, 200))  # Light green
         elif 'classic' in job.gamepad_compatibility.lower() or 'lr' in job.gamepad_compatibility.lower():
             gamepad_item.setBackground(QColor(255, 255, 200))  # Light yellow
@@ -814,13 +1319,33 @@ class BatchWindow(QMainWindow):
             gamepad_item.setBackground(QColor(255, 200, 200))  # Light red
         self.table.setItem(row, 5, gamepad_item)
 
-        # Column 6: Status
+        # Column 6: Pad Option (ComboBox)
+        # Options: None, Gamepad, Gamepad+LR, Vertical Wiimote, Horizontal Wiimote, Galaxy AllStars, Galaxy Nvidia
+        pad_combo = QComboBox()
+        if tr.current_language == "ko":
+            pad_combo.addItems(["미적용", "패드", "패드+LR", "세로위모트", "가로위모트", "갤럭시-올스타", "갤럭시-엔비디아"])
+        else:
+            pad_combo.addItems(["None", "Pad", "Pad+LR", "Vert.Wii", "Horz.Wii", "Galaxy-AS", "Galaxy-NV"])
+
+        # Set default based on compatibility from DB
+        # Index: 0=none, 1=gamepad, 2=gamepad+lr, 3=vertical, 4=horizontal
+        if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
+            pad_combo.setCurrentIndex(1)  # Gamepad
+            job.pad_option = "gamepad"
+        else:
+            pad_combo.setCurrentIndex(0)  # None (미적용)
+            job.pad_option = "none"
+
+        pad_combo.currentIndexChanged.connect(lambda idx, r=row: self.on_pad_option_changed(r, idx))
+        self.table.setCellWidget(row, 6, pad_combo)
+
+        # Column 7: Status
         status_text = "대기 중" if tr.current_language == "ko" else "Pending"
         status_item = QTableWidgetItem(status_text)
         status_item.setBackground(QColor(255, 249, 196))  # Yellow
-        self.table.setItem(row, 6, status_item)
+        self.table.setItem(row, 7, status_item)
 
-        # Column 7: Edit button
+        # Column 8: Edit button
         edit_text = "편집" if tr.current_language == "ko" else "Edit"
         edit_btn = QPushButton(edit_text)
         edit_btn.setStyleSheet("""
@@ -838,8 +1363,8 @@ class BatchWindow(QMainWindow):
                 border-color: #bbb;
             }
         """)
-        edit_btn.clicked.connect(lambda r=row: self.edit_game_by_row(r))
-        self.table.setCellWidget(row, 7, edit_btn)
+        edit_btn.clicked.connect(lambda checked, btn=edit_btn: self.edit_game_by_button(btn))
+        self.table.setCellWidget(row, 8, edit_btn)
 
         return row
 
@@ -848,9 +1373,22 @@ class BatchWindow(QMainWindow):
         if row < len(self.jobs):
             dialog = EditGameDialog(self.jobs[row], self)
             if dialog.exec_():
-                # Update table
-                self.table.item(row, 1).setText(self.jobs[row].title_name)
-                self.table.item(row, 2).setText(self.jobs[row].title_id)
+                # Update table (column 3: title, column 4: title ID)
+                self.table.item(row, 3).setText(self.jobs[row].title_name)
+                game_id = self.jobs[row].game_info.get('game_id', '') if self.jobs[row].game_info else ''
+                title_id_text = f"{self.jobs[row].title_id}\n({game_id})" if game_id else self.jobs[row].title_id
+                self.table.item(row, 4).setText(title_id_text)
+
+                # Update image previews if changed
+                self.update_image_preview(row, self.jobs[row])
+
+    def edit_game_by_button(self, button):
+        """Edit game by finding the button's row in the table."""
+        # Find the row by iterating through all rows to find the button
+        for row in range(self.table.rowCount()):
+            if self.table.cellWidget(row, 8) == button:
+                self.edit_game(row, 0)
+                return
 
     def edit_game_by_row(self, row):
         """Edit game by row index."""
@@ -875,12 +1413,7 @@ class BatchWindow(QMainWindow):
             title = "Clear All"
             msg = "Remove all games from the list?"
 
-        reply = QMessageBox.question(
-            self,
-            title,
-            msg,
-            QMessageBox.Yes | QMessageBox.No
-        )
+        reply = show_message(self, "question", title, msg)
 
         if reply == QMessageBox.Yes:
             self.jobs.clear()
@@ -927,7 +1460,7 @@ class BatchWindow(QMainWindow):
 
                 if not common_key or not title_key_rhythm:
                     msg = "Wii U Common Key와 Rhythm Heaven 키가 필요합니다!" if tr.current_language == "ko" else "Wii U Common Key and Rhythm Heaven key are required!"
-                    QMessageBox.warning(self, tr.get("error"), msg)
+                    show_message(self, "warning", tr.get("error"), msg)
                     return
 
                 # Use Rhythm Heaven as fallback if others are missing
@@ -939,7 +1472,7 @@ class BatchWindow(QMainWindow):
             import traceback
             traceback.print_exc()
             msg = f"설정 로드 실패: {e}" if tr.current_language == "ko" else f"Failed to load settings: {e}"
-            QMessageBox.warning(self, tr.get("error"), msg)
+            show_message(self, "warning", tr.get("error"), msg)
             return
 
         # Get output directory
@@ -986,14 +1519,15 @@ class BatchWindow(QMainWindow):
 
     def on_progress(self, current, total, message):
         """Handle progress update."""
-        progress = int((current / total) * 100) if total > 0 else 0
-        self.progress_bar.setValue(progress)
+        # current is already a percentage (0-100) from batch_builder
+        # total is always 100
+        self.progress_bar.setValue(current)
         self.status_label.setText(message)
 
     def on_job_started(self, idx, game_name):
         """Handle job started."""
         if idx < self.table.rowCount():
-            status_item = self.table.item(idx, 6)
+            status_item = self.table.item(idx, 7)
             status_text = "빌드 중..." if tr.current_language == "ko" else "Building..."
             status_item.setText(status_text)
             status_item.setBackground(QColor(173, 216, 230))  # Light blue
@@ -1001,7 +1535,7 @@ class BatchWindow(QMainWindow):
     def on_job_finished(self, idx, success, message):
         """Handle job finished."""
         if idx < self.table.rowCount():
-            status_item = self.table.item(idx, 6)
+            status_item = self.table.item(idx, 7)
             if success:
                 status_text = "완료" if tr.current_language == "ko" else "Completed"
                 status_item.setText(status_text)
@@ -1019,19 +1553,45 @@ class BatchWindow(QMainWindow):
 
         if tr.current_language == "ko":
             self.status_label.setText(f"완료: {success_count}/{total_count} 성공")
-            title = "일괄 빌드 완료"
-            msg = f"빌드 완료!\n\n성공: {success_count}\n실패: {total_count - success_count}\n전체: {total_count}"
+            title = "일괄 빌드 결과 안내"
+            msg = f"일괄 빌드가 완료되었습니다!\n\n성공: {success_count}개\n실패: {total_count - success_count}개\n전체: {total_count}개"
         else:
             self.status_label.setText(f"Completed: {success_count}/{total_count} succeeded")
-            title = "Batch Build Complete"
-            msg = f"Build finished!\n\nSuccess: {success_count}\nFailed: {total_count - success_count}\nTotal: {total_count}"
+            title = "Batch Build Results"
+            msg = f"Batch build completed!\n\nSuccess: {success_count}\nFailed: {total_count - success_count}\nTotal: {total_count}"
 
-        QMessageBox.information(self, title, msg)
+        show_message(self, "info", title, msg, min_width=500)
 
     def show_settings(self):
         """Show settings dialog for encryption keys."""
         dialog = SimpleKeysDialog(self)
         dialog.exec_()
+
+    def show_compatibility_list(self):
+        """Show compatibility list dialog."""
+        dialog = CompatibilityListDialog(self)
+        dialog.exec_()
+
+    def on_pad_option_changed(self, row, index):
+        """Handle pad option combobox change."""
+        if row < len(self.jobs):
+            job = self.jobs[row]
+            # Index: 0=none, 1=gamepad, 2=gamepad+lr, 3=vertical, 4=horizontal, 5=galaxy_allstars, 6=galaxy_nvidia
+            if index == 0:
+                job.pad_option = "none"
+            elif index == 1:
+                job.pad_option = "gamepad"
+            elif index == 2:
+                job.pad_option = "gamepad_lr"
+            elif index == 3:
+                job.pad_option = "wiimote"
+            elif index == 4:
+                job.pad_option = "horizontal_wiimote"
+            elif index == 5:
+                job.pad_option = "galaxy_allstars"
+            else:
+                job.pad_option = "galaxy_nvidia"
+            print(f"[INFO] Pad option for {job.title_name}: {job.pad_option}")
 
     def on_cell_clicked(self, row, column):
         """Handle cell click - allow manual icon/banner selection."""

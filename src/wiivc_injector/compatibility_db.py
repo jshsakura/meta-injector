@@ -180,6 +180,20 @@ class CompatibilityDB:
         conn.commit()
         print(f"Learned game ID mapping: {title} ({region}) = {game_id}")
 
+    def update_title(self, old_title: str, region: str, new_title: str):
+        """Update title for a game."""
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE games
+            SET title = ?
+            WHERE title = ? AND region = ?
+        """, (new_title, old_title, region))
+
+        conn.commit()
+        print(f"Updated title: {old_title} ({region}) -> {new_title}")
+
     def update_title_key(self, title: str, region: str, title_key: str):
         """Update title key for a game."""
         conn = self.connect()
@@ -213,6 +227,62 @@ class CompatibilityDB:
 
         cursor.execute("SELECT * FROM games ORDER BY title, region")
         return [dict(row) for row in cursor.fetchall()]
+
+    def fill_missing_game_ids(self):
+        """Fill missing game IDs by searching GameTDB with game titles."""
+        from .game_tdb import GameTdb
+        import re
+
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        # Get games with missing game_id
+        cursor.execute("SELECT title, region FROM games WHERE game_id IS NULL OR game_id = ''")
+        missing_games = cursor.fetchall()
+
+        updated_count = 0
+        for title, region in missing_games:
+            # Extract English title from parentheses if present
+            # e.g., "한글제목 (English Title)" -> "English Title"
+            eng_match = re.search(r'\(([^)]+)\)\s*$', title)
+            search_title = eng_match.group(1) if eng_match else title
+
+            # Search GameTDB by title
+            results = GameTdb.search_by_name(search_title)
+
+            # If no results with English title, try original title
+            if not results and eng_match:
+                results = GameTdb.search_by_name(title)
+
+            if results:
+                # Try to find matching region
+                region_code = {'USA': 'E', 'EUR': 'P', 'JPN': 'J', 'KOR': 'K'}.get(region, '')
+
+                best_match = None
+                for game_id, game_name in results:
+                    # Exact title match preferred
+                    if game_name.lower() == title.lower():
+                        if region_code and len(game_id) > 3 and game_id[3] == region_code:
+                            best_match = game_id
+                            break
+                        elif not best_match:
+                            best_match = game_id
+
+                # If no exact match, use first partial match
+                if not best_match and results:
+                    for game_id, game_name in results:
+                        if region_code and len(game_id) > 3 and game_id[3] == region_code:
+                            best_match = game_id
+                            break
+                    if not best_match:
+                        best_match = results[0][0]
+
+                if best_match:
+                    self.update_game_id(title, region, best_match)
+                    updated_count += 1
+                    print(f"  [DB] Found game ID for '{title}' ({region}): {best_match}")
+
+        return updated_count
 
     def get_games_by_host(self, host_game: str) -> List[Dict]:
         """Get games by host game."""

@@ -25,7 +25,22 @@
       "Bash(del check_db_titles.py create_manual_mapping.py manual_mappings.py package-lock.json rename_wii_images.py)",
       "Bash(del srcwiivc_injectorsimple_batch_window.py)",
       "Bash(src/wiivc_injector/translations.py)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "WebFetch(domain:www.gametdb.com)",
+      "WebSearch",
+      "WebFetch(domain:wit.wiimm.de)",
+      "Bash(./nuspacker.exe:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:bitbucket.org)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\EXE\\nfs2iso2nfs.exe\" --help)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\EXE\\nfs2iso2nfs.exe\" -h)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\EXE\\nfs2iso2nfs.exe\")",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\EXE\\nfs2iso2nfs.exe\" -help)",
+      "Bash(wit.exe --help:*)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\WIT\\wit.exe\" --help)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\WIT\\wit.exe\" help copy)"
     ],
     "deny": [],
     "ask": []

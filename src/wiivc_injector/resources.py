@@ -21,14 +21,19 @@ class ResourceManager:
         Returns:
             Path to resources directory
         """
-        # Try different possible locations
+        # Check if running as PyInstaller bundle first
+        if getattr(sys, 'frozen', False):
+            # When packaged with PyInstaller
+            meipass_path = Path(sys._MEIPASS) / "resources"
+            if meipass_path.exists():
+                return meipass_path
+
+        # Try different possible locations for source
         possible_paths = [
             # When running from source
             Path(__file__).parent.parent.parent / "resources",
             # When installed as package
             Path(__file__).parent / "resources",
-            # When packaged with PyInstaller
-            Path(getattr(sys, '_MEIPASS', '.')) / "resources",
         ]
 
         for path in possible_paths:

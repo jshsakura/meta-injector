@@ -893,6 +893,64 @@ class Translations:
             "en": "Enter or generate 32-character hex key",
             "ko": "32자리 hex 키 입력 또는 생성"
         },
+
+        # Build progress messages
+        "progress_verifying_keys": {
+            "en": "Verifying encryption keys...",
+            "ko": "암호화 키 확인 중..."
+        },
+        "progress_keys_verified": {
+            "en": "Keys verified",
+            "ko": "키 확인 완료"
+        },
+        "progress_copying_base_files": {
+            "en": "Copying base files...",
+            "ko": "베이스 파일 복사 중..."
+        },
+        "progress_converting_images": {
+            "en": "Converting images...",
+            "ko": "이미지 변환 중..."
+        },
+        "progress_converting_wbfs": {
+            "en": "Converting WBFS to ISO...",
+            "ko": "WBFS를 ISO로 변환 중..."
+        },
+        "progress_wbfs_converted": {
+            "en": "WBFS converted to ISO",
+            "ko": "WBFS를 ISO로 변환 완료"
+        },
+        "progress_using_iso": {
+            "en": "Using ISO file",
+            "ko": "ISO 파일 사용 중"
+        },
+        "progress_applying_patch": {
+            "en": "Applying gamepad patch ({patch_type})...",
+            "ko": "게임패드 패치 적용 중 ({patch_type})..."
+        },
+        "progress_patch_applied": {
+            "en": "Gamepad patch applied",
+            "ko": "게임패드 패치 적용 완료"
+        },
+        "progress_skipping_patch": {
+            "en": "Skipping gamepad patch",
+            "ko": "게임패드 패치 건너뛰기"
+        },
+        "progress_preparing_nfs": {
+            "en": "Preparing NFS converter...",
+            "ko": "NFS 변환기 준비 중..."
+        },
+        "progress_converting_nfs": {
+            "en": "Converting ISO to NFS format (this will take several minutes)...",
+            "ko": "ISO를 NFS 형식으로 변환 중 (몇 분 소요됩니다)..."
+        },
+        "progress_nfs_complete": {
+            "en": "NFS conversion complete",
+            "ko": "NFS 변환 완료"
+        },
+        "progress_processing": {
+            "en": "Processing... {percent}%",
+            "ko": "처리 중... {percent}%"
+        },
     }
 
     @classmethod

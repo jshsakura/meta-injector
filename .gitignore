@@ -72,6 +72,13 @@ Thumbs.db
 # Base files cache (downloaded from Nintendo CDN)
 base_files/
 
+# JNUSTool downloaded files (in core/JAR)
+core/JAR/00050000*/
+core/JAR/00050010*/
+
+# Temp files
+temp/
+
 # Standalone build artifacts
 standalone/build/
 standalone/dist/

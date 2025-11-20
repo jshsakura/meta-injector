@@ -20,8 +20,10 @@ class BatchBuildJob:
         self.title_id = ""
         self.icon_path: Optional[Path] = None
         self.banner_path: Optional[Path] = None
+        self.drc_path: Optional[Path] = None
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
+        self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
 
 
 class BatchBuilder(QThread):
@@ -114,31 +116,60 @@ class BatchBuilder(QThread):
         """Build single job."""
         try:
             def progress_callback(percent, message):
-                self.progress_updated.emit(idx + 1, total, f"[{idx+1}/{total}] {message}")
+                # Calculate overall progress: job progress + previous jobs
+                # Each job is worth (100/total)%, current job contributes (percent * 100/total)%
+                overall_percent = int((idx * 100 / total) + (percent / total))
+                self.progress_updated.emit(overall_percent, 100, f"[{idx+1}/{total}] {message}")
 
             # Process images if available
             if job.icon_path and job.icon_path.exists():
                 image_processor.process_icon(job.icon_path, paths.temp_icon)
             if job.banner_path and job.banner_path.exists():
                 image_processor.process_banner(job.banner_path, paths.temp_banner)
+            # Use separate DRC if available, otherwise generate from banner
+            if job.drc_path and job.drc_path.exists():
+                image_processor.process_drc(job.drc_path, paths.temp_drc)
+            elif job.banner_path and job.banner_path.exists():
                 image_processor.process_drc(job.banner_path, paths.temp_drc)
 
             engine = BuildEngine(paths, progress_callback)
 
-            # Set options based on gamepad compatibility from DB
+            # Set options based on user selection (pad_option)
+            # none: 아무것도 적용 안 함
+            # gamepad: 게임패드로 클래식 컨트롤러 에뮬레이션
+            # gamepad_lr: 게임패드 + LR 패치
+            # wiimote: 세로 Wiimote (passthrough)
+            # horizontal_wiimote: 가로 Wiimote (passthrough + horizontal)
             options = {
-                "disable_passthrough": False,
-                "lr_patch": False,
+                "force_cc_emu": False,  # 게임패드로 클래식 컨트롤러 에뮬레이션
+                "lr_patch": False,      # LR 버튼 패치
+                "horizontal_wiimote": False,  # 가로 Wiimote 모드
             }
 
-            # Check gamepad compatibility and set options accordingly
-            gamepad_compat = job.gamepad_compatibility.lower()
-            if 'gamepad works' in gamepad_compat or 'works' in gamepad_compat:
-                # Enable gamepad support
-                options["disable_passthrough"] = True
-            elif 'classic controller' in gamepad_compat or 'lr patch' in gamepad_compat:
-                # Enable LR patch for classic controller only games
+            # Use pad_option from user selection
+            if job.pad_option == "none":
+                # 미적용 - 아무 옵션도 안 넣음
+                print(f"  [CONTROLLER] {job.title_name}: None (no options)")
+            elif job.pad_option == "gamepad":
+                options["force_cc_emu"] = True
+                print(f"  [CONTROLLER] {job.title_name}: Gamepad (CC emulation)")
+            elif job.pad_option == "gamepad_lr":
+                options["force_cc_emu"] = True
                 options["lr_patch"] = True
+                print(f"  [CONTROLLER] {job.title_name}: Gamepad + LR patch")
+            elif job.pad_option == "horizontal_wiimote":
+                options["horizontal_wiimote"] = True
+                print(f"  [CONTROLLER] {job.title_name}: Horizontal Wiimote")
+            elif job.pad_option == "galaxy_allstars":
+                options["galaxy_patch"] = "allstars"
+                options["force_cc_emu"] = True  # Galaxy patch needs CC emulation
+                print(f"  [CONTROLLER] {job.title_name}: Galaxy AllStars patch")
+            elif job.pad_option == "galaxy_nvidia":
+                options["galaxy_patch"] = "nvidia"
+                options["force_cc_emu"] = True  # Galaxy patch needs CC emulation
+                print(f"  [CONTROLLER] {job.title_name}: Galaxy Nvidia patch")
+            else:  # wiimote (vertical)
+                print(f"  [CONTROLLER] {job.title_name}: Vertical Wiimote (passthrough)")
 
             # Select appropriate title key based on host game
             title_key = self.title_keys.get(job.host_game, '')
@@ -154,6 +185,7 @@ class BatchBuilder(QThread):
                 title_key=title_key,
                 title_name=job.title_name,
                 title_id=job.title_id,
+                game_id=job.game_info.get('game_id', ''),
                 options=options
             )
 
