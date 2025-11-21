@@ -182,7 +182,7 @@ class BuildEngine:
                     if current_progress < progress_end:
                         current_progress = min(current_progress + increment, progress_end - 1)
                         self.update_progress(current_progress, tr.get("progress_processing", percent=current_progress))
-                    time.sleep(0.5)  # Update every 0.5 seconds
+                    time.sleep(1.5)  # Update every 1.5 seconds (slower, more stable)
 
                 # Wait for threads to finish
                 stdout_thread.join(timeout=1)
@@ -240,7 +240,7 @@ class BuildEngine:
         Returns:
             True if successful
         """
-        self.update_progress(10, "Checking base files...")
+        self.update_progress(10, tr.get("progress_checking_base_files"))
 
         # Define critical files (title_id, jnustool_subpath, local_filename)
         # jnustool_subpath: path used by jnustool (includes code/meta folders)
@@ -379,9 +379,10 @@ class BuildEngine:
 
     def convert_wbfs_to_iso(self, wbfs_path: Path) -> Path:
         """
-        Convert WBFS to ISO format using wit.
-
-        Uses direct conversion which is faster than extract+repack.
+        Convert WBFS to ISO format using TeconMoon's method:
+        1. wbfs_file.exe to convert WBFS → ISO (full size)
+        2. wit extract to extract data partition
+        3. wit copy to rebuild trimmed ISO
 
         Args:
             wbfs_path: Path to WBFS file
@@ -389,24 +390,48 @@ class BuildEngine:
         Returns:
             Path to converted ISO file, or None if failed
         """
+        wbfs_tool = self.paths.project_root / "core" / "EXE" / "wbfs_file.exe"
         wit_tool = self.paths.project_root / "core" / "WIT" / "wit.exe"
-        output_iso = self.paths.temp_source / f"{wbfs_path.stem}.iso"
 
-        # Direct copy: WBFS → ISO (maximum speed optimizations)
-        # --iso: Force plain ISO output (fastest format)
-        # --overwrite: No confirmation prompts
-        # --no-sort: Skip file sorting
-        # --trunc: Truncate to minimal size (faster write)
-        # --psel=raw: Copy raw data without scrubbing (fastest mode)
-        # -q: Quiet mode (minimal output)
-        args = f'copy "{wbfs_path}" "{output_iso}" --iso --overwrite --no-sort --trunc --psel=raw -q'
+        wbfsconvert_iso = self.paths.temp_source / "wbfsconvert.iso"
+        extract_dir = self.paths.temp_source / "ISOEXTRACT"
+        final_iso = self.paths.temp_source / "game.iso"
 
-        if self.run_tool(wit_tool, args):
-            if output_iso.exists():
-                print(f"✓ Converted WBFS to ISO: {output_iso}")
-                return output_iso
+        # Step 1: Convert WBFS to ISO using wbfs_file.exe
+        self.progress_callback(10, tr.get("progress_wbfs_to_iso"))
+        args = f'"{wbfs_path}" convert "{wbfsconvert_iso}"'
+        if not self.run_tool(wbfs_tool, args):
+            print(f"❌ Failed to convert WBFS to ISO")
+            return None
 
-        print(f"❌ Failed to convert WBFS to ISO")
+        # Step 2: Extract ISO to get data partition only (this removes padding)
+        self.progress_callback(30, tr.get("progress_extracting_game_data"))
+        args = f'extract "{wbfsconvert_iso}" --DEST "{extract_dir}" --psel data,-update -ovv'
+        if not self.run_tool(wit_tool, args):
+            print(f"❌ Failed to extract ISO")
+            return None
+
+        # Step 3: Rebuild ISO from extracted data (creates trimmed ISO)
+        self.progress_callback(50, tr.get("progress_rebuilding_iso"))
+        args = f'copy "{extract_dir}" --DEST "{final_iso}" -ovv --links --iso'
+        if not self.run_tool(wit_tool, args):
+            print(f"❌ Failed to rebuild ISO")
+            return None
+
+        # Step 4: Clean up intermediate files
+        if wbfsconvert_iso.exists():
+            wbfsconvert_iso.unlink()
+        if extract_dir.exists():
+            import shutil
+            shutil.rmtree(extract_dir)
+
+        if final_iso.exists():
+            iso_size_mb = final_iso.stat().st_size / (1024 * 1024)
+            print(f"✓ Converted WBFS to trimmed ISO: {final_iso}")
+            print(f"  Final ISO size: {iso_size_mb:.2f} MB")
+            return final_iso
+
+        print(f"❌ Failed to create final ISO")
         return None
 
     def apply_galaxy_gamepad_patch(self, game_path: Path, game_id: str, patch_type: str) -> Path:
@@ -560,29 +585,64 @@ class BuildEngine:
         self.update_progress(40, tr.get("progress_preparing_nfs"))
 
         # Build arguments based on system type
-        # nfs2iso2nfs options:
-        # -passthrough: 게임패드 입력을 Wii 리모컨으로 변환 (게임패드 미지원 게임용)
-        # -lrpatch: LR 버튼 패치 (클래식 컨트롤러 전용)
-        # -horizontal: 가로 Wiimote 모드
-        # force_cc_emu=True: passthrough 제거 → 게임패드로 클래식 컨트롤러 에뮬레이션
+        # nfs2iso2nfs options (Technical Documentation):
+        # -nocc: No Classic Controller - 게임패드 입력 래퍼 비활성화, Wii 리모컨만 사용
+        # -instantcc: Instant Classic Controller - 게임패드를 가상 CC로 에뮬레이션 (부팅 시 즉시 감지)
+        # -wiimote: Wiimote Emulation - 게임패드를 Wii 리모컨으로 에뮬레이션
+        # -horizontal: Horizontal Wiimote - 입력 매트릭스 90도 회전 (가로 파지 게임용)
+        # -lrpatch: Analog Trigger Patch - 디지털 ZL/ZR을 아날로그 L/R 최댓값으로 변환
+        # -passthrough: Homebrew Native - 래퍼 입력 변환 비활성화, Raw 데이터 전달 (Nintendont용)
         args = "-enc"
 
         if system_type == "wii":
-            if not options.get("force_cc_emu"):
-                # 게임패드 미지원 - passthrough로 Wii 리모컨 에뮬레이션
-                args += " -passthrough"
-                # 가로 Wiimote 모드
+            # 컨트롤러 모드 선택 (게임패드와 Wii 리모컨은 동시 사용 불가)
+            if options.get("no_gamepad_emu"):
+                # 프로파일 1: 미적용 (No GamePad)
+                # 게임패드 입력 래퍼 비활성화, Wii 리모컨만 사용 (원래 게임 그대로)
+                # 용도: Just Dance, Wii Sports Resort 등 모션 컨트롤 필수 게임
+                args += " -nocc"
+            elif options.get("wiimote_mode"):
+                # 프로파일 4: Wii 리모컨 모드 (Vertical Wiimote Emulation)
+                # 게임패드를 Wii 리모컨 본체로 에뮬레이션
+                # 용도: New Super Mario Bros. Wii 등 리모컨 버튼 입력 중심 게임
+                args += " -wiimote"
                 if options.get("horizontal_wiimote"):
+                    # 프로파일 5: 가로 Wii 리모컨 (Horizontal Wiimote Emulation)
+                    # 입력 매트릭스 90도 회전 (NES 컨트롤러 파지)
+                    # 용도: Kirby's Return to Dream Land, Donkey Kong Country Returns
                     args += " -horizontal"
-            # force_cc_emu=True면 passthrough 없음 → 게임패드로 CC 에뮬레이션
+            elif options.get("passthrough_mode"):
+                # 프로파일 6: Passthrough (Homebrew/Nintendont Native)
+                # 래퍼 레벨 입력 변환 비활성화, Raw HID 데이터 전달
+                # 용도: Nintendont, Not64, WiiSXR 등 자체 컨트롤러 드라이버 내장 홈브루
+                # 경고: 일반 Wii 게임에서는 게임패드 입력 인식 불가
+                args += " -passthrough"
+            else:
+                # 프로파일 2: 기본 게임패드 (Classic Controller Emulation)
+                # 게임패드를 가상 클래식 컨트롤러로 에뮬레이션 (부팅 시 즉시 감지)
+                # 용도: Xenoblade Chronicles, Monster Hunter Tri 등 CC 지원 게임
+                args += " -instantcc"
+
+            # 프로파일 3: 게임패드 + LR (Analog Trigger Patch)
+            # 디지털 ZL/ZR → 아날로그 L/R 최댓값(0xFF) 변환
+            # 용도: GameCube 게임 (Nintendont), F-Zero, Super Mario Sunshine
             if options.get("lr_patch"):
                 args += " -lrpatch"
+
+            # 프로파일 7: Galaxy 패치 (Complex Instruction Set Injection)
+            # -instantcc + GCT 코드 후킹 (실시간 입력 변환)
+            # 우측 스틱 → IR 포인터, 좌측 스틱 → 눈차크 이동
+            # GCT 패치는 apply_galaxy_gamepad_patch()에서 별도 처리
         elif system_type == "gcn":
             # GameCube는 항상 homebrew + passthrough
             args += " -homebrew -passthrough"
         elif system_type in ["dol", "wiiware"]:
             args += " -homebrew"
-            if not options.get("force_cc_emu"):
+            if options.get("wiimote_mode"):
+                args += " -wiimote"
+                if options.get("horizontal_wiimote"):
+                    args += " -horizontal"
+            elif options.get("passthrough_mode"):
                 args += " -passthrough"
                 if options.get("horizontal_wiimote"):
                     args += " -horizontal"
@@ -756,7 +816,8 @@ class BuildEngine:
 </app>"""
 
             app_xml_path = code_dir / "app.xml"
-            app_xml_path.write_text(app_xml, encoding='utf-8')
+            # Write with UTF-8 BOM (same as C# File.WriteAllLines)
+            app_xml_path.write_bytes(('\ufeff' + app_xml).encode('utf-8'))
             print(f"✓ Generated app.xml: {app_xml_path}")
 
             # Generate meta.xml
@@ -873,7 +934,8 @@ class BuildEngine:
 </menu>"""
 
             meta_xml_path = meta_dir / "meta.xml"
-            meta_xml_path.write_text(meta_xml, encoding='utf-8')
+            # Write with UTF-8 BOM (same as C# File.WriteAllLines)
+            meta_xml_path.write_bytes(('\ufeff' + meta_xml).encode('utf-8'))
             print(f"✓ Generated meta.xml: {meta_xml_path}")
 
             return True
@@ -899,8 +961,12 @@ class BuildEngine:
         Returns:
             True if successful
         """
+        print(f"\n{'='*80}")
+        print(f"[PACK_FINAL] Starting NUSPacker packaging...")
+        print(f"{'='*80}\n")
+
         # Pack final: 85-95% (encryption and packing)
-        self.update_progress(85, "Preparing for encryption...")
+        self.update_progress(85, tr.get("progress_preparing_encryption"))
 
         nuspacker_exe = self.paths.temp_tools / "JAR" / "nuspacker.exe"
 
@@ -936,6 +1002,12 @@ class BuildEngine:
 
         final_output = output_path / f"{safe_name}{option_suffix}_WUP-N-{title_id}"
 
+        # Delete existing output directory to prevent file conflicts
+        if final_output.exists():
+            import shutil
+            print(f"Removing existing output directory: {final_output}")
+            shutil.rmtree(final_output, ignore_errors=True)
+
         # Create output directory
         output_path.mkdir(parents=True, exist_ok=True)
 
@@ -966,13 +1038,63 @@ class BuildEngine:
             return False
         print(f"✓ Build directory verified: {len(nfs_files)} NFS files ready")
 
-        self.update_progress(87, "Encrypting and packing (this may take a while)...")
+        self.update_progress(87, tr.get("progress_encrypting_packing"))
 
-        # Run NUSPacker with special error checking
-        args = f'-in "{self.paths.temp_build}" -out "{final_output}" -encryptKeyWith {common_key}'
+        # NUSPacker must run from JAR directory to access content rules (0005001010004000, etc)
+        # Use relative paths like TeconMoon does
+        jar_dir = self.paths.project_root / "core" / "JAR"
+
+        # Use relative path to BUILDDIR (from JAR directory)
+        # Copy BUILDDIR to JAR/tmp/BUILDDIR temporarily
+        temp_build_in_jar = jar_dir / "tmp" / "BUILDDIR"
+        temp_build_in_jar.parent.mkdir(parents=True, exist_ok=True)
+
+        # Update content rules - NUSPacker needs these files in ALL Wii templates
+        print(f"Updating content rules templates...")
+
+        # Find all content rule directories (any folder with meta subdirectory)
+        import shutil
+        content_rule_dirs = [d for d in jar_dir.iterdir() if d.is_dir() and (d / "meta").exists() and d.name not in ["tmp", "output"]]
+
+        required_meta_files = ["bootDrcTex.tga", "bootTvTex.tga", "iconTex.tga", "meta.xml"]
+        updated_count = 0
+
+        for rule_dir in content_rule_dirs:
+            meta_dir = rule_dir / "meta"
+            for filename in required_meta_files:
+                src_file = self.paths.temp_build / "meta" / filename
+                dst_file = meta_dir / filename
+                if src_file.exists():
+                    shutil.copy2(src_file, dst_file)
+            updated_count += 1
+
+        print(f"✓ Updated {updated_count} content rule template(s) with required meta files")
+
+        # Copy entire BUILDDIR to JAR/tmp/ using shutil.copytree
+        try:
+            shutil.copytree(str(self.paths.temp_build), str(temp_build_in_jar))
+
+            # Count files for verification
+            import os
+            file_count = sum(1 for _, _, files in os.walk(temp_build_in_jar) for _ in files)
+            total_size = sum(f.stat().st_size for f in temp_build_in_jar.rglob('*') if f.is_file())
+
+            print(f"✓ Copied {file_count} files ({total_size / 1024 / 1024:.1f} MB) to JAR/tmp/BUILDDIR")
+
+            # Verify critical files exist
+            meta_files = list((temp_build_in_jar / "meta").glob("*"))
+            code_files = list((temp_build_in_jar / "code").glob("*"))
+            print(f"  - meta: {len(meta_files)} files, code: {len(code_files)} files")
+
+        except Exception as e:
+            print(f"❌ Failed to copy BUILDDIR: {e}")
+            return False
+
+        # Run NUSPacker from JAR directory with relative paths
+        args = f'-in "tmp/BUILDDIR" -out "{final_output}" -encryptKeyWith {common_key}'
 
         try:
-            cmd = f'"{nuspacker_exe}" {args}'
+            cmd = f'"nuspacker.exe" {args}'
 
             startupinfo = None
             if os.name == 'nt':
@@ -983,13 +1105,13 @@ class BuildEngine:
             print(f"\n{'='*80}")
             print(f"Running tool: nuspacker.exe")
             print(f"Command: {cmd}")
-            print(f"Working directory: {self.paths.temp_root}")
+            print(f"Working directory: {jar_dir}")
             print(f"{'='*80}")
 
             result = subprocess.run(
                 cmd,
                 shell=True,
-                cwd=str(self.paths.temp_root),
+                cwd=str(jar_dir),
                 startupinfo=startupinfo,
                 capture_output=True,
                 text=True,
@@ -997,10 +1119,34 @@ class BuildEngine:
                 errors='ignore'
             )
 
+            # Summarize NUSPacker output instead of printing everything
             if result.stdout:
-                print(f"STDOUT:\n{result.stdout}")
+                stdout_lines = result.stdout.strip().split('\n')
+                # Only print important lines
+                important_lines = []
+                for line in stdout_lines:
+                    line_lower = line.lower()
+                    if any(keyword in line_lower for keyword in ['error', 'failed', 'warning', 'saved to', 'packed', 'encrypted']):
+                        important_lines.append(line)
+
+                if important_lines:
+                    print(f"NUSPacker output:")
+                    for line in important_lines[-10:]:  # Last 10 important lines
+                        print(f"  {line}")
+                else:
+                    print(f"NUSPacker: Packaging completed ({len(stdout_lines)} lines of output)")
+
             if result.stderr:
-                print(f"STDERR:\n{result.stderr}")
+                # Count errors but don't print Java SHA256 spam
+                stderr_lines = result.stderr.split('\n')
+                error_count = sum(1 for line in stderr_lines if 'error' in line.lower() and 'sha' not in line.lower())
+
+                if error_count > 0:
+                    print(f"⚠ NUSPacker warnings: {error_count} non-fatal errors (Java internals)")
+                # Only print if there are real errors (not SHA256)
+                real_errors = [line for line in stderr_lines if 'error' in line.lower() and 'sha' not in line.lower() and 'nosuchalgorithm' not in line.lower()]
+                if real_errors:
+                    print(f"STDERR:\n" + '\n'.join(real_errors[:5]))
 
                 # Check for fatal errors in stderr (NUSPacker returns 0 even on errors)
                 stderr_lower = result.stderr.lower()
@@ -1028,7 +1174,7 @@ class BuildEngine:
             print(f"{'='*80}\n")
             return False
 
-        self.update_progress(90, "Verifying output files...")
+        self.update_progress(90, tr.get("progress_verifying_output"))
 
         # Verify output files were created
         if not final_output.exists():
@@ -1108,10 +1254,54 @@ class BuildEngine:
 
             self.update_progress(3, tr.get("progress_keys_verified"))
 
+            # Modify Title ID based on controller options to prevent conflicts
+            # Each build variant needs unique Title ID so Wii U treats them as separate titles
+            # Title ID format: 00050000 XXXXXXXX (first 8 chars = prefix, last 8 chars = game identifier)
+            # We modify bytes 9-10 (index 8-9) to create variants while keeping game ID intact
+            original_title_id = title_id
+            if options:
+                if options.get("galaxy_patch") == "allstars":
+                    # Modify byte 9-10 for Galaxy AllStars
+                    title_id = title_id[:8] + "01" + title_id[10:]
+                elif options.get("galaxy_patch") == "nvidia":
+                    # Modify byte 9-10 for Galaxy Nvidia
+                    title_id = title_id[:8] + "02" + title_id[10:]
+                elif options.get("force_cc_emu") and options.get("lr_patch"):
+                    # Modify byte 9-10 for GamePad + LR
+                    title_id = title_id[:8] + "03" + title_id[10:]
+                elif options.get("force_cc_emu"):
+                    # Modify byte 9-10 for GamePad
+                    title_id = title_id[:8] + "04" + title_id[10:]
+                elif options.get("horizontal_wiimote"):
+                    # Modify byte 9-10 for Horizontal Wiimote
+                    title_id = title_id[:8] + "05" + title_id[10:]
+                # Vertical wiimote (default) keeps original ID
+
+            if title_id != original_title_id:
+                print(f"Title ID modified for variant: {original_title_id} → {title_id}")
+
+            # Clean JAR/tmp directory from previous runs (CRITICAL: must be fresh for NUSPacker)
+            jar_tmp = self.paths.project_root / "core" / "JAR" / "tmp"
+            if jar_tmp.exists():
+                print(f"Cleaning JAR/tmp directory: {jar_tmp}")
+                shutil.rmtree(jar_tmp, ignore_errors=True)
+
             # Clean build directory from previous runs
             if self.paths.temp_build.exists():
                 print(f"Cleaning previous build directory: {self.paths.temp_build}")
                 shutil.rmtree(self.paths.temp_build, ignore_errors=True)
+
+            # Clean source temp directory from previous runs (except images for reuse)
+            if self.paths.temp_source.exists():
+                print(f"Cleaning previous source directory (keeping images): {self.paths.temp_source}")
+                for item in self.paths.temp_source.iterdir():
+                    # Skip image files - they can be reused
+                    if item.suffix.lower() in ['.png', '.tga', '.jpg', '.jpeg']:
+                        continue
+                    if item.is_file():
+                        item.unlink()
+                    elif item.is_dir():
+                        shutil.rmtree(item, ignore_errors=True)
 
             # Download base files (3-20%)
             if not self.download_base_files(common_key, title_key):
@@ -1165,8 +1355,13 @@ class BuildEngine:
             if not self.pack_final(output_dir, common_key, title_name, title_id, game_id, options):
                 raise RuntimeError("Failed to pack final package")
 
-            # Cleanup temporary files
-            self.cleanup_temp_files()
+            # Cleanup temporary files (DISABLED for debugging)
+            # self.cleanup_temp_files()
+            jar_tmp = self.paths.project_root / "core" / "JAR" / "tmp" / "BUILDDIR"
+            print(f"✓ Temporary files kept for inspection")
+            print(f"  - BUILDDIR: {self.paths.temp_build}")
+            print(f"  - SOURCETEMP: {self.paths.temp_source}")
+            print(f"  - JAR/tmp/BUILDDIR: {jar_tmp}")
 
             return True
 
@@ -1187,12 +1382,17 @@ class BuildEngine:
             return False
 
     def cleanup_temp_files(self):
-        """Clean up temporary files to free disk space."""
+        """Clean up temporary files to free disk space (but keep images for reuse)."""
         try:
             # Clean SOURCETEMP (ISO files, extracted directories)
+            # BUT keep images (*.png, *.tga) for potential reuse in next build
             if self.paths.temp_source.exists():
                 print(f"Cleaning temporary source files: {self.paths.temp_source}")
                 for item in self.paths.temp_source.iterdir():
+                    # Skip image files - they can be reused
+                    if item.suffix.lower() in ['.png', '.tga', '.jpg', '.jpeg']:
+                        continue
+
                     if item.is_file():
                         item.unlink()
                         print(f"  Removed: {item.name}")

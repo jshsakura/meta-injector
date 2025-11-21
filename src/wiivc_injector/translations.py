@@ -375,7 +375,7 @@ class Translations:
         },
         "build_injection": {
             "en": "BUILD INJECTION",
-            "ko": "빌드 시작"
+            "ko": "빌드"
         },
 
         # Common buttons
@@ -941,7 +941,7 @@ class Translations:
         },
         "progress_converting_nfs": {
             "en": "Converting ISO to NFS format (this will take several minutes)...",
-            "ko": "ISO를 NFS 형식으로 변환 중 (몇 분 소요됩니다)..."
+            "ko": "ISO를 NFS 형식으로 변환 중 (시간이 상당히 소요될 수 있습니다. 잠시만 기다려주세요)"
         },
         "progress_nfs_complete": {
             "en": "NFS conversion complete",
@@ -950,6 +950,58 @@ class Translations:
         "progress_processing": {
             "en": "Processing... {percent}%",
             "ko": "처리 중... {percent}%"
+        },
+        "progress_preparing_encryption": {
+            "en": "Preparing for encryption...",
+            "ko": "암호화 준비 중..."
+        },
+        "progress_encrypting_packing": {
+            "en": "Encrypting and packing (this may take a while)...",
+            "ko": "암호화 및 패킹 중 (시간이 상당히 소요될 수 있습니다. 잠시만 기다려주세요)"
+        },
+        "progress_verifying_output": {
+            "en": "Verifying output files...",
+            "ko": "출력 파일 확인 중..."
+        },
+        "progress_checking_base_files": {
+            "en": "Checking base files...",
+            "ko": "베이스 파일 확인 중..."
+        },
+        "progress_wbfs_to_iso": {
+            "en": "Converting WBFS to ISO...",
+            "ko": "WBFS를 ISO로 변환 중..."
+        },
+        "progress_extracting_game_data": {
+            "en": "Extracting game data...",
+            "ko": "게임 데이터 추출 중..."
+        },
+        "progress_rebuilding_iso": {
+            "en": "Rebuilding trimmed ISO...",
+            "ko": "트림된 ISO 재구성 중..."
+        },
+        "output_folder": {
+            "en": "Output Folder:",
+            "ko": "출력 폴더:"
+        },
+        "output_folder_placeholder": {
+            "en": "Leave empty to use game file directory",
+            "ko": "비워두면 게임 파일과 같은 경로에 출력"
+        },
+        "clear": {
+            "en": "Clear",
+            "ko": "초기화"
+        },
+        "loading_games_title": {
+            "en": "Please wait",
+            "ko": "잠시만 기다려주세요"
+        },
+        "loading_games_message": {
+            "en": "Searching for game icons and banners...",
+            "ko": "게임 아이콘 및 배너 이미지를 검색하고 있습니다..."
+        },
+        "loading_games_progress": {
+            "en": "Searching for game icons and banners... ({current}/{total})",
+            "ko": "게임 아이콘 및 배너 이미지를 검색하고 있습니다... ({current}/{total})"
         },
     }
 

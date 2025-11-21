@@ -134,42 +134,58 @@ class BatchBuilder(QThread):
 
             engine = BuildEngine(paths, progress_callback)
 
-            # Set options based on user selection (pad_option)
-            # none: 아무것도 적용 안 함
-            # gamepad: 게임패드로 클래식 컨트롤러 에뮬레이션
-            # gamepad_lr: 게임패드 + LR 패치
-            # wiimote: 세로 Wiimote (passthrough)
-            # horizontal_wiimote: 가로 Wiimote (passthrough + horizontal)
+            # Controller Profile Selection (7 Profiles)
+            # Profile 1 - no_gamepad: 미적용 (Wii 리모컨만) → -nocc
+            # Profile 2 - none: 기본 게임패드 (CC 에뮬레이션) → -instantcc
+            # Profile 3 - gamepad_lr: 게임패드 + LR 패치 → -instantcc -lrpatch
+            # Profile 4 - wiimote: Wii 리모컨 모드 → -wiimote
+            # Profile 5 - horizontal_wiimote: 가로 Wii 리모컨 → -wiimote -horizontal
+            # Profile 6 - passthrough: Passthrough (Homebrew/Nintendont) → -passthrough
+            # Profile 7 - galaxy: Galaxy 패치 → -instantcc + GCT
             options = {
-                "force_cc_emu": False,  # 게임패드로 클래식 컨트롤러 에뮬레이션
-                "lr_patch": False,      # LR 버튼 패치
-                "horizontal_wiimote": False,  # 가로 Wiimote 모드
+                "no_gamepad_emu": False,    # Profile 1: -nocc
+                "wiimote_mode": False,      # Profile 4/5: -wiimote
+                "passthrough_mode": False,  # Profile 6: -passthrough
+                "horizontal_wiimote": False,  # Profile 5: -horizontal
+                "lr_patch": False,          # Profile 3: -lrpatch
             }
 
-            # Use pad_option from user selection
-            if job.pad_option == "none":
-                # 미적용 - 아무 옵션도 안 넣음
-                print(f"  [CONTROLLER] {job.title_name}: None (no options)")
-            elif job.pad_option == "gamepad":
-                options["force_cc_emu"] = True
-                print(f"  [CONTROLLER] {job.title_name}: Gamepad (CC emulation)")
+            # Apply selected profile
+            if job.pad_option == "no_gamepad":
+                # Profile 1: 미적용 (No GamePad)
+                options["no_gamepad_emu"] = True
+                print(f"  [CONTROLLER] {job.title_name}: 미적용 (Wii 리모컨만)")
+            elif job.pad_option == "none":
+                # Profile 2: 기본 게임패드 (Classic Controller Emulation)
+                # 옵션 없음 (기본값이 -instantcc)
+                print(f"  [CONTROLLER] {job.title_name}: 게임패드 (CC 에뮬레이션)")
             elif job.pad_option == "gamepad_lr":
-                options["force_cc_emu"] = True
+                # Profile 3: 게임패드 + LR (Analog Trigger Patch)
                 options["lr_patch"] = True
-                print(f"  [CONTROLLER] {job.title_name}: Gamepad + LR patch")
+                print(f"  [CONTROLLER] {job.title_name}: 게임패드 + LR 패치")
+            elif job.pad_option == "wiimote":
+                # Profile 4: Wii 리모컨 모드 (Vertical Wiimote Emulation)
+                options["wiimote_mode"] = True
+                print(f"  [CONTROLLER] {job.title_name}: Wii 리모컨 모드 (세로)")
             elif job.pad_option == "horizontal_wiimote":
+                # Profile 5: 가로 Wii 리모컨 (Horizontal Wiimote Emulation)
+                options["wiimote_mode"] = True
                 options["horizontal_wiimote"] = True
-                print(f"  [CONTROLLER] {job.title_name}: Horizontal Wiimote")
+                print(f"  [CONTROLLER] {job.title_name}: Wii 리모컨 모드 (가로)")
+            elif job.pad_option == "passthrough":
+                # Profile 6: Passthrough (Homebrew/Nintendont Native)
+                options["passthrough_mode"] = True
+                print(f"  [CONTROLLER] {job.title_name}: Passthrough (홈브루 전용)")
             elif job.pad_option == "galaxy_allstars":
+                # Profile 7: Galaxy AllStars 패치 (Complex Instruction Set Injection)
                 options["galaxy_patch"] = "allstars"
-                options["force_cc_emu"] = True  # Galaxy patch needs CC emulation
-                print(f"  [CONTROLLER] {job.title_name}: Galaxy AllStars patch")
+                print(f"  [CONTROLLER] {job.title_name}: Galaxy AllStars 패치")
             elif job.pad_option == "galaxy_nvidia":
+                # Profile 7: Galaxy Nvidia 패치 (Complex Instruction Set Injection)
                 options["galaxy_patch"] = "nvidia"
-                options["force_cc_emu"] = True  # Galaxy patch needs CC emulation
-                print(f"  [CONTROLLER] {job.title_name}: Galaxy Nvidia patch")
-            else:  # wiimote (vertical)
-                print(f"  [CONTROLLER] {job.title_name}: Vertical Wiimote (passthrough)")
+                print(f"  [CONTROLLER] {job.title_name}: Galaxy Nvidia 패치")
+            else:
+                print(f"  [CONTROLLER] {job.title_name}: 알 수 없는 옵션 '{job.pad_option}', 기본값 사용")
 
             # Select appropriate title key based on host game
             title_key = self.title_keys.get(job.host_game, '')

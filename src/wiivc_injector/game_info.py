@@ -172,8 +172,8 @@ class GameInfoExtractor:
         """
         Generate Title ID from Game ID.
 
-        For Wii: Usually starts with game ID
-        For GC: Different format
+        For Wii VC Inject: Use 00050002 prefix (Homebrew/Custom content area)
+        This avoids conflicts with official Nintendo titles (00050000)
 
         Args:
             game_id: 6-character game ID
@@ -181,16 +181,13 @@ class GameInfoExtractor:
         Returns:
             16-character hex Title ID
         """
-        # This is a simplified version
-        # Real implementation would follow Nintendo's Title ID scheme
         if not game_id or len(game_id) < 4:
-            return "0000000000000000"
+            return "0005000200000000"
 
-        # Basic format: Convert game ID to hex representation
-        # Real Wii VC titles use format: 0001000x4e4c4558 (where x varies)
-        title_id = "00010001" + game_id[:4].encode('ascii').hex().upper()
-        # Pad to 16 chars
-        title_id = title_id.ljust(16, '0')
+        # Format: 00050002 + Game ID (4 chars ASCII hex)
+        # Example: RUUK → 00050002 + 5255554B = 000500025255554B
+        game_id_hex = game_id[:4].encode('ascii').hex().upper()
+        title_id = "00050002" + game_id_hex
 
         return title_id
 

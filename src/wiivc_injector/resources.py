@@ -1,7 +1,6 @@
 """Resource handler for WiiVC Injector."""
 import os
 import sys
-import zipfile
 from pathlib import Path
 from typing import Optional
 
@@ -59,34 +58,6 @@ class ResourceManager:
         if resource_path.exists():
             return resource_path
         return None
-
-    def extract_tools(self, destination: Path) -> bool:
-        """
-        Extract core.zip to destination.
-
-        Args:
-            destination: Directory to extract tools to
-
-        Returns:
-            True if successful, False otherwise
-        """
-        tools_zip = self.get_resource_path("core.zip")
-
-        if not tools_zip or not tools_zip.exists():
-            print("Warning: core.zip not found in resources")
-            return False
-
-        try:
-            destination.mkdir(parents=True, exist_ok=True)
-
-            with zipfile.ZipFile(tools_zip, 'r') as zip_ref:
-                zip_ref.extractall(destination)
-
-            print(f"Tools extracted to {destination}")
-            return True
-        except Exception as e:
-            print(f"Error extracting tools: {e}")
-            return False
 
     def get_game_database(self) -> Optional[Path]:
         """

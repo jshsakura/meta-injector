@@ -527,6 +527,22 @@ class SimpleKeysDialog(QDialog):
 
         layout.addLayout(form)
 
+        # Output directory setting
+        output_layout = QHBoxLayout()
+        self.output_dir_input = QLineEdit()
+        self.output_dir_input.setPlaceholderText(tr.get("output_folder_placeholder"))
+        browse_btn = QPushButton(tr.get("browse"))
+        browse_btn.clicked.connect(self.browse_output_dir)
+        clear_btn = QPushButton(tr.get("clear"))
+        clear_btn.clicked.connect(self.clear_output_dir)
+        output_layout.addWidget(self.output_dir_input)
+        output_layout.addWidget(browse_btn)
+        output_layout.addWidget(clear_btn)
+
+        output_label = QLabel(tr.get("output_folder"))
+        layout.addWidget(output_label)
+        layout.addLayout(output_layout)
+
         # Info label
         if tr.current_language == "ko":
             info_text = "참고: Rhythm Heaven 키는 필수입니다. 나머지는 선택사항이며 없으면 Rhythm Heaven으로 빌드됩니다."
@@ -546,6 +562,17 @@ class SimpleKeysDialog(QDialog):
         btn_layout.addWidget(save_btn)
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
+
+    def browse_output_dir(self):
+        """Browse for output directory."""
+        dialog_title = tr.get("output_folder").replace(":", "")
+        output_dir = QFileDialog.getExistingDirectory(self, dialog_title)
+        if output_dir:
+            self.output_dir_input.setText(output_dir)
+
+    def clear_output_dir(self):
+        """Clear output directory setting to use default."""
+        self.output_dir_input.clear()
 
     def save(self):
         """Save keys and close."""
@@ -568,11 +595,13 @@ class SimpleKeysDialog(QDialog):
             return
 
         # Save to settings file
+        output_dir = self.output_dir_input.text().strip()
         settings = {
             'wii_u_common_key': common_key,
             'title_key_rhythm_heaven': rhythm_key,
             'title_key_xenoblade': xenoblade_key,
-            'title_key_galaxy2': galaxy_key
+            'title_key_galaxy2': galaxy_key,
+            'output_directory': output_dir
         }
 
         settings_file = Path.home() / ".wiivc_injector_settings.json"
@@ -622,6 +651,10 @@ class SimpleKeysDialog(QDialog):
                 if galaxy_key:
                     self.galaxy_key_input.setText(galaxy_key)
 
+                output_dir = settings.get('output_directory', '')
+                if output_dir:
+                    self.output_dir_input.setText(output_dir)
+
                 print("[DEBUG] Loaded existing settings into dialog")
         except Exception as e:
             print(f"[WARN] Failed to load existing settings: {e}")
@@ -654,12 +687,19 @@ class EditGameDialog(QDialog):
         icon_layout.addWidget(QLabel(icon_label_text))
         self.icon_preview = QLabel()
         self.icon_preview.setFixedSize(192, 192)
-        self.icon_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0; cursor: pointer;")
+        self.icon_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.icon_preview.setAlignment(Qt.AlignCenter)
         if self.job.icon_path and self.job.icon_path.exists():
+            print(f"[DEBUG] Loading icon from: {self.job.icon_path}")
             pixmap = QPixmap(str(self.job.icon_path))
-            self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            if not pixmap.isNull():
+                self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            else:
+                print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
+                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
+                self.icon_preview.setText(no_image_text)
         else:
+            print(f"[DEBUG] Icon path not found or doesn't exist: {self.job.icon_path}")
             no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
             self.icon_preview.setText(no_image_text)
         self.icon_preview.mousePressEvent = lambda e: self.change_icon()
@@ -673,12 +713,19 @@ class EditGameDialog(QDialog):
         banner_layout.addWidget(QLabel(banner_label_text))
         self.banner_preview = QLabel()
         self.banner_preview.setFixedSize(384, 216)
-        self.banner_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0; cursor: pointer;")
+        self.banner_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.banner_preview.setAlignment(Qt.AlignCenter)
         if self.job.banner_path and self.job.banner_path.exists():
+            print(f"[DEBUG] Loading banner from: {self.job.banner_path}")
             pixmap = QPixmap(str(self.job.banner_path))
-            self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            if not pixmap.isNull():
+                self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            else:
+                print(f"[ERROR] Failed to load banner pixmap from: {self.job.banner_path}")
+                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
+                self.banner_preview.setText(no_image_text)
         else:
+            print(f"[DEBUG] Banner path not found or doesn't exist: {self.job.banner_path}")
             no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
             self.banner_preview.setText(no_image_text)
         self.banner_preview.mousePressEvent = lambda e: self.change_banner()
@@ -908,7 +955,7 @@ class BatchWindow(QMainWindow):
     def init_ui(self):
         """Initialize UI."""
         self.setWindowTitle(tr.get("app_title") + " - " + (tr.get("batch_converter_title") if tr.current_language == "ko" else "Batch Mode"))
-        self.setGeometry(100, 100, 900, 600)
+        self.setGeometry(100, 100, 900, 600)  # 타이틀 ID 컬럼 제거로 너비 복원
 
         # Set window icon
         import sys
@@ -949,40 +996,40 @@ class BatchWindow(QMainWindow):
             }
         """
 
-        add_btn = QPushButton(tr.get("add_files"))
-        add_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogNewFolder))
-        add_btn.setStyleSheet(btn_style)
-        add_btn.clicked.connect(self.add_games)
-        top_layout.addWidget(add_btn)
+        self.add_btn = QPushButton(tr.get("add_files"))
+        self.add_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogNewFolder))
+        self.add_btn.setStyleSheet(btn_style)
+        self.add_btn.clicked.connect(self.add_games)
+        top_layout.addWidget(self.add_btn)
 
-        remove_btn = QPushButton(tr.get("remove_selected"))
-        remove_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogCancelButton))
-        remove_btn.setStyleSheet(btn_style)
-        remove_btn.clicked.connect(self.remove_selected)
-        top_layout.addWidget(remove_btn)
+        self.remove_btn = QPushButton(tr.get("remove_selected"))
+        self.remove_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogCancelButton))
+        self.remove_btn.setStyleSheet(btn_style)
+        self.remove_btn.clicked.connect(self.remove_selected)
+        top_layout.addWidget(self.remove_btn)
 
-        clear_btn = QPushButton(tr.get("clear_all"))
-        clear_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
-        clear_btn.setStyleSheet(btn_style)
-        clear_btn.clicked.connect(self.clear_all)
-        top_layout.addWidget(clear_btn)
+        self.clear_btn = QPushButton(tr.get("clear_all"))
+        self.clear_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
+        self.clear_btn.setStyleSheet(btn_style)
+        self.clear_btn.clicked.connect(self.clear_all)
+        top_layout.addWidget(self.clear_btn)
 
         # Compatibility list button
         compat_text = "호환성 목록" if tr.current_language == "ko" else "Compatibility"
-        compat_btn = QPushButton(compat_text)
-        compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
-        compat_btn.setStyleSheet(btn_style)
-        compat_btn.clicked.connect(self.show_compatibility_list)
-        top_layout.addWidget(compat_btn)
+        self.compat_btn = QPushButton(compat_text)
+        self.compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        self.compat_btn.setStyleSheet(btn_style)
+        self.compat_btn.clicked.connect(self.show_compatibility_list)
+        top_layout.addWidget(self.compat_btn)
 
         top_layout.addStretch()
 
         # Settings button
         settings_text = "⚙ 설정" if tr.current_language == "ko" else "⚙ Settings"
-        settings_btn = QPushButton(settings_text)
-        settings_btn.setStyleSheet(btn_style)
-        settings_btn.clicked.connect(self.show_settings)
-        top_layout.addWidget(settings_btn)
+        self.settings_btn = QPushButton(settings_text)
+        self.settings_btn.setStyleSheet(btn_style)
+        self.settings_btn.clicked.connect(self.show_settings)
+        top_layout.addWidget(self.settings_btn)
 
         auto_download_text = "아이콘 자동 다운로드" if tr.current_language == "ko" else "Auto Download Icons"
         self.auto_icons_check = QCheckBox(auto_download_text)
@@ -991,29 +1038,59 @@ class BatchWindow(QMainWindow):
 
         layout.addLayout(top_layout)
 
-        # Game list table
+        # Game list table (파일명/게임제목 통합, 게임 ID 별도 표시, 호환성/패드옵션 통합)
         self.table = QTableWidget()
-        self.table.setColumnCount(9)
+        self.table.setColumnCount(7)
 
         if tr.current_language == "ko":
-            headers = ["파일 이름", "아이콘", "배너", "게임 제목", "타이틀 ID", "게임패드", "패드옵션", "상태", "작업"]
+            headers = ["게임 제목 / 파일명", "게임 ID", "아이콘", "배너", "호환성 / 패드옵션", "상태", "작업"]
         else:
-            headers = ["File Name", "Icon", "Banner", "Game Title", "Title ID", "Gamepad", "Pad Option", "Status", "Actions"]
+            headers = ["Game Title / Filename", "Game ID", "Icon", "Banner", "Compatibility / Pad Option", "Status", "Actions"]
 
         self.table.setHorizontalHeaderLabels(headers)
-        # Set column widths
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # File Name
-        self.table.setColumnWidth(1, 50)  # Icon preview
-        self.table.setColumnWidth(2, 80)  # Banner preview (16:9 ratio)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)  # Game Title
-        self.table.setColumnWidth(4, 140)  # Title ID
-        self.table.setColumnWidth(5, 100)  # Gamepad
-        self.table.setColumnWidth(6, 130)  # Pad Option
-        self.table.setColumnWidth(7, 100)  # Status
-        self.table.setColumnWidth(8, 80)  # Actions
+        # Header styling - modern flat design with vertical separators
+        self.table.horizontalHeader().setStyleSheet("""
+            QHeaderView::section {
+                background-color: #f5f5f5;
+                color: #333333;
+                border: none;
+                border-right: 1px solid #d0d0d0;
+                border-bottom: 2px solid #4a90e2;
+                padding: 8px 4px;
+                font-weight: 500;
+                text-align: center;
+            }
+            QHeaderView::section:first {
+                padding-left: 15px;
+            }
+            QHeaderView::section:last {
+                border-right: none;
+            }
+        """)
+        # Set column widths (파일명/게임제목 통합, 게임 ID 별도, 호환성/패드옵션 통합)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # File Name / Game Title
+        # 첫 번째 헤더만 좌측 정렬
+        header_item = self.table.horizontalHeaderItem(0)
+        if header_item:
+            header_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.table.setColumnWidth(1, 80)   # Game ID
+        self.table.setColumnWidth(2, 60)   # Icon preview
+        self.table.setColumnWidth(3, 90)   # Banner preview
+        self.table.setColumnWidth(4, 150)  # Compatibility / Pad Option (통합 컬럼, 180→150)
+        self.table.setColumnWidth(5, 80)   # Status
+        self.table.setColumnWidth(6, 80)   # Actions
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.table.cellDoubleClicked.connect(self.edit_game)
+        # 아이콘/배너 컬럼 중앙 정렬을 위한 스타일시트
+        self.table.setStyleSheet("""
+            QTableWidget::item {
+                padding: 2px;
+            }
+        """)
+        # 더블클릭 편집 제거 - 편집 버튼에서만 수정 가능
+        # self.table.cellDoubleClicked.connect(self.edit_game)
         self.table.cellClicked.connect(self.on_cell_clicked)
+        # 셀 편집 불가능하게 설정
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
         layout.addWidget(self.table)
 
         # Progress
@@ -1032,7 +1109,7 @@ class BatchWindow(QMainWindow):
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
 
-        build_text = "빌드 시작" if tr.current_language == "ko" else "Start Build"
+        build_text = "빌드" if tr.current_language == "ko" else "Start Build"
         self.build_btn = QPushButton(build_text)
         self.build_btn.setStyleSheet("""
             QPushButton {
@@ -1149,14 +1226,9 @@ class BatchWindow(QMainWindow):
             self.status_label.setText(f"Loading {len(new_file_paths)} games...")
 
         # Create progress dialog
-        if tr.current_language == "ko":
-            progress_label = "게임 추가 중..."
-            cancel_label = "취소"
-            window_title = "잠시만 기다려주세요"
-        else:
-            progress_label = "Adding games..."
-            cancel_label = "Cancel"
-            window_title = "Please wait"
+        progress_label = tr.get("loading_games_message")
+        window_title = tr.get("loading_games_title")
+        cancel_label = tr.get("cancel")
 
         self.loading_progress = QProgressDialog(
             progress_label,
@@ -1197,10 +1269,7 @@ class BatchWindow(QMainWindow):
         if hasattr(self, 'loading_progress') and self.loading_progress is not None:
             try:
                 self.loading_progress.setValue(current)
-                if tr.current_language == "ko":
-                    self.loading_progress.setLabelText(f"게임 추가 중... ({current}/{total})")
-                else:
-                    self.loading_progress.setLabelText(f"Adding games... ({current}/{total})")
+                self.loading_progress.setLabelText(tr.get("loading_games_progress", current=current, total=total))
             except (AttributeError, RuntimeError) as e:
                 # Dialog might be closed/deleted - ignore
                 pass
@@ -1239,14 +1308,14 @@ class BatchWindow(QMainWindow):
 
     def update_icon_preview(self, row: int, job: BatchBuildJob):
         """Update icon and banner preview in table."""
-        # Update icon (Column 1)
+        # Update icon (Column 2) - Use QLabel for center alignment
         if job.icon_path and job.icon_path.exists():
             pixmap = QPixmap(str(job.icon_path))
             scaled_pixmap = pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            icon_item = QTableWidgetItem()
-            icon_item.setData(Qt.DecorationRole, scaled_pixmap)
-            icon_item.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 1, icon_item)
+            icon_label = QLabel()
+            icon_label.setPixmap(scaled_pixmap)
+            icon_label.setAlignment(Qt.AlignCenter)
+            self.table.setCellWidget(row, 2, icon_label)
         else:
             # Create a red X icon for failed download
             icon_item = QTableWidgetItem("X")
@@ -1257,16 +1326,16 @@ class BatchWindow(QMainWindow):
             font.setBold(True)
             icon_item.setFont(font)
             icon_item.setBackground(QColor(255, 240, 240))
-            self.table.setItem(row, 1, icon_item)
+            self.table.setItem(row, 2, icon_item)
 
-        # Update banner (Column 2)
+        # Update banner (Column 3) - Use QLabel for center alignment
         if job.banner_path and job.banner_path.exists():
             pixmap = QPixmap(str(job.banner_path))
             scaled_pixmap = pixmap.scaled(72, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            banner_item = QTableWidgetItem()
-            banner_item.setData(Qt.DecorationRole, scaled_pixmap)
-            banner_item.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row, 2, banner_item)
+            banner_label = QLabel()
+            banner_label.setPixmap(scaled_pixmap)
+            banner_label.setAlignment(Qt.AlignCenter)
+            self.table.setCellWidget(row, 3, banner_label)
         else:
             # Create a red X for failed banner
             banner_item = QTableWidgetItem("X")
@@ -1277,75 +1346,115 @@ class BatchWindow(QMainWindow):
             font.setBold(True)
             banner_item.setFont(font)
             banner_item.setBackground(QColor(255, 240, 240))
-            self.table.setItem(row, 2, banner_item)
+            self.table.setItem(row, 3, banner_item)
 
     def add_job_to_table(self, job: BatchBuildJob):
         """Add job to table and return row index."""
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setRowHeight(row, 50)  # Two lines height
+        self.table.setRowHeight(row, 50)  # Height for two-line cells
 
-        # Column 0: File name
-        self.table.setItem(row, 0, QTableWidgetItem(job.game_path.name))
+        # Column 0: Game title / File name (Combined)
+        title_widget = QWidget()
+        title_layout = QVBoxLayout(title_widget)
+        title_layout.setContentsMargins(4, 2, 4, 2)
+        title_layout.setSpacing(2)
 
-        # Column 1: Icon preview
-        icon_item = QTableWidgetItem("Loading...")
-        icon_item.setTextAlignment(Qt.AlignCenter)
-        self.table.setItem(row, 1, icon_item)
+        # Game title (top)
+        title_label = QLabel(job.title_name)
+        title_label.setStyleSheet("font-size: 12px; font-weight: 500; color: #000;")
+        title_layout.addWidget(title_label)
 
-        # Column 2: Banner preview
-        banner_item = QTableWidgetItem("Loading...")
-        banner_item.setTextAlignment(Qt.AlignCenter)
-        self.table.setItem(row, 2, banner_item)
+        # File name (bottom)
+        filename_label = QLabel(job.game_path.name)
+        filename_label.setStyleSheet("font-size: 11px; color: #666;")
+        title_layout.addWidget(filename_label)
 
-        # Column 3: Game title
-        self.table.setItem(row, 3, QTableWidgetItem(job.title_name))
+        self.table.setCellWidget(row, 0, title_widget)
 
-        # Column 4: Title ID (with Game ID)
+        # Column 1: Game ID
         game_id = job.game_info.get('game_id', '') if job.game_info else ''
-        title_id_text = f"{job.title_id}\n({game_id})" if game_id else job.title_id
-        self.table.setItem(row, 4, QTableWidgetItem(title_id_text))
+        game_id_item = QTableWidgetItem(game_id)
+        game_id_item.setTextAlignment(Qt.AlignCenter)
+        self.table.setItem(row, 1, game_id_item)
 
-        # Column 5: Gamepad compatibility
-        gamepad_item = QTableWidgetItem(job.gamepad_compatibility)
+        # Column 2: Icon preview (will be replaced by QLabel in update_icon_preview)
+        icon_item = QTableWidgetItem("")
+        self.table.setItem(row, 2, icon_item)
+
+        # Column 3: Banner preview (will be replaced by QLabel in update_icon_preview)
+        banner_item = QTableWidgetItem("")
+        self.table.setItem(row, 3, banner_item)
+
+        # Column 4: Compatibility / Pad Option (Combined)
+        # Create widget with vertical layout
+        compat_widget = QWidget()
+        compat_layout = QVBoxLayout(compat_widget)
+        compat_layout.setContentsMargins(4, 2, 4, 2)
+        compat_layout.setSpacing(2)
+
+        # Compatibility label (top)
+        compat_label = QLabel(job.gamepad_compatibility)
+        compat_label.setAlignment(Qt.AlignCenter)
+        compat_label.setStyleSheet("font-size: 11px; padding: 1px 4px;")
+
         # Color code based on compatibility
         if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
-            gamepad_item.setBackground(QColor(200, 255, 200))  # Light green
+            compat_label.setStyleSheet("background-color: #c8ffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px;")  # Light green
         elif 'classic' in job.gamepad_compatibility.lower() or 'lr' in job.gamepad_compatibility.lower():
-            gamepad_item.setBackground(QColor(255, 255, 200))  # Light yellow
+            compat_label.setStyleSheet("background-color: #ffffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px;")  # Light yellow
         elif 'unknown' in job.gamepad_compatibility.lower():
-            gamepad_item.setBackground(QColor(220, 220, 220))  # Light gray
+            compat_label.setStyleSheet("background-color: #dcdcdc; font-size: 11px; padding: 1px 4px; border-radius: 3px;")  # Light gray
         else:
-            gamepad_item.setBackground(QColor(255, 200, 200))  # Light red
-        self.table.setItem(row, 5, gamepad_item)
+            compat_label.setStyleSheet("background-color: #ffc8c8; font-size: 11px; padding: 1px 4px; border-radius: 3px;")  # Light red
 
-        # Column 6: Pad Option (ComboBox)
-        # Options: None, Gamepad, Gamepad+LR, Vertical Wiimote, Horizontal Wiimote, Galaxy AllStars, Galaxy Nvidia
+        compat_layout.addWidget(compat_label)
+
+        # Pad Option ComboBox (bottom) - 7 Controller Profiles
         pad_combo = QComboBox()
+        pad_combo.setStyleSheet("font-size: 11px;")
         if tr.current_language == "ko":
-            pad_combo.addItems(["미적용", "패드", "패드+LR", "세로위모트", "가로위모트", "갤럭시-올스타", "갤럭시-엔비디아"])
+            pad_combo.addItems([
+                "미적용 (위모트)",          # Profile 1: no_gamepad
+                "게임패드 CC",             # Profile 2: none (default)
+                "게임패드 CC+LR",          # Profile 3: gamepad_lr
+                "게임패드 위모트(↕)",      # Profile 4: wiimote
+                "게임패드 위모트(↔)",      # Profile 5: horizontal_wiimote
+                "갤럭시 패치(올스타)",     # Profile 6: galaxy_allstars
+                "갤럭시 패치(엔비디아)"    # Profile 7: galaxy_nvidia
+            ])
         else:
-            pad_combo.addItems(["None", "Pad", "Pad+LR", "Vert.Wii", "Horz.Wii", "Galaxy-AS", "Galaxy-NV"])
+            pad_combo.addItems([
+                "No Pad (Wiimote)",        # Profile 1
+                "Pad CC",                  # Profile 2
+                "Pad CC+LR",               # Profile 3
+                "Pad Wiimote(↕)",          # Profile 4
+                "Pad Wiimote(↔)",          # Profile 5
+                "Galaxy Patch(AllStars)",  # Profile 6
+                "Galaxy Patch(Nvidia)"     # Profile 7
+            ])
 
         # Set default based on compatibility from DB
-        # Index: 0=none, 1=gamepad, 2=gamepad+lr, 3=vertical, 4=horizontal
         if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
-            pad_combo.setCurrentIndex(1)  # Gamepad
-            job.pad_option = "gamepad"
+            pad_combo.setCurrentIndex(1)  # Gamepad CC (Profile 2)
+            job.pad_option = "none"  # 기본 CC 에뮬레이션
         else:
-            pad_combo.setCurrentIndex(0)  # None (미적용)
-            job.pad_option = "none"
+            pad_combo.setCurrentIndex(0)  # No Pad (Profile 1)
+            job.pad_option = "no_gamepad"  # 미적용
 
         pad_combo.currentIndexChanged.connect(lambda idx, r=row: self.on_pad_option_changed(r, idx))
-        self.table.setCellWidget(row, 6, pad_combo)
+        compat_layout.addWidget(pad_combo)
 
-        # Column 7: Status
+        self.table.setCellWidget(row, 4, compat_widget)
+
+        # Column 5: Status
         status_text = "대기 중" if tr.current_language == "ko" else "Pending"
         status_item = QTableWidgetItem(status_text)
+        status_item.setTextAlignment(Qt.AlignCenter)
         status_item.setBackground(QColor(255, 249, 196))  # Yellow
-        self.table.setItem(row, 7, status_item)
+        self.table.setItem(row, 5, status_item)
 
-        # Column 8: Edit button
+        # Column 6: Edit button
         edit_text = "편집" if tr.current_language == "ko" else "Edit"
         edit_btn = QPushButton(edit_text)
         edit_btn.setStyleSheet("""
@@ -1364,30 +1473,32 @@ class BatchWindow(QMainWindow):
             }
         """)
         edit_btn.clicked.connect(lambda checked, btn=edit_btn: self.edit_game_by_button(btn))
-        self.table.setCellWidget(row, 8, edit_btn)
+        self.table.setCellWidget(row, 6, edit_btn)
 
         return row
 
     def edit_game(self, row, column):
-        """Edit game metadata."""
-        if row < len(self.jobs):
-            dialog = EditGameDialog(self.jobs[row], self)
-            if dialog.exec_():
-                # Update table (column 3: title, column 4: title ID)
-                self.table.item(row, 3).setText(self.jobs[row].title_name)
-                game_id = self.jobs[row].game_info.get('game_id', '') if self.jobs[row].game_info else ''
-                title_id_text = f"{self.jobs[row].title_id}\n({game_id})" if game_id else self.jobs[row].title_id
-                self.table.item(row, 4).setText(title_id_text)
-
-                # Update image previews if changed
-                self.update_image_preview(row, self.jobs[row])
+        """Edit game metadata (사용 안 함 - 편집 버튼으로만 수정)."""
+        # 더블클릭 편집 비활성화됨
+        pass
 
     def edit_game_by_button(self, button):
         """Edit game by finding the button's row in the table."""
         # Find the row by iterating through all rows to find the button
         for row in range(self.table.rowCount()):
-            if self.table.cellWidget(row, 8) == button:
-                self.edit_game(row, 0)
+            if self.table.cellWidget(row, 6) == button:
+                if row < len(self.jobs):
+                    dialog = EditGameDialog(self.jobs[row], self)
+                    if dialog.exec_():
+                        # 편집 다이얼로그에서 저장 후 테이블 업데이트
+                        # Column 0: Update game title in the combined widget
+                        title_widget = self.table.cellWidget(row, 0)
+                        if title_widget:
+                            title_label = title_widget.layout().itemAt(0).widget()
+                            title_label.setText(self.jobs[row].title_name)
+
+                        # Update image previews if changed
+                        self.update_icon_preview(row, self.jobs[row])
                 return
 
     def edit_game_by_row(self, row):
@@ -1475,11 +1586,30 @@ class BatchWindow(QMainWindow):
             show_message(self, "warning", tr.get("error"), msg)
             return
 
-        # Get output directory
-        dialog_title = "출력 디렉토리 선택" if tr.current_language == "ko" else "Select Output Directory"
-        output_dir = QFileDialog.getExistingDirectory(self, dialog_title)
+        # Get output directory from settings or use default
+        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        output_dir = None
+
+        if settings_file.exists():
+            try:
+                with open(settings_file, 'r', encoding='utf-8') as f:
+                    settings = json.load(f)
+                    output_dir = settings.get('output_directory', '').strip()
+            except:
+                pass
+
+        # If no output directory in settings, use first game's directory
         if not output_dir:
-            return
+            if self.jobs:
+                first_game_path = self.jobs[0].game_path
+                output_dir = str(first_game_path.parent)
+                print(f"No output directory in settings, using game directory: {output_dir}")
+            else:
+                # Should not happen, but fallback to dialog
+                dialog_title = "출력 디렉토리 선택" if tr.current_language == "ko" else "Select Output Directory"
+                output_dir = QFileDialog.getExistingDirectory(self, dialog_title)
+                if not output_dir:
+                    return
 
         # Prepare all metadata in main thread (to avoid SQLite threading issues)
         for job in self.jobs:
@@ -1510,6 +1640,9 @@ class BatchWindow(QMainWindow):
         self.batch_builder.job_finished.connect(self.on_job_finished)
         self.batch_builder.all_finished.connect(self.on_all_finished)
 
+        # Disable UI during build
+        self.set_ui_enabled(False)
+
         self.batch_builder.start()
 
     def stop_build(self):
@@ -1527,26 +1660,32 @@ class BatchWindow(QMainWindow):
     def on_job_started(self, idx, game_name):
         """Handle job started."""
         if idx < self.table.rowCount():
-            status_item = self.table.item(idx, 7)
+            status_item = self.table.item(idx, 5)
             status_text = "빌드 중..." if tr.current_language == "ko" else "Building..."
             status_item.setText(status_text)
+            status_item.setTextAlignment(Qt.AlignCenter)
             status_item.setBackground(QColor(173, 216, 230))  # Light blue
 
     def on_job_finished(self, idx, success, message):
         """Handle job finished."""
         if idx < self.table.rowCount():
-            status_item = self.table.item(idx, 7)
+            status_item = self.table.item(idx, 5)
             if success:
                 status_text = "완료" if tr.current_language == "ko" else "Completed"
                 status_item.setText(status_text)
+                status_item.setTextAlignment(Qt.AlignCenter)
                 status_item.setBackground(QColor(200, 230, 201))  # Green
             else:
                 failed_text = "실패" if tr.current_language == "ko" else "Failed"
                 status_item.setText(f"{failed_text}: {message}")
+                status_item.setTextAlignment(Qt.AlignCenter)
                 status_item.setBackground(QColor(255, 205, 210))  # Red
 
     def on_all_finished(self, success_count, total_count):
         """Handle all jobs finished."""
+        # Re-enable UI after build
+        self.set_ui_enabled(True)
+
         self.build_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self.progress_bar.setValue(100)
@@ -1562,6 +1701,19 @@ class BatchWindow(QMainWindow):
 
         show_message(self, "info", title, msg, min_width=500)
 
+    def set_ui_enabled(self, enabled: bool):
+        """Enable or disable UI elements during build."""
+        # Disable/enable top buttons
+        self.add_btn.setEnabled(enabled)
+        self.remove_btn.setEnabled(enabled)
+        self.clear_btn.setEnabled(enabled)
+        self.compat_btn.setEnabled(enabled)
+        self.settings_btn.setEnabled(enabled)
+        self.auto_icons_check.setEnabled(enabled)
+
+        # Disable/enable table editing (edit buttons and pad option comboboxes)
+        self.table.setEnabled(enabled)
+
     def show_settings(self):
         """Show settings dialog for encryption keys."""
         dialog = SimpleKeysDialog(self)
@@ -1576,21 +1728,22 @@ class BatchWindow(QMainWindow):
         """Handle pad option combobox change."""
         if row < len(self.jobs):
             job = self.jobs[row]
-            # Index: 0=none, 1=gamepad, 2=gamepad+lr, 3=vertical, 4=horizontal, 5=galaxy_allstars, 6=galaxy_nvidia
+            # 7 Controller Profiles mapping
+            # Index: 0=no_gamepad, 1=none(CC), 2=gamepad_lr, 3=wiimote, 4=horizontal_wiimote, 5=galaxy_allstars, 6=galaxy_nvidia
             if index == 0:
-                job.pad_option = "none"
+                job.pad_option = "no_gamepad"  # Profile 1: 미적용 (Wii 리모컨만)
             elif index == 1:
-                job.pad_option = "gamepad"
+                job.pad_option = "none"  # Profile 2: 게임패드 CC
             elif index == 2:
-                job.pad_option = "gamepad_lr"
+                job.pad_option = "gamepad_lr"  # Profile 3: 게임패드 CC+LR
             elif index == 3:
-                job.pad_option = "wiimote"
+                job.pad_option = "wiimote"  # Profile 4: 게임패드 위모트(세로)
             elif index == 4:
-                job.pad_option = "horizontal_wiimote"
+                job.pad_option = "horizontal_wiimote"  # Profile 5: 게임패드 위모트(가로)
             elif index == 5:
-                job.pad_option = "galaxy_allstars"
+                job.pad_option = "galaxy_allstars"  # Profile 6: 갤럭시 올스타
             else:
-                job.pad_option = "galaxy_nvidia"
+                job.pad_option = "galaxy_nvidia"  # Profile 7: 갤럭시 엔비디아
             print(f"[INFO] Pad option for {job.title_name}: {job.pad_option}")
 
     def on_cell_clicked(self, row, column):

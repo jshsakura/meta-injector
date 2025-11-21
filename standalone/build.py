@@ -55,13 +55,13 @@ def build_exe():
         sys.executable,
         "-m", "PyInstaller",
         "--name=WiiVC-Injector",
-        "--onefile",  # Single executable
+        "--onefile",  # Single executable - everything in one .exe
         "--windowed",  # No console window
         f"--icon={icon_path}",
 
-        # Add data files
+        # Add data files - pack only resources into the exe
+        # core folder (75MB) is kept external to reduce exe size (22MB like TeconMoon)
         f"--add-data={PROJECT_ROOT / 'resources'};resources",
-        f"--add-data={PROJECT_ROOT / 'core'};core",
         f"--add-data={PROJECT_ROOT / 'src' / 'wiivc_injector'};wiivc_injector",
 
         # Hidden imports
@@ -126,21 +126,49 @@ def create_release_package():
         print(f"   [FAILED] Executable not found: {exe_path}")
         return False
 
-    # Copy core tools
+    # Copy core tools (only essential files, exclude BASE/C2W/DOL/IMG/NKIT/SOX)
     core_src = PROJECT_ROOT / "core"
     core_dst = release_dir / "core"
 
     if core_src.exists():
-        shutil.copytree(core_src, core_dst, dirs_exist_ok=True)
-        print(f"   OK Copied: core/")
+        core_dst.mkdir(parents=True, exist_ok=True)
 
-    # Copy resources
-    resources_src = PROJECT_ROOT / "resources"
-    resources_dst = release_dir / "resources"
+        # Copy only essential folders
+        essential_folders = ["EXE", "WIT", "JAR", "Galaxy1GamePad_v1.2"]
+        for folder in essential_folders:
+            src_folder = core_src / folder
+            dst_folder = core_dst / folder
+            if src_folder.exists():
+                shutil.copytree(src_folder, dst_folder, dirs_exist_ok=True)
 
-    if resources_src.exists():
-        shutil.copytree(resources_src, resources_dst, dirs_exist_ok=True)
-        print(f"   OK Copied: resources/")
+        # Copy shortnamepath.cmd if exists
+        if (core_src / "shortnamepath.cmd").exists():
+            shutil.copy2(core_src / "shortnamepath.cmd", core_dst / "shortnamepath.cmd")
+
+        # Clean JAR content rules - remove generated files (images, fw.img)
+        # These are auto-generated during build, no need to include in distribution
+        jar_dir = core_dst / "JAR"
+        if jar_dir.exists():
+            for template_dir in jar_dir.iterdir():
+                if template_dir.is_dir() and template_dir.name not in ["tmp", "output"]:
+                    # Remove meta folder contents (images will be auto-generated)
+                    meta_dir = template_dir / "meta"
+                    if meta_dir.exists():
+                        for file in meta_dir.iterdir():
+                            if file.suffix in ['.tga', '.png', '.jpg']:
+                                file.unlink()
+                    # Remove code folder contents (fw.img will be copied from base_files)
+                    code_dir = template_dir / "code"
+                    if code_dir.exists():
+                        for file in code_dir.iterdir():
+                            if file.name in ['fw.img', 'frisbiiU.rpx']:
+                                file.unlink()
+
+        print(f"   OK Copied: core/ (essential tools only, cleaned templates)")
+
+    # Copy resources (icon, images, database - already embedded in exe)
+    # No need to copy resources folder to release - they're packed into the .exe
+    # The exe already has resources embedded via PyInstaller --add-data
 
     # Create README
     readme_path = release_dir / "README.txt"
