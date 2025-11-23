@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 from PyQt5.QtCore import QThread, pyqtSignal
 from .build_engine import BuildEngine
+from .translations import tr
 from .paths import paths
 from .image_utils import image_processor
 import requests
@@ -36,13 +37,14 @@ class BatchBuilder(QThread):
     all_finished = pyqtSignal(int, int)  # success_count, total_count
 
     def __init__(self, jobs: List[BatchBuildJob], common_key: str, title_keys: Dict[str, str],
-                 output_dir: Path, auto_icons: bool = True):
+                 output_dir: Path, auto_icons: bool = True, keep_temp_for_debug: bool = False):
         super().__init__()
         self.jobs = jobs
         self.common_key = common_key
         self.title_keys = title_keys  # Dict mapping host game name to title key
         self.output_dir = output_dir
         self.auto_icons = auto_icons
+        self.keep_temp_for_debug = keep_temp_for_debug
         self.should_stop = False
 
     def stop(self):
@@ -132,7 +134,7 @@ class BatchBuilder(QThread):
             elif job.banner_path and job.banner_path.exists():
                 image_processor.process_drc(job.banner_path, paths.temp_drc)
 
-            engine = BuildEngine(paths, progress_callback)
+            engine = BuildEngine(paths, progress_callback, keep_temp_for_debug=self.keep_temp_for_debug, language=tr.current_language)
 
             # Controller Profile Selection (7 Profiles)
             # Profile 1 - no_gamepad: 미적용 (Wii 리모컨만) → -nocc

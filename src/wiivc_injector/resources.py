@@ -16,33 +16,33 @@ class ResourceManager:
     def _get_resources_dir(self) -> Path:
         """
         Get the resources directory path.
-
-        Returns:
-            Path to resources directory
         """
         # Check if running as PyInstaller bundle first
         if getattr(sys, 'frozen', False):
-            # When packaged with PyInstaller
+            # When packaged with PyInstaller, resources are in _MEIPASS
             meipass_path = Path(sys._MEIPASS) / "resources"
             if meipass_path.exists():
                 return meipass_path
+        
+        # When running as a script, use the project_root from paths.py
+        # This centralizes the logic for finding the project root.
+        try:
+            from .paths import paths
+            resources_path = paths.project_root / "resources"
 
-        # Try different possible locations for source
-        possible_paths = [
-            # When running from source
-            Path(__file__).parent.parent.parent / "resources",
-            # When installed as package
-            Path(__file__).parent / "resources",
-        ]
-
-        for path in possible_paths:
-            if path.exists():
-                return path
-
-        # Default to first path and create if needed
-        default_path = possible_paths[0]
-        default_path.mkdir(parents=True, exist_ok=True)
-        return default_path
+            if resources_path.exists():
+                return resources_path
+            
+            # As a final fallback, create and return the directory.
+            print(f"[WARN] Resources directory not found at {resources_path}. Creating it.")
+            resources_path.mkdir(parents=True, exist_ok=True)
+            return resources_path
+        except ImportError:
+            # Fallback for rare cases where paths.py is not available
+            fallback_path = Path(__file__).parent.parent.parent / "resources"
+            if not fallback_path.exists():
+                fallback_path.mkdir(parents=True, exist_ok=True)
+            return fallback_path
 
     def get_resource_path(self, filename: str) -> Optional[Path]:
         """

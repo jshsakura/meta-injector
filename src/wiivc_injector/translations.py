@@ -979,6 +979,10 @@ class Translations:
             "en": "Rebuilding trimmed ISO...",
             "ko": "트림된 ISO 재구성 중..."
         },
+        "progress_trimming_iso": {
+            "en": "Trimming game ISO...",
+            "ko": "게임 ISO 트리밍 중..."
+        },
         "output_folder": {
             "en": "Output Folder:",
             "ko": "출력 폴더:"

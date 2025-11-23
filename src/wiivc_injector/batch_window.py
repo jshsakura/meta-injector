@@ -198,8 +198,8 @@ class GameLoaderThread(QThread):
         full_id = game_id[:6] if len(game_id) >= 6 else game_id
         system_type = job.game_info.get('system', 'wii')
 
-        # Check image cache first
-        cache_dir = paths.base_files_cache / "images" / repo_id
+        # Check image cache first (now using session-specific temp downloads folder)
+        cache_dir = paths.temp_downloads / "images" / repo_id
         cached_icon = cache_dir / "icon.png"
         cached_banner = cache_dir / "banner.png"
         cached_drc = cache_dir / "drc.png"
@@ -955,7 +955,7 @@ class BatchWindow(QMainWindow):
     def init_ui(self):
         """Initialize UI."""
         self.setWindowTitle(tr.get("app_title") + " - " + (tr.get("batch_converter_title") if tr.current_language == "ko" else "Batch Mode"))
-        self.setGeometry(100, 100, 900, 600)  # 타이틀 ID 컬럼 제거로 너비 복원
+        self.setGeometry(100, 100, 800, 500)  # 타이틀 ID 컬럼 제거로 너비 복원
 
         # Set window icon
         import sys
@@ -1035,6 +1035,11 @@ class BatchWindow(QMainWindow):
         self.auto_icons_check = QCheckBox(auto_download_text)
         self.auto_icons_check.setChecked(True)
         top_layout.addWidget(self.auto_icons_check)
+
+        keep_temp_text = "임시 파일 유지" if tr.current_language == "ko" else "Keep Temp Files"
+        self.keep_temp_check = QCheckBox(keep_temp_text)
+        self.keep_temp_check.setChecked(True) # Checked by default for debugging
+        top_layout.addWidget(self.keep_temp_check)
 
         layout.addLayout(top_layout)
 
@@ -1632,7 +1637,8 @@ class BatchWindow(QMainWindow):
             common_key,
             title_keys,
             Path(output_dir),
-            self.auto_icons_check.isChecked()
+            self.auto_icons_check.isChecked(),
+            keep_temp_for_debug=self.keep_temp_check.isChecked()
         )
 
         self.batch_builder.progress_updated.connect(self.on_progress)

@@ -18,7 +18,7 @@ class PathManager:
             self.project_root = Path(__file__).parent.parent.parent
 
         # Base temp directory
-        self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiVCInjector"
+        self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiUVCInjector"
 
         # Source temp directory
         self.temp_source = self.temp_root / "SOURCETEMP"
@@ -26,8 +26,11 @@ class PathManager:
         # Build directory
         self.temp_build = self.temp_root / "BUILDDIR"
 
-        # Tools directory - use project folder instead of temp
-        self.temp_tools = self.project_root / "core"
+        # Tools directory - now in temp
+        self.temp_tools = self.temp_root / "TOOLDIR"
+
+        # Download cache in temp
+        self.temp_downloads = self.temp_root / "DOWNLOADS"
 
         # Specific source file paths
         self.temp_icon = self.temp_source / "iconTex.png"
@@ -53,6 +56,7 @@ class PathManager:
         self.temp_source.mkdir(parents=True, exist_ok=True)
         self.temp_build.mkdir(parents=True, exist_ok=True)
         self.temp_tools.mkdir(parents=True, exist_ok=True)
+        self.temp_downloads.mkdir(parents=True, exist_ok=True)
         self.jnustool_downloads.mkdir(parents=True, exist_ok=True)
 
     def cleanup_temp(self):
