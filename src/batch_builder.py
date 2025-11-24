@@ -123,17 +123,46 @@ class BatchBuilder(QThread):
                 overall_percent = int((idx * 100 / total) + (percent / total))
                 self.progress_updated.emit(overall_percent, 100, f"[{idx+1}/{total}] {message}")
 
-            # Process images if available
+            # Process images BEFORE BuildEngine init (so they don't get deleted by cleanup)
+            # Ensure temp directories exist
+            paths.temp_root.mkdir(parents=True, exist_ok=True)
+            paths.temp_source.mkdir(parents=True, exist_ok=True)
+
+            print(f"[IMAGE] Processing images for {job.title_name}")
             if job.icon_path and job.icon_path.exists():
+                print(f"  Icon: {job.icon_path} -> {paths.temp_icon}")
                 image_processor.process_icon(job.icon_path, paths.temp_icon)
+                if paths.temp_icon.exists():
+                    print(f"  ✓ Icon ready: {paths.temp_icon.stat().st_size} bytes")
+                else:
+                    print(f"  ✗ Icon processing failed!")
+            else:
+                print(f"  ✗ Icon not found: {job.icon_path}")
+
             if job.banner_path and job.banner_path.exists():
+                print(f"  Banner: {job.banner_path} -> {paths.temp_banner}")
                 image_processor.process_banner(job.banner_path, paths.temp_banner)
+                if paths.temp_banner.exists():
+                    print(f"  ✓ Banner ready: {paths.temp_banner.stat().st_size} bytes")
+                else:
+                    print(f"  ✗ Banner processing failed!")
+            else:
+                print(f"  ✗ Banner not found: {job.banner_path}")
+
             # Use separate DRC if available, otherwise generate from banner
             if job.drc_path and job.drc_path.exists():
+                print(f"  DRC: {job.drc_path} -> {paths.temp_drc}")
                 image_processor.process_drc(job.drc_path, paths.temp_drc)
             elif job.banner_path and job.banner_path.exists():
+                print(f"  DRC: {job.banner_path} -> {paths.temp_drc}")
                 image_processor.process_drc(job.banner_path, paths.temp_drc)
 
+            if paths.temp_drc.exists():
+                print(f"  ✓ DRC ready: {paths.temp_drc.stat().st_size} bytes")
+            else:
+                print(f"  ✗ DRC processing failed!")
+
+            # Now create BuildEngine (it will preserve SOURCETEMP during cleanup)
             engine = BuildEngine(paths, progress_callback, keep_temp_for_debug=self.keep_temp_for_debug, language=tr.current_language)
 
             # Controller Profile Selection (7 Profiles)
@@ -150,6 +179,10 @@ class BatchBuilder(QThread):
                 "passthrough_mode": False,  # Profile 6: -passthrough
                 "horizontal_wiimote": False,  # Profile 5: -horizontal
                 "lr_patch": False,          # Profile 3: -lrpatch
+                # Image paths (processed images in temp)
+                "icon_path": paths.temp_icon,
+                "banner_path": paths.temp_banner,
+                "drc_path": paths.temp_drc,
             }
 
             # Apply selected profile

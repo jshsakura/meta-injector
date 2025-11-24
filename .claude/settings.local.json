@@ -58,7 +58,15 @@
       "Bash(python3:*)",
       "Bash(sort:*)",
       "Bash(del \"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\resources\\core.zip\")",
-      "Bash(jnustool.exe:*)"
+      "Bash(jnustool.exe:*)",
+      "Bash(if [ -d \"C:\\ProgramData\\JNUSToolDownloads\\Rhythm Heaven Fever [VAKE01]\" ])",
+      "Bash(then echo \"Old base files found\")",
+      "Bash(else echo \"No old base files\")",
+      "Bash(fi)",
+      "Bash(if [ -d \"C:/ProgramData/JNUSToolDownloads/0005001010004000\" ])",
+      "Bash(then cp -r \"C:/ProgramData/JNUSToolDownloads/0005001010004000\" \"$TEMP/WiiUVCInjector/BASECACHE/\")",
+      "Bash(if [ -d \"C:/ProgramData/JNUSToolDownloads/0005001010004001\" ])",
+      "Bash(then cp -r \"C:/ProgramData/JNUSToolDownloads/0005001010004001\" \"$TEMP/WiiUVCInjector/BASECACHE/\")"
     ],
     "deny": [],
     "ask": []

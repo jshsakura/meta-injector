@@ -983,6 +983,42 @@ class Translations:
             "en": "Trimming game ISO...",
             "ko": "게임 ISO 트리밍 중..."
         },
+        "progress_initializing": {
+            "en": "Initializing...",
+            "ko": "초기화 중..."
+        },
+        "progress_downloading_base": {
+            "en": "Downloading base files from Nintendo...",
+            "ko": "닌텐도 서버에서 베이스 파일 다운로드 중..."
+        },
+        "progress_generating_meta": {
+            "en": "Generating meta.xml...",
+            "ko": "meta.xml 생성 중..."
+        },
+        "progress_processing_game": {
+            "en": "Processing game file...",
+            "ko": "게임 파일 처리 중..."
+        },
+        "progress_extracting_tik_tmd": {
+            "en": "Extracting TIK and TMD from ISO...",
+            "ko": "ISO에서 TIK 및 TMD 추출 중..."
+        },
+        "progress_packing_wup": {
+            "en": "Packing final WUP...",
+            "ko": "최종 WUP 패킹 중..."
+        },
+        "progress_build_successful": {
+            "en": "Build successful!",
+            "ko": "빌드 성공!"
+        },
+        "progress_copying_iso": {
+            "en": "Copying ISO...",
+            "ko": "ISO 복사 중..."
+        },
+        "progress_preparing_iso": {
+            "en": "Preparing ISO...",
+            "ko": "ISO 준비 중..."
+        },
         "output_folder": {
             "en": "Output Folder:",
             "ko": "출력 폴더:"

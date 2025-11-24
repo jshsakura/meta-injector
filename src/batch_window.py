@@ -199,17 +199,16 @@ class GameLoaderThread(QThread):
         full_id = game_id[:6] if len(game_id) >= 6 else game_id
         system_type = job.game_info.get('system', 'wii')
 
-        # Ensure temp_source directory exists
-        paths.temp_source.mkdir(parents=True, exist_ok=True)
+        # Use permanent cache directory (not temp - survives across builds)
+        cache_dir = paths.images_cache / game_id
+        cache_dir.mkdir(parents=True, exist_ok=True)
 
-        # Check image cache first (using temp_source folder)
-        cache_dir = paths.temp_source / "images" / repo_id
         cached_icon = cache_dir / "icon.png"
         cached_banner = cache_dir / "banner.png"
         cached_drc = cache_dir / "drc.png"
 
         if cached_icon.exists() and cached_banner.exists():
-            print(f"  [CACHE] Found cached images for {repo_id}")
+            print(f"  [CACHE] Found cached images for {game_id}")
             job.icon_path = cached_icon
             job.banner_path = cached_banner
             if cached_drc.exists():
@@ -226,15 +225,15 @@ class GameLoaderThread(QThread):
 
             if local_icon.exists() and local_banner.exists():
                 print(f"  [LOCAL] Found local images for {repo_id}")
-                paths.temp_source.mkdir(parents=True, exist_ok=True)
+                cache_dir.mkdir(parents=True, exist_ok=True)
 
                 # Copy icon
-                icon_path = paths.temp_source / f"icon_{game_id}.png"
+                icon_path = cache_dir / "icon.png"
                 shutil.copy(local_icon, icon_path)
                 job.icon_path = icon_path
 
                 # Copy banner
-                banner_path = paths.temp_source / f"banner_{game_id}.png"
+                banner_path = cache_dir / "banner.png"
                 shutil.copy(local_banner, banner_path)
                 job.banner_path = banner_path
 
@@ -252,8 +251,6 @@ class GameLoaderThread(QThread):
         download_success = False
         from PIL import Image
         import io
-
-        paths.temp_source.mkdir(parents=True, exist_ok=True)
 
         # Try GameTDB first (coverfullHQ for banner, cover for icon crop)
         # Prioritize by region code in game ID
@@ -286,13 +283,13 @@ class GameLoaderThread(QThread):
                         # Resize for banner (1280x720)
                         img = Image.open(io.BytesIO(banner_data))
                         banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
-                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_path = cache_dir / "banner.png"
                         banner_img.save(banner_path)
                         job.banner_path = banner_path
 
                         # Resize for DRC (854x480)
                         drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
-                        drc_path = paths.temp_source / f"drc_{game_id}.png"
+                        drc_path = cache_dir / "drc.png"
                         drc_img.save(drc_path)
                         job.drc_path = drc_path
 
@@ -315,7 +312,7 @@ class GameLoaderThread(QThread):
                         # Resize to icon size (128x128)
                         icon_img = cropped.resize((128, 128), Image.Resampling.LANCZOS)
 
-                        icon_path = paths.temp_source / f"icon_{game_id}.png"
+                        icon_path = cache_dir / "icon.png"
                         icon_img.save(icon_path)
                         job.icon_path = icon_path
 
@@ -344,19 +341,19 @@ class GameLoaderThread(QThread):
                             crop_size = min(width, height)
                             cropped = img.crop((0, 0, width, crop_size))
                             icon_img = cropped.resize((128, 128), Image.Resampling.LANCZOS)
-                            icon_path = paths.temp_source / f"icon_{game_id}.png"
+                            icon_path = cache_dir / "icon.png"
                             icon_img.save(icon_path)
                             job.icon_path = icon_path
 
                             # Resize for banner (1280x720)
                             banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
-                            banner_path = paths.temp_source / f"banner_{game_id}.png"
+                            banner_path = cache_dir / "banner.png"
                             banner_img.save(banner_path)
                             job.banner_path = banner_path
 
                             # Resize for DRC (854x480)
                             drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
-                            drc_path = paths.temp_source / f"drc_{game_id}.png"
+                            drc_path = cache_dir / "drc.png"
                             drc_img.save(drc_path)
                             job.drc_path = drc_path
 
@@ -383,7 +380,7 @@ class GameLoaderThread(QThread):
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         icon_data = response.read()
-                        icon_path = paths.temp_source / f"icon_{game_id}.png"
+                        icon_path = cache_dir / "icon.png"
                         icon_path.write_bytes(icon_data)
                         job.icon_path = icon_path
 
@@ -394,14 +391,14 @@ class GameLoaderThread(QThread):
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         banner_data = response.read()
-                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_path = cache_dir / "banner.png"
                         banner_path.write_bytes(banner_data)
                         job.banner_path = banner_path
 
                         # Resize banner for DRC (854x480)
                         banner_img = Image.open(io.BytesIO(banner_data))
                         drc_img = banner_img.resize((854, 480), Image.Resampling.LANCZOS)
-                        drc_path = paths.temp_source / f"drc_{game_id}.png"
+                        drc_path = cache_dir / "drc.png"
                         drc_img.save(drc_path)
                         job.drc_path = drc_path
 
@@ -419,36 +416,24 @@ class GameLoaderThread(QThread):
             default_banner = resources.resources_dir / "images" / "default_banner.png"
             default_drc = resources.resources_dir / "images" / "default_drc.png"
 
-            paths.temp_source.mkdir(parents=True, exist_ok=True)
+            cache_dir.mkdir(parents=True, exist_ok=True)
 
             if default_icon.exists():
-                icon_path = paths.temp_source / f"icon_{game_id}.png"
+                icon_path = cache_dir / "icon.png"
                 shutil.copy(default_icon, icon_path)
                 job.icon_path = icon_path
 
             if default_banner.exists():
-                banner_path = paths.temp_source / f"banner_{game_id}.png"
+                banner_path = cache_dir / "banner.png"
                 shutil.copy(default_banner, banner_path)
                 job.banner_path = banner_path
 
             if default_drc.exists():
-                drc_path = paths.temp_source / f"drc_{game_id}.png"
+                drc_path = cache_dir / "drc.png"
                 shutil.copy(default_drc, drc_path)
                 job.drc_path = drc_path
-        else:
-            # Save to cache for future use
-            try:
-                cache_dir.mkdir(parents=True, exist_ok=True)
-                if job.icon_path and job.icon_path.exists():
-                    shutil.copy(job.icon_path, cached_icon)
-                if job.banner_path and job.banner_path.exists():
-                    shutil.copy(job.banner_path, cached_banner)
-                if job.drc_path and job.drc_path.exists():
-                    shutil.copy(job.drc_path, cached_drc)
-                print(f"  [CACHE] Saved images to cache for {repo_id}")
-            except Exception as e:
-                print(f"  [CACHE] Failed to cache images: {e}")
 
+        # Images are already saved to cache_dir during download, no need to copy again
         return True
 
     def fetch_gametdb_title(self, job: BatchBuildJob, game_id: str, ssl_context):
@@ -667,11 +652,12 @@ class SimpleKeysDialog(QDialog):
 class EditGameDialog(QDialog):
     """Dialog to edit individual game metadata."""
 
-    def __init__(self, job: BatchBuildJob, parent=None):
+    def __init__(self, job: BatchBuildJob, available_bases: dict = None, parent=None):
         super().__init__(parent)
         # Remove ? button from title bar
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.job = job
+        self.available_bases = available_bases or {}
         self.init_ui()
 
     def init_ui(self):
@@ -747,13 +733,35 @@ class EditGameDialog(QDialog):
         title_layout.addWidget(self.title_input)
         layout.addLayout(title_layout)
 
-        # Title ID
+        # Title ID (read-only, for reference/copy only)
         id_layout = QHBoxLayout()
         title_id_text = "타이틀 ID:" if tr.current_language == "ko" else "Title ID:"
         id_layout.addWidget(QLabel(title_id_text))
         self.id_input = QLineEdit(self.job.title_id)
+        self.id_input.setReadOnly(True)  # Make read-only (can still copy text)
+        self.id_input.setStyleSheet("background-color: #f5f5f5;")  # Visual indicator
         id_layout.addWidget(self.id_input)
         layout.addLayout(id_layout)
+
+        # Base ROM Selection (only if multiple bases available)
+        if self.available_bases:
+            base_layout = QHBoxLayout()
+            base_label_text = "베이스 롬:" if tr.current_language == "ko" else "Base ROM:"
+            base_layout.addWidget(QLabel(base_label_text))
+            self.base_combo = QComboBox()
+
+            # Add available bases to combo box
+            for base_name in self.available_bases.keys():
+                self.base_combo.addItem(base_name)
+
+            # Set current selection (default to current host_game or first available)
+            if self.job.host_game and self.job.host_game in self.available_bases:
+                self.base_combo.setCurrentText(self.job.host_game)
+
+            base_layout.addWidget(self.base_combo)
+            layout.addLayout(base_layout)
+        else:
+            self.base_combo = None
 
         # Buttons
         btn_layout = QHBoxLayout()
@@ -794,7 +802,13 @@ class EditGameDialog(QDialog):
     def save(self):
         """Save changes."""
         self.job.title_name = self.title_input.text()
-        self.job.title_id = self.id_input.text()
+        # Title ID is read-only, don't save it
+        # self.job.title_id = self.id_input.text()
+
+        # Save selected base ROM if combo box exists
+        if self.base_combo:
+            self.job.host_game = self.base_combo.currentText()
+
         self.accept()
 
 
@@ -954,7 +968,9 @@ class BatchWindow(QMainWindow):
         self.jobs = []
         self.batch_builder = None
         self.loader_thread = None
+        self.available_bases = {}  # Will be populated from settings
         self.init_ui()
+        self.load_available_bases()  # Load on startup
 
     def init_ui(self):
         """Initialize UI."""
@@ -1498,7 +1514,7 @@ class BatchWindow(QMainWindow):
         for row in range(self.table.rowCount()):
             if self.table.cellWidget(row, 6) == button:
                 if row < len(self.jobs):
-                    dialog = EditGameDialog(self.jobs[row], self)
+                    dialog = EditGameDialog(self.jobs[row], self.available_bases, self)
                     if dialog.exec_():
                         # 편집 다이얼로그에서 저장 후 테이블 업데이트
                         # Column 0: Update game title in the combined widget
@@ -1637,6 +1653,11 @@ class BatchWindow(QMainWindow):
             'Super Mario Galaxy 2 (EUR)': title_key_galaxy
         }
 
+        # Store available bases (only those with valid title keys)
+        self.available_bases = {
+            name: key for name, key in title_keys.items() if key
+        }
+
         self.batch_builder = BatchBuilder(
             self.jobs,
             common_key,
@@ -1728,7 +1749,38 @@ class BatchWindow(QMainWindow):
     def show_settings(self):
         """Show settings dialog for encryption keys."""
         dialog = SimpleKeysDialog(self)
-        dialog.exec_()
+        if dialog.exec_() == QDialog.Accepted:
+            # Reload available bases after settings change
+            self.load_available_bases()
+
+    def load_available_bases(self):
+        """Load available bases from settings file."""
+        import json
+        from pathlib import Path
+
+        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        if not settings_file.exists():
+            return
+
+        try:
+            with open(settings_file, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+
+            title_keys = {
+                'Rhythm Heaven Fever (USA)': settings.get('title_key_rhythm_heaven', ''),
+                'Xenoblade Chronicles (USA)': settings.get('title_key_xenoblade', ''),
+                'Super Mario Galaxy 2 (EUR)': settings.get('title_key_galaxy2', '')
+            }
+
+            # Store only bases with valid title keys
+            self.available_bases = {
+                name: key for name, key in title_keys.items() if key
+            }
+
+            print(f"[DEBUG] Loaded available bases: {list(self.available_bases.keys())}")
+
+        except Exception as e:
+            print(f"[WARN] Failed to load available bases: {e}")
 
     def show_compatibility_list(self):
         """Show compatibility list dialog."""

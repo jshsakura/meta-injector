@@ -20,14 +20,18 @@ class PathManager:
         # Base temp directory (system temp - TeconMoon/UWUVCI style)
         self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiUVCInjector"
 
-        # Source temp directory
+        # Source temp directory (빌드마다 삭제)
         self.temp_source = self.temp_root / "SOURCETEMP"
 
-        # Build directory
+        # Build directory (빌드마다 삭제)
         self.temp_build = self.temp_root / "BUILDDIR"
 
-        # Tools directory - now in temp
+        # Tools directory (빌드마다 삭제)
         self.temp_tools = self.temp_root / "TOOLDIR"
+
+        # Cache directories (빌드 시 삭제하지 않음 - 영구 캐시)
+        self.images_cache = self.temp_root / "IMAGECACHE"
+        self.base_cache = self.temp_root / "BASECACHE"
 
         # Specific source file paths
         self.temp_icon = self.temp_source / "iconTex.png"
@@ -36,16 +40,8 @@ class PathManager:
         self.temp_logo = self.temp_source / "bootLogoTex.png"
         self.temp_sound = self.temp_source / "bootSound.wav"
 
-        # JNUSTool downloads - try multiple locations
-        if os.name == 'nt':
-            # Windows: CommonApplicationData
-            self.jnustool_downloads = Path(os.environ.get('PROGRAMDATA', 'C:\\ProgramData')) / "JNUSToolDownloads"
-        else:
-            # Linux/Mac: user's home
-            self.jnustool_downloads = Path.home() / ".JNUSToolDownloads"
-
-        # Project-local base files cache (more reliable)
-        self.base_files_cache = self.project_root / "base_files"
+        # Legacy compatibility (일부 코드에서 사용할 수 있음)
+        self.jnustool_downloads = self.base_cache
 
     def create_temp_directories(self):
         """Create all necessary temporary directories."""

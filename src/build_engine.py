@@ -8,6 +8,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Callable, Optional
+from .translations import tr
 
 
 class BuildEngine:
@@ -176,14 +177,17 @@ class BuildEngine:
 
         # TeconMoon uses the downloaded base directly from JNUSToolDownloads
         jnus_downloads = self.paths.jnustool_downloads
-        rhythm_heaven = jnus_downloads / "00050000101b0700"
+        rhythm_heaven = jnus_downloads / "Rhythm Heaven Fever [VAKE01]"
 
         if not rhythm_heaven.exists():
             print(f"Error: Base files not found at {rhythm_heaven}")
+            print(f"Expected location: {jnus_downloads}")
+            print("Please ensure base files were downloaded correctly.")
             return False
 
+        print(f"[COPY] Copying base files from {rhythm_heaven}")
         shutil.copytree(rhythm_heaven, self.paths.temp_build, dirs_exist_ok=True)
-        print("Base files copied successfully")
+        print("[OK] Base files copied successfully")
         return True
 
     def generate_random_ids(self) -> tuple:
@@ -422,17 +426,30 @@ class BuildEngine:
                 return False
 
         # Move converted TGA files to meta directory
-        for tga_file in temp_img_dir.glob("*.tga"):
+        tga_files = list(temp_img_dir.glob("*.tga"))
+        if not tga_files:
+            print("[ERROR] No TGA files generated! Check png2tgacmd.exe")
+            return False
+
+        for tga_file in tga_files:
             dest = meta_dir / tga_file.name
             if dest.exists():
                 dest.unlink()
             shutil.move(str(tga_file), str(dest))
-            print(f"Moved {tga_file.name} to meta/")
+            print(f"✓ Moved {tga_file.name} to meta/ (size: {dest.stat().st_size} bytes)")
 
         # Clean up temp directory
         shutil.rmtree(temp_img_dir)
 
-        print("Images converted to TGA")
+        # Verify required TGA files exist
+        required_tgas = ["iconTex.tga", "bootTvTex.tga", "bootDrcTex.tga"]
+        for tga_name in required_tgas:
+            tga_path = meta_dir / tga_name
+            if not tga_path.exists():
+                print(f"[ERROR] Required TGA file missing: {tga_name}")
+                return False
+
+        print("✓ Images converted to TGA successfully")
         return True
 
     def process_game_file(self, game_path: Path, disable_trimming: bool = False) -> Path:
@@ -615,7 +632,7 @@ class BuildEngine:
         print("NFS conversion complete")
         return True
 
-    def pack_final(self, output_dir: Path, common_key: str, game_name: str) -> bool:
+    def pack_final(self, output_dir: Path, common_key: str, game_id: str) -> bool:
         """
         Pack final WUP using NUSPacker (uses generated random IDs).
         """
@@ -631,9 +648,8 @@ class BuildEngine:
         if not title_id or not product_code:
             raise RuntimeError("Title ID and Product Code not generated")
 
-        # Create safe output path with game name and generated IDs
-        safe_name = "".join(c for c in game_name if c.isalnum() or c in " -_()").strip()
-        final_output = output_dir / f"{safe_name}_WUP-N-{product_code}_{title_id}"
+        # Use game ID as folder name (short and simple)
+        final_output = output_dir / game_id
 
         args = f'-in "{build_dir}" -out "{final_output}" -encryptKeyWith {common_key}'
 
@@ -667,11 +683,21 @@ class BuildEngine:
             print("="*80 + "\n")
 
             # Clean temp directories first (important for consecutive builds)
+            # But preserve cache folders and SOURCETEMP (images already prepared there)
             if self.paths.temp_root.exists():
                 print("[CLEANUP] Removing previous temp files...")
-                shutil.rmtree(self.paths.temp_root, ignore_errors=True)
+                preserve_folders = {"IMAGECACHE", "BASECACHE", "SOURCETEMP"}
+                for item in self.paths.temp_root.iterdir():
+                    if item.name not in preserve_folders:  # Preserve cache and source folders
+                        if item.is_dir():
+                            shutil.rmtree(item, ignore_errors=True)
+                        else:
+                            item.unlink(missing_ok=True)
 
             self.paths.create_temp_directories()
+            # Ensure cache directories exist
+            self.paths.images_cache.mkdir(parents=True, exist_ok=True)
+            self.paths.base_cache.mkdir(parents=True, exist_ok=True)
 
             # Copy core tools to temp (fresh copy for each build)
             print("[SETUP] Copying core tools...")
@@ -687,6 +713,25 @@ class BuildEngine:
 
             # Process game FIRST (need ISO to read game code for meta.xml)
             processed_iso = self.process_game_file(game_path, options.get("disable_trimming", False))
+
+            # Extract game ID from ISO for output folder name
+            with open(processed_iso, 'rb') as f:
+                game_id = f.read(6).decode('ascii', errors='ignore')  # e.g., RUUK01
+
+            # Add prefix based on controller option
+            pad_option = options.get("pad_option", "none")
+            prefix_map = {
+                "no_gamepad": "NOGP_",
+                "none": "GP_",
+                "gamepad_lr": "GPLR_",
+                "wiimote": "WM_",
+                "horizontal_wiimote": "HWM_",
+                "passthrough": "PT_",
+                "galaxy_allstars": "GALA_",
+                "galaxy_nvidia": "GALN_"
+            }
+            prefix = prefix_map.get(pad_option, "")
+            game_id_with_prefix = f"{prefix}{game_id}"
 
             # Generate XML (reads game code from processed ISO, generates random IDs)
             drc_use = "65537" if options.get("pad_option", "no_gamepad") != "no_gamepad" else "1"
@@ -710,8 +755,8 @@ class BuildEngine:
             if not self.convert_iso_to_nfs(processed_iso, options.get("pad_option", "no_gamepad")):
                 raise RuntimeError("Failed to convert to NFS")
 
-            # Pack final (uses generated random IDs)
-            if not self.pack_final(output_dir, common_key, title_name):
+            # Pack final (uses game ID with prefix as folder name)
+            if not self.pack_final(output_dir, common_key, game_id_with_prefix):
                 raise RuntimeError("Failed to pack WUP")
 
             self.update_progress(100, "Build successful!")
