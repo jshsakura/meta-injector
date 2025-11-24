@@ -84,36 +84,22 @@ class GameLoaderThread(QThread):
                     import traceback
                     traceback.print_exc()
 
-            # Second pass: Download icons in parallel
+            # Second pass: Download icons sequentially (one at a time)
             if self.auto_download_icons and jobs_to_process:
-                completed = 0
+                for idx, job in jobs_to_process:
+                    if self.should_stop:
+                        break
 
-                with ThreadPoolExecutor(max_workers=8) as executor:
-                    # Submit all download tasks
-                    future_to_job = {
-                        executor.submit(self.download_icon_for_job, job): (idx, job)
-                        for idx, job in jobs_to_process
-                    }
+                    # Download icon for this job
+                    try:
+                        self.download_icon_for_job(job)
+                    except Exception as e:
+                        print(f"[ERROR] Download failed for {job.game_path.name}: {e}")
 
-                    # Process completed tasks
-                    for future in as_completed(future_to_job):
-                        if self.should_stop:
-                            executor.shutdown(wait=False, cancel_futures=True)
-                            break
-
-                        idx, job = future_to_job[future]
-                        completed += 1
-                        self.progress_updated.emit(completed, len(jobs_to_process))
-
-                        try:
-                            future.result()  # Get result to catch exceptions
-                            self.game_loaded.emit(job)
-                            loaded_count += 1
-                        except Exception as e:
-                            print(f"[ERROR] Download failed for {job.game_path.name}: {e}")
-                            # Still emit job even if download failed
-                            self.game_loaded.emit(job)
-                            loaded_count += 1
+                    # Emit job after download completes
+                    self.progress_updated.emit(idx + 1, len(jobs_to_process))
+                    self.game_loaded.emit(job)
+                    loaded_count += 1
             else:
                 # No icon download, just emit jobs
                 for idx, job in jobs_to_process:
