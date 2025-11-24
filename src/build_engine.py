@@ -24,9 +24,21 @@ class BuildEngine:
         self.language = language
         self.generated_title_id = None
         self.generated_product_code = None
+        self.should_stop = False
+
+    def stop(self):
+        """Request build to stop."""
+        self.should_stop = True
+        print("[STOP] Build cancellation requested")
+
+    def check_stop(self):
+        """Check if build should stop and raise exception if so."""
+        if self.should_stop:
+            raise RuntimeError("Build cancelled by user")
 
     def update_progress(self, percent: int, message: str):
         """Update progress callback."""
+        self.check_stop()  # Check for cancellation
         if self.progress_callback:
             self.progress_callback(percent, message)
 
@@ -88,7 +100,7 @@ class BuildEngine:
         Download base files using JNUSTool (TeconMoon style - downloads individual files).
         Uses CommonApplicationData path like TeconMoon.
         """
-        self.update_progress(10, "Checking base files...")
+        self.update_progress(10, tr.get("progress_checking_base_files"))
 
         # Use the same path as TeconMoon: %PROGRAMDATA%\JNUSToolDownloads\
         jnus_downloads = self.paths.jnustool_downloads
@@ -115,7 +127,7 @@ class BuildEngine:
 
         # Need to download - setup JNUSTool
         print("[DOWNLOAD] Base files not found, downloading from Nintendo...")
-        self.update_progress(15, "Downloading base files from Nintendo...")
+        self.update_progress(15, tr.get("progress_downloading_base"))
 
         jnustool_dir = self.paths.temp_tools / "JAR"
         config_path = jnustool_dir / "config"
@@ -173,7 +185,7 @@ class BuildEngine:
 
     def copy_base_files(self) -> bool:
         """Copy base files from JNUSToolDownloads to build directory (TeconMoon style)."""
-        self.update_progress(45, "Copying base files...")
+        self.update_progress(45, tr.get("progress_copying_base_files"))
 
         # TeconMoon uses the downloaded base directly from JNUSToolDownloads
         jnus_downloads = self.paths.jnustool_downloads
@@ -211,7 +223,7 @@ class BuildEngine:
         """
         Generate meta.xml (UWUVCI style - reads game code from ISO, random IDs).
         """
-        self.update_progress(50, "Generating meta.xml...")
+        self.update_progress(50, tr.get("progress_generating_meta"))
 
         import html
         safe_title = html.escape(title_name.strip())
@@ -390,7 +402,7 @@ class BuildEngine:
         Convert PNG images to TGA using png2tgacmd.exe (TeconMoon style).
         Uses temp directory to avoid overwriting source images.
         """
-        self.update_progress(52, "Converting images to TGA...")
+        self.update_progress(52, tr.get("progress_converting_images"))
 
         png_tool = self.paths.temp_tools / "IMG" / "png2tgacmd.exe"
         meta_dir = self.paths.temp_build / "meta"
@@ -452,18 +464,59 @@ class BuildEngine:
         print("✓ Images converted to TGA successfully")
         return True
 
-    def process_game_file(self, game_path: Path, disable_trimming: bool = False) -> Path:
+    def apply_galaxy_patch(self, extract_dir: Path, game_id: str, galaxy_variant: str) -> bool:
+        """
+        Apply Galaxy GCT patch to main.dol using wstrt.
+
+        Args:
+            extract_dir: Extracted game directory
+            game_id: Game ID (e.g., RMGE01)
+            galaxy_variant: 'allstars' or 'nvidia'
+
+        Returns:
+            True if successful
+        """
+        print(f"[GALAXY] Applying {galaxy_variant} patch to {game_id}...")
+
+        # Find GCT file
+        variant_name = "AllStars" if galaxy_variant == "allstars" else "Nvidia"
+        gct_filename = f"{game_id}-{variant_name}.gct"
+        gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+
+        if not gct_path.exists():
+            # Try without deflicker variant
+            print(f"[GALAXY] GCT not found: {gct_path}")
+            return False
+
+        # Path to main.dol
+        main_dol = extract_dir / "sys" / "main.dol"
+        if not main_dol.exists():
+            print(f"[GALAXY] main.dol not found: {main_dol}")
+            return False
+
+        # Apply patch using wstrt
+        wstrt_exe = self.paths.temp_tools / "WIT" / "wstrt.exe"
+        args = f'patch "{main_dol}" --add-section "{gct_path}"'
+
+        if not self.run_tool(wstrt_exe, args):
+            print("[GALAXY] Failed to apply GCT patch")
+            return False
+
+        print(f"✓ Galaxy {variant_name} patch applied successfully")
+        return True
+
+    def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None) -> Path:
         """
         Process game file (WBFS conversion, trimming) - UWUVCI style with proper WIT options.
         """
-        self.update_progress(60, "Processing game file...")
+        self.update_progress(60, tr.get("progress_processing_game"))
 
         # Always copy/convert to pre.iso first (UWUVCI style)
         pre_iso = self.paths.temp_source / "pre.iso"
 
         # Convert WBFS to ISO if needed
         if str(game_path).lower().endswith('.wbfs'):
-            self.update_progress(62, "Converting WBFS to ISO...")
+            self.update_progress(62, tr.get("progress_converting_wbfs"))
             wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
             # UWUVCI uses WIT for WBFS conversion
             args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
@@ -471,7 +524,7 @@ class BuildEngine:
                 raise RuntimeError("WBFS conversion failed")
         else:
             # Copy ISO to pre.iso
-            self.update_progress(62, "Copying ISO...")
+            self.update_progress(62, tr.get("progress_copying_iso"))
             shutil.copy(game_path, pre_iso)
 
         wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
@@ -482,12 +535,21 @@ class BuildEngine:
 
         # Trim ISO if not disabled (UWUVCI style)
         if not disable_trimming:
-            self.update_progress(65, "Trimming ISO...")
+            self.update_progress(65, tr.get("progress_trimming_iso"))
 
             # Extract with --psel WHOLE (UWUVCI trim mode)
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel WHOLE -vv1'
             if not self.run_tool(wit_exe, args):
                 raise RuntimeError("WIT extract failed")
+
+            # Apply Galaxy patch if specified
+            if galaxy_patch:
+                # Read game ID from extracted disc
+                disc_header = extract_dir / "sys" / "boot.bin"
+                if disc_header.exists():
+                    with open(disc_header, 'rb') as f:
+                        game_id = f.read(6).decode('ascii', errors='ignore')
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
 
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
@@ -498,12 +560,21 @@ class BuildEngine:
             processed_path = game_iso
         else:
             # No trim: extract data only, then repack with --psel WHOLE
-            self.update_progress(65, "Preparing ISO...")
+            self.update_progress(65, tr.get("progress_preparing_iso"))
 
             # Extract
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel data -vv1'
             if not self.run_tool(wit_exe, args):
                 raise RuntimeError("WIT extract failed")
+
+            # Apply Galaxy patch if specified
+            if galaxy_patch:
+                # Read game ID from extracted disc
+                disc_header = extract_dir / "sys" / "boot.bin"
+                if disc_header.exists():
+                    with open(disc_header, 'rb') as f:
+                        game_id = f.read(6).decode('ascii', errors='ignore')
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
 
             # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
             game_iso = self.paths.temp_source / "game.iso"
@@ -527,7 +598,7 @@ class BuildEngine:
         Extract TIK and TMD from ISO and copy to code folder (UWUVCI style).
         CRITICAL: Without this, WiiU shows "Corrupted Software" error!
         """
-        self.update_progress(72, "Extracting TIK and TMD from ISO...")
+        self.update_progress(72, tr.get("progress_extracting_tik_tmd"))
 
         wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
         tiktmd_dir = self.paths.temp_source / "TIKTMD"
@@ -585,7 +656,7 @@ class BuildEngine:
         """
         Convert ISO to NFS format using nfs2iso2nfs.exe (TeconMoon style).
         """
-        self.update_progress(70, "Converting ISO to NFS...")
+        self.update_progress(70, tr.get("progress_converting_nfs"))
 
         nfs_tool = self.paths.temp_tools / "EXE" / "nfs2iso2nfs.exe"
         content_dir = self.paths.temp_build / "content"
@@ -599,6 +670,9 @@ class BuildEngine:
             args += " -wiimote"
         elif pad_option == "horizontal_wiimote":
             args += " -horizontal"
+        elif pad_option in ("galaxy_allstars", "galaxy_nvidia"):
+            # Galaxy patches use Classic Controller emulation
+            args += " -instantcc"
         else:
             args += " -instantcc"
 
@@ -636,7 +710,7 @@ class BuildEngine:
         """
         Pack final WUP using NUSPacker (uses generated random IDs).
         """
-        self.update_progress(85, "Packing final WUP...")
+        self.update_progress(85, tr.get("progress_packing_wup"))
 
         nuspacker_exe = self.paths.temp_tools / "JAR" / "nuspacker.exe"
         build_dir = self.paths.temp_build
@@ -677,18 +751,18 @@ class BuildEngine:
         try:
             # Setup
             self.system_type = system_type  # Store for use in other methods
-            self.update_progress(0, "Initializing...")
+            self.update_progress(0, tr.get("progress_initializing"))
             print("\n" + "="*80)
             print(f"WiiVC Injector - Enhanced Build Process ({'GameCube' if system_type == 'gc' else 'Wii'})")
             print("="*80 + "\n")
 
             # Clean temp directories first (important for consecutive builds)
-            # But preserve cache folders and SOURCETEMP (images already prepared there)
+            # Only preserve permanent cache folders (IMAGECACHE, BASECACHE)
             if self.paths.temp_root.exists():
                 print("[CLEANUP] Removing previous temp files...")
-                preserve_folders = {"IMAGECACHE", "BASECACHE", "SOURCETEMP"}
+                preserve_folders = {"IMAGECACHE", "BASECACHE"}
                 for item in self.paths.temp_root.iterdir():
-                    if item.name not in preserve_folders:  # Preserve cache and source folders
+                    if item.name not in preserve_folders:
                         if item.is_dir():
                             shutil.rmtree(item, ignore_errors=True)
                         else:
@@ -698,6 +772,24 @@ class BuildEngine:
             # Ensure cache directories exist
             self.paths.images_cache.mkdir(parents=True, exist_ok=True)
             self.paths.base_cache.mkdir(parents=True, exist_ok=True)
+
+            # Copy images from cache to temp AFTER cleanup
+            print("[IMAGE] Copying images from cache...")
+            cache_icon = options.get("cache_icon_path")
+            cache_banner = options.get("cache_banner_path")
+            cache_drc = options.get("cache_drc_path")
+
+            if cache_icon and cache_icon.exists():
+                shutil.copy2(cache_icon, self.paths.temp_icon)
+                print(f"  ✓ Icon copied: {cache_icon} -> {self.paths.temp_icon}")
+
+            if cache_banner and cache_banner.exists():
+                shutil.copy2(cache_banner, self.paths.temp_banner)
+                print(f"  ✓ Banner copied: {cache_banner} -> {self.paths.temp_banner}")
+
+            if cache_drc and cache_drc.exists():
+                shutil.copy2(cache_drc, self.paths.temp_drc)
+                print(f"  ✓ DRC copied: {cache_drc} -> {self.paths.temp_drc}")
 
             # Copy core tools to temp (fresh copy for each build)
             print("[SETUP] Copying core tools...")
@@ -712,7 +804,11 @@ class BuildEngine:
                 raise RuntimeError("Failed to copy base files")
 
             # Process game FIRST (need ISO to read game code for meta.xml)
-            processed_iso = self.process_game_file(game_path, options.get("disable_trimming", False))
+            processed_iso = self.process_game_file(
+                game_path,
+                options.get("disable_trimming", False),
+                options.get("galaxy_patch")
+            )
 
             # Extract game ID from ISO for output folder name
             with open(processed_iso, 'rb') as f:
@@ -759,7 +855,7 @@ class BuildEngine:
             if not self.pack_final(output_dir, common_key, game_id_with_prefix):
                 raise RuntimeError("Failed to pack WUP")
 
-            self.update_progress(100, "Build successful!")
+            self.update_progress(100, tr.get("progress_build_successful"))
             print("\n" + "="*80)
             print("✓ BUILD SUCCESSFUL!")
             print("="*80)

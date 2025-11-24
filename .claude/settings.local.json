@@ -66,7 +66,9 @@
       "Bash(if [ -d \"C:/ProgramData/JNUSToolDownloads/0005001010004000\" ])",
       "Bash(then cp -r \"C:/ProgramData/JNUSToolDownloads/0005001010004000\" \"$TEMP/WiiUVCInjector/BASECACHE/\")",
       "Bash(if [ -d \"C:/ProgramData/JNUSToolDownloads/0005001010004001\" ])",
-      "Bash(then cp -r \"C:/ProgramData/JNUSToolDownloads/0005001010004001\" \"$TEMP/WiiUVCInjector/BASECACHE/\")"
+      "Bash(then cp -r \"C:/ProgramData/JNUSToolDownloads/0005001010004001\" \"$TEMP/WiiUVCInjector/BASECACHE/\")",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\WIT\\wit.exe\" help --gct)",
+      "Bash(\"C:\\Users\\WIN11\\Documents\\workspace\\WiiU-Expedition-VC-Injector\\core\\WIT\\wit.exe\" help)"
     ],
     "deny": [],
     "ask": []

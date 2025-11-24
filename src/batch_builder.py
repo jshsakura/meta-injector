@@ -46,10 +46,14 @@ class BatchBuilder(QThread):
         self.auto_icons = auto_icons
         self.keep_temp_for_debug = keep_temp_for_debug
         self.should_stop = False
+        self.current_engine = None  # Track current BuildEngine for cancellation
 
     def stop(self):
         """Stop batch processing."""
         self.should_stop = True
+        # Also stop the current build engine if running
+        if self.current_engine:
+            self.current_engine.stop()
 
     def run(self):
         """Process all jobs in queue."""
@@ -123,47 +127,73 @@ class BatchBuilder(QThread):
                 overall_percent = int((idx * 100 / total) + (percent / total))
                 self.progress_updated.emit(overall_percent, 100, f"[{idx+1}/{total}] {message}")
 
-            # Process images BEFORE BuildEngine init (so they don't get deleted by cleanup)
-            # Ensure temp directories exist
-            paths.temp_root.mkdir(parents=True, exist_ok=True)
-            paths.temp_source.mkdir(parents=True, exist_ok=True)
+            # Process images to cache BEFORE BuildEngine (so they survive cleanup)
+            print(f"[IMAGE] Processing images to cache for {job.title_name}")
 
-            print(f"[IMAGE] Processing images for {job.title_name}")
+            # Get game ID for cache folder
+            game_id = job.game_info.get('game_id', 'unknown')
+
+            # Determine badge type for galaxy patches
+            badge_type = None
+            if job.pad_option == "galaxy_allstars":
+                badge_type = "galaxy_allstars"
+            elif job.pad_option == "galaxy_nvidia":
+                badge_type = "galaxy_nvidia"
+
+            # Cache paths for this game
+            cache_icon = None
+            cache_banner = None
+            cache_drc = None
+
             if job.icon_path and job.icon_path.exists():
-                print(f"  Icon: {job.icon_path} -> {paths.temp_icon}")
-                image_processor.process_icon(job.icon_path, paths.temp_icon)
-                if paths.temp_icon.exists():
-                    print(f"  ✓ Icon ready: {paths.temp_icon.stat().st_size} bytes")
+                cache_icon = paths.images_cache / game_id / "iconTex.png"
+                cache_icon.parent.mkdir(parents=True, exist_ok=True)
+                print(f"  Icon: {job.icon_path} -> {cache_icon}")
+                if badge_type:
+                    print(f"  Adding {badge_type} badge to icon")
+                image_processor.process_icon(job.icon_path, cache_icon, badge_type=badge_type)
+                if cache_icon.exists():
+                    print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
                 else:
                     print(f"  ✗ Icon processing failed!")
+                    cache_icon = None
             else:
                 print(f"  ✗ Icon not found: {job.icon_path}")
 
             if job.banner_path and job.banner_path.exists():
-                print(f"  Banner: {job.banner_path} -> {paths.temp_banner}")
-                image_processor.process_banner(job.banner_path, paths.temp_banner)
-                if paths.temp_banner.exists():
-                    print(f"  ✓ Banner ready: {paths.temp_banner.stat().st_size} bytes")
+                cache_banner = paths.images_cache / game_id / "bootTvTex.png"
+                cache_banner.parent.mkdir(parents=True, exist_ok=True)
+                print(f"  Banner: {job.banner_path} -> {cache_banner}")
+                image_processor.process_banner(job.banner_path, cache_banner)
+                if cache_banner.exists():
+                    print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
                 else:
                     print(f"  ✗ Banner processing failed!")
+                    cache_banner = None
             else:
                 print(f"  ✗ Banner not found: {job.banner_path}")
 
             # Use separate DRC if available, otherwise generate from banner
             if job.drc_path and job.drc_path.exists():
-                print(f"  DRC: {job.drc_path} -> {paths.temp_drc}")
-                image_processor.process_drc(job.drc_path, paths.temp_drc)
+                cache_drc = paths.images_cache / game_id / "bootDrcTex.png"
+                cache_drc.parent.mkdir(parents=True, exist_ok=True)
+                print(f"  DRC: {job.drc_path} -> {cache_drc}")
+                image_processor.process_drc(job.drc_path, cache_drc)
             elif job.banner_path and job.banner_path.exists():
-                print(f"  DRC: {job.banner_path} -> {paths.temp_drc}")
-                image_processor.process_drc(job.banner_path, paths.temp_drc)
+                cache_drc = paths.images_cache / game_id / "bootDrcTex.png"
+                cache_drc.parent.mkdir(parents=True, exist_ok=True)
+                print(f"  DRC: {job.banner_path} -> {cache_drc}")
+                image_processor.process_drc(job.banner_path, cache_drc)
 
-            if paths.temp_drc.exists():
-                print(f"  ✓ DRC ready: {paths.temp_drc.stat().st_size} bytes")
+            if cache_drc and cache_drc.exists():
+                print(f"  ✓ DRC cached: {cache_drc.stat().st_size} bytes")
             else:
                 print(f"  ✗ DRC processing failed!")
+                cache_drc = None
 
-            # Now create BuildEngine (it will preserve SOURCETEMP during cleanup)
+            # Create BuildEngine (it will clean temp directories)
             engine = BuildEngine(paths, progress_callback, keep_temp_for_debug=self.keep_temp_for_debug, language=tr.current_language)
+            self.current_engine = engine  # Track for cancellation
 
             # Controller Profile Selection (7 Profiles)
             # Profile 1 - no_gamepad: 미적용 (Wii 리모컨만) → -nocc
@@ -179,10 +209,16 @@ class BatchBuilder(QThread):
                 "passthrough_mode": False,  # Profile 6: -passthrough
                 "horizontal_wiimote": False,  # Profile 5: -horizontal
                 "lr_patch": False,          # Profile 3: -lrpatch
-                # Image paths (processed images in temp)
+                # Cache image paths (BuildEngine will copy from cache to temp)
+                "cache_icon_path": cache_icon,
+                "cache_banner_path": cache_banner,
+                "cache_drc_path": cache_drc,
+                # Temp image paths (for BuildEngine to use)
                 "icon_path": paths.temp_icon,
                 "banner_path": paths.temp_banner,
                 "drc_path": paths.temp_drc,
+                # Controller option for folder naming
+                "pad_option": job.pad_option,
             }
 
             # Apply selected profile
