@@ -9,8 +9,8 @@ src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
 from PyQt5.QtWidgets import QApplication
-from wiivc_injector.batch_window import BatchWindow
-from wiivc_injector.translations import tr
+from src.batch_window import BatchWindow
+from src.translations import tr
 
 def main():
     """Launch batch mode window."""

@@ -14,10 +14,10 @@ class PathManager:
             # Running as compiled exe
             self.project_root = Path(sys.executable).parent
         else:
-            # Running as script
-            self.project_root = Path(__file__).parent.parent.parent
+            # Running as script (src/paths.py -> src/ -> project_root/)
+            self.project_root = Path(__file__).parent.parent
 
-        # Base temp directory
+        # Base temp directory (system temp - TeconMoon/UWUVCI style)
         self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiUVCInjector"
 
         # Source temp directory
@@ -28,9 +28,6 @@ class PathManager:
 
         # Tools directory - now in temp
         self.temp_tools = self.temp_root / "TOOLDIR"
-
-        # Download cache in temp
-        self.temp_downloads = self.temp_root / "DOWNLOADS"
 
         # Specific source file paths
         self.temp_icon = self.temp_source / "iconTex.png"
@@ -56,8 +53,7 @@ class PathManager:
         self.temp_source.mkdir(parents=True, exist_ok=True)
         self.temp_build.mkdir(parents=True, exist_ok=True)
         self.temp_tools.mkdir(parents=True, exist_ok=True)
-        self.temp_downloads.mkdir(parents=True, exist_ok=True)
-        self.jnustool_downloads.mkdir(parents=True, exist_ok=True)
+        # JNUSToolDownloads는 CommonApplicationData에 있으므로 여기서 생성 안함
 
     def cleanup_temp(self):
         """Clean up temporary directories."""

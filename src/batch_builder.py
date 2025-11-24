@@ -197,14 +197,12 @@ class BatchBuilder(QThread):
 
             success = engine.build(
                 game_path=job.game_path,
-                system_type=job.game_info.get('system', 'wii'),
                 output_dir=self.output_dir,
                 common_key=self.common_key,
                 title_key=title_key,
                 title_name=job.title_name,
-                title_id=job.title_id,
-                game_id=job.game_info.get('game_id', ''),
-                options=options
+                options=options,
+                system_type=job.game_info.get('system', 'wii')
             )
 
             return success

@@ -192,14 +192,18 @@ class GameLoaderThread(QThread):
 
         game_id = job.game_info.get('game_id', '')
         if not game_id or len(game_id) < 4:
+            print(f"  [SKIP] Invalid game ID: {game_id}")
             return False
 
         repo_id = game_id[:4]
         full_id = game_id[:6] if len(game_id) >= 6 else game_id
         system_type = job.game_info.get('system', 'wii')
 
-        # Check image cache first (now using session-specific temp downloads folder)
-        cache_dir = paths.temp_downloads / "images" / repo_id
+        # Ensure temp_source directory exists
+        paths.temp_source.mkdir(parents=True, exist_ok=True)
+
+        # Check image cache first (using temp_source folder)
+        cache_dir = paths.temp_source / "images" / repo_id
         cached_icon = cache_dir / "icon.png"
         cached_banner = cache_dir / "banner.png"
         cached_drc = cache_dir / "drc.png"
@@ -1038,8 +1042,9 @@ class BatchWindow(QMainWindow):
 
         keep_temp_text = "임시 파일 유지" if tr.current_language == "ko" else "Keep Temp Files"
         self.keep_temp_check = QCheckBox(keep_temp_text)
-        self.keep_temp_check.setChecked(True) # Checked by default for debugging
+        self.keep_temp_check.setChecked(False) # Default to not keeping temp files
         top_layout.addWidget(self.keep_temp_check)
+        self.keep_temp_check.setVisible(False)
 
         layout.addLayout(top_layout)
 
