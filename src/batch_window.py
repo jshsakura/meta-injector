@@ -84,22 +84,34 @@ class GameLoaderThread(QThread):
                     import traceback
                     traceback.print_exc()
 
-            # Second pass: Download icons sequentially (one at a time)
+            # Second pass: Download icons in parallel (multiple games at once)
             if self.auto_download_icons and jobs_to_process:
-                for idx, job in jobs_to_process:
-                    if self.should_stop:
-                        break
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    # Submit all download jobs
+                    future_to_job = {}
+                    for idx, job in jobs_to_process:
+                        if self.should_stop:
+                            break
+                        future = executor.submit(self.download_icon_for_job, job)
+                        future_to_job[future] = (idx, job)
 
-                    # Download icon for this job
-                    try:
-                        self.download_icon_for_job(job)
-                    except Exception as e:
-                        print(f"[ERROR] Download failed for {job.game_path.name}: {e}")
+                    # Process completed downloads as they finish
+                    completed = 0
+                    for future in as_completed(future_to_job):
+                        if self.should_stop:
+                            break
 
-                    # Emit job after download completes
-                    self.progress_updated.emit(idx + 1, len(jobs_to_process))
-                    self.game_loaded.emit(job)
-                    loaded_count += 1
+                        idx, job = future_to_job[future]
+                        try:
+                            future.result()  # Get result or raise exception
+                        except Exception as e:
+                            print(f"[ERROR] Download failed for {job.game_path.name}: {e}")
+
+                        # Emit job after download completes
+                        completed += 1
+                        self.progress_updated.emit(completed, len(jobs_to_process))
+                        self.game_loaded.emit(job)
+                        loaded_count += 1
             else:
                 # No icon download, just emit jobs
                 for idx, job in jobs_to_process:
@@ -253,6 +265,7 @@ class GameLoaderThread(QThread):
         else:  # E or others
             region_codes = ['US', 'EN', 'JA', 'KO']
 
+        # Try in priority order (region priority maintained)
         for try_id in alternative_ids:
             for region in region_codes:
                 # Full cover for banner (front+back+spine)
