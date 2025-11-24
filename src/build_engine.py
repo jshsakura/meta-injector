@@ -481,7 +481,11 @@ class BuildEngine:
         # Find GCT file
         variant_name = "AllStars" if galaxy_variant == "allstars" else "Nvidia"
         gct_filename = f"{game_id}-{variant_name}.gct"
-        gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+
+        # Try bundle_root first (for EXE), fallback to project_root
+        gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+        if not gct_path.exists():
+            gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
 
         if not gct_path.exists():
             # Try without deflicker variant
@@ -793,7 +797,11 @@ class BuildEngine:
 
             # Copy core tools to temp (fresh copy for each build)
             print("[SETUP] Copying core tools...")
-            shutil.copytree(self.paths.project_root / "core", self.paths.temp_tools, dirs_exist_ok=True)
+            core_source = self.paths.bundle_root / "core"
+            if not core_source.exists():
+                # Fallback to project_root for development
+                core_source = self.paths.project_root / "core"
+            shutil.copytree(core_source, self.paths.temp_tools, dirs_exist_ok=True)
 
             # Download base files
             if not self.download_base_files(common_key, title_key):

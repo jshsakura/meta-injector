@@ -230,8 +230,11 @@ class GameLoaderThread(QThread):
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
 
-        # Try full ID first, then 4-char alternatives
-        alternative_ids = [full_id] if full_id != repo_id else []
+        # Try exact game_id first (highest priority), then full_id, then alternatives
+        alternative_ids = [game_id]  # Start with exact game ID
+        if full_id != game_id and full_id != repo_id:
+            alternative_ids.append(full_id)
+        # Only use alternatives as fallback
         alternative_ids.extend(list(GameTdb.get_alternative_ids(repo_id)))
 
         download_success = False

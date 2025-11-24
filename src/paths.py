@@ -12,10 +12,14 @@ class PathManager:
         # Project root directory (handle PyInstaller frozen state)
         if getattr(sys, 'frozen', False):
             # Running as compiled exe
+            # Use _MEIPASS for bundled resources (core, resources)
+            self.bundle_root = Path(sys._MEIPASS)
+            # Use exe directory for user data (output, cache, etc)
             self.project_root = Path(sys.executable).parent
         else:
             # Running as script (src/paths.py -> src/ -> project_root/)
             self.project_root = Path(__file__).parent.parent
+            self.bundle_root = self.project_root
 
         # Base temp directory (system temp - TeconMoon/UWUVCI style)
         self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiUVCInjector"
