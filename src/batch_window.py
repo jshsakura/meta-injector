@@ -747,7 +747,8 @@ class EditGameDialog(QDialog):
         if self.available_bases:
             base_layout = QHBoxLayout()
             base_label_text = "베이스 롬:" if tr.current_language == "ko" else "Base ROM:"
-            base_layout.addWidget(QLabel(base_label_text))
+            base_label = QLabel(base_label_text)
+            base_layout.addWidget(base_label)
             self.base_combo = QComboBox()
 
             # Add available bases to combo box
@@ -758,7 +759,7 @@ class EditGameDialog(QDialog):
             if self.job.host_game and self.job.host_game in self.available_bases:
                 self.base_combo.setCurrentText(self.job.host_game)
 
-            base_layout.addWidget(self.base_combo)
+            base_layout.addWidget(self.base_combo, 1)  # Add stretch factor to combo box
             layout.addLayout(base_layout)
         else:
             self.base_combo = None
