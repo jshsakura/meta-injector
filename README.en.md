@@ -215,13 +215,6 @@ The build engine follows this workflow:
 - ✅ Batch processing support
 - ✅ Automatic image download
 
-### vs UWUVCI-AIO
-- ✅ Simpler codebase (Wii-only focus)
-- ✅ Cleaner temp file management
-- ✅ Direct tool usage (no wrapper complexity)
-- ✅ Better GameTDB integration
-- ✅ Real-time batch progress tracking
-
 ## 📊 Technical Details
 
 ### Metadata Extraction
