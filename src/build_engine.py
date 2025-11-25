@@ -42,19 +42,20 @@ class BuildEngine:
         if self.progress_callback:
             self.progress_callback(percent, message)
 
-    def run_tool(self, exe_path: Path, args: str, cwd: Optional[Path] = None, timeout: int = 300) -> bool:
+    def run_tool(self, exe_path: Path, args: str, cwd: Optional[Path] = None, timeout: int = 300, show_output: bool = False) -> bool:
         """
         Run external tool (mimics TeconMoon's LaunchProgram()).
 
         Args:
             timeout: Timeout in seconds (default 300 = 5 minutes)
+            show_output: Show real-time output for long-running operations
         """
         try:
             cmd = f'"{exe_path}" {args}'
 
             startupinfo = None
             creationflags = 0
-            if os.name == 'nt':
+            if os.name == 'nt' and not show_output:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0  # SW_HIDE
@@ -63,27 +64,37 @@ class BuildEngine:
             print(f"\nRunning: {exe_path.name}")
             print(f"Command: {cmd}")
 
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                cwd=str(cwd) if cwd else None,
-                startupinfo=startupinfo,
-                creationflags=creationflags,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                timeout=timeout
-            )
+            # For long operations, show real-time output
+            if show_output:
+                result = subprocess.run(
+                    cmd,
+                    shell=True,
+                    cwd=str(cwd) if cwd else None,
+                    timeout=timeout
+                )
+            else:
+                result = subprocess.run(
+                    cmd,
+                    shell=True,
+                    cwd=str(cwd) if cwd else None,
+                    startupinfo=startupinfo,
+                    creationflags=creationflags,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=timeout
+                )
 
             if result.returncode != 0:
                 print(f"Tool failed with code: {result.returncode}")
-                if result.stderr:
-                    print(f"Error: {result.stderr}")
-                if result.stdout:
-                    print(f"Output: {result.stdout}")
+                if not show_output:
+                    if result.stderr:
+                        print(f"Error: {result.stderr}")
+                    if result.stdout:
+                        print(f"Output: {result.stdout}")
                 return False
 
-            if result.stdout:
+            if not show_output and result.stdout:
                 print(f"Output: {result.stdout[:500]}")  # Print first 500 chars
             print("Tool completed successfully\n")
             return True
@@ -523,8 +534,9 @@ class BuildEngine:
             self.update_progress(62, tr.get("progress_converting_wbfs"))
             wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
             # UWUVCI uses WIT for WBFS conversion
+            # Large files (Smash Bros: 7-8GB) need longer timeout
             args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
-            if not self.run_tool(wit_exe, args):
+            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 raise RuntimeError("WBFS conversion failed")
         else:
             # Copy ISO to pre.iso
@@ -543,7 +555,7 @@ class BuildEngine:
 
             # Extract with --psel WHOLE (UWUVCI trim mode)
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel WHOLE -vv1'
-            if not self.run_tool(wit_exe, args):
+            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 raise RuntimeError("WIT extract failed")
 
             # Apply Galaxy patch if specified
@@ -558,7 +570,7 @@ class BuildEngine:
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --links --iso'
-            if not self.run_tool(wit_exe, args):
+            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 raise RuntimeError("WIT copy failed")
 
             processed_path = game_iso
@@ -568,7 +580,7 @@ class BuildEngine:
 
             # Extract
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel data -vv1'
-            if not self.run_tool(wit_exe, args):
+            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 raise RuntimeError("WIT extract failed")
 
             # Apply Galaxy patch if specified
@@ -583,7 +595,7 @@ class BuildEngine:
             # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
-            if not self.run_tool(wit_exe, args):
+            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 raise RuntimeError("WIT copy failed")
 
             processed_path = game_iso
@@ -613,7 +625,7 @@ class BuildEngine:
 
         # Extract tmd.bin and ticket.bin from ISO
         args = f'extract "{iso_path}" --psel data --files +tmd.bin --files +ticket.bin --DEST "{tiktmd_dir}" -vv1'
-        if not self.run_tool(wit_exe, args):
+        if not self.run_tool(wit_exe, args, timeout=1800):
             raise RuntimeError("Failed to extract TIK/TMD from ISO")
 
         code_dir = self.paths.temp_build / "code"
@@ -698,7 +710,8 @@ class BuildEngine:
                 if f.exists():
                     shutil.copy(f, content_dir)
 
-            if not self.run_tool(nfs_tool, args, cwd=content_dir):
+            # Large games like Smash Bros need more time (30 minutes)
+            if not self.run_tool(nfs_tool, args, cwd=content_dir, timeout=1800):
                 return False
         finally:
             # Clean up temp files

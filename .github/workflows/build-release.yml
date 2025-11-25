@@ -1,0 +1,98 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for version calculation
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Calculate version
+        id: version
+        shell: bash
+        run: |
+          # Get latest tag version
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Extract version number (remove 'v' prefix)
+          VERSION=${LATEST_TAG#v}
+          echo "Current version: $VERSION"
+
+          # Parse semantic version (major.minor.patch)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # Increment patch version
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version: $NEW_VERSION"
+
+          # Set outputs
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build executable
+        run: python build.py
+
+      - name: Create Release Archive
+        shell: bash
+        run: |
+          mkdir -p release
+          cp dist/Meta-Injector.exe release/
+          cd release
+          # Create zip file with version
+          7z a -tzip "Meta-Injector-v${{ steps.version.outputs.version }}-Windows.zip" Meta-Injector.exe
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Meta-Injector ${{ steps.version.outputs.tag }}"
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release/Meta-Injector-v${{ steps.version.outputs.version }}-Windows.zip
+            dist/Meta-Injector.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Meta-Injector-v${{ steps.version.outputs.version }}
+          path: |
+            dist/Meta-Injector.exe
+            release/*.zip
+          retention-days: 30

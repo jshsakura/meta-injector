@@ -1,6 +1,5 @@
 """Compatibility database manager for WiiVC Injector."""
 import sqlite3
-import csv
 from pathlib import Path
 from typing import List, Dict, Optional
 
@@ -11,8 +10,21 @@ class CompatibilityDB:
     def __init__(self, db_path: Optional[Path] = None):
         """Initialize database."""
         if db_path is None:
-            # Default to user's home directory
-            db_path = Path.home() / ".meta_injector_compatibility.db"
+            # Try resources directory first
+            try:
+                from .resources import resources
+                resource_db = resources.get_resource_path("compatibility.db")
+                if resource_db and resource_db.exists():
+                    db_path = resource_db
+                    print(f"[DB] Using database: {db_path}")
+                else:
+                    # Fallback to user's home directory
+                    db_path = Path.home() / ".meta_injector_compatibility.db"
+                    print(f"[DB] Using user database: {db_path}")
+            except Exception as e:
+                # Fallback to user's home directory
+                db_path = Path.home() / ".meta_injector_compatibility.db"
+                print(f"[DB] Using user database: {db_path}")
 
         self.db_path = db_path
         self.conn = None
@@ -349,6 +361,28 @@ class CompatibilityDB:
             'games_with_keys': games_with_keys,
             'total_hosts': total_hosts
         }
+
+    def _auto_import_csv(self):
+        """Auto-import CSV if database is empty."""
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        # Check if database has any games
+        cursor.execute("SELECT COUNT(*) FROM games")
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            # Database is empty, try to import CSV
+            try:
+                from .resources import resources
+                csv_path = resources.get_resource_path("compatibility.csv")
+                if csv_path and csv_path.exists():
+                    print(f"[DB] Database empty, importing from {csv_path}")
+                    self.import_from_csv(csv_path)
+                else:
+                    print("[DB] Warning: compatibility.csv not found in resources")
+            except Exception as e:
+                print(f"[DB] Error auto-importing CSV: {e}")
 
 
 # Global instance
