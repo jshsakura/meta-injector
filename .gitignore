@@ -87,4 +87,7 @@ standalone/*.spec
 
 # Old C# project
 OLD/
+
+# Claude Code and GitHub workflows
 .claude/
+.github/

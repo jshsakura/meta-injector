@@ -12,7 +12,7 @@ class CompatibilityDB:
         """Initialize database."""
         if db_path is None:
             # Default to user's home directory
-            db_path = Path.home() / ".wiivc_injector_compatibility.db"
+            db_path = Path.home() / ".meta_injector_compatibility.db"
 
         self.db_path = db_path
         self.conn = None

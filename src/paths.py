@@ -22,7 +22,7 @@ class PathManager:
             self.bundle_root = self.project_root
 
         # Base temp directory (system temp - TeconMoon/UWUVCI style)
-        self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "WiiUVCInjector"
+        self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "MetaInjector"
 
         # Source temp directory (빌드마다 삭제)
         self.temp_source = self.temp_root / "SOURCETEMP"

@@ -277,7 +277,7 @@ class GameLoaderThread(QThread):
                     # Download full cover for banner and DRC
                     req = urllib.request.Request(
                         fullcover_url,
-                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                        headers={'User-Agent': 'Meta-Injector/1.0'}
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         banner_data = response.read()
@@ -298,7 +298,7 @@ class GameLoaderThread(QThread):
                     # Download cover and crop top portion for icon
                     req = urllib.request.Request(
                         cover_url,
-                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                        headers={'User-Agent': 'Meta-Injector/1.0'}
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         cover_data = response.read()
@@ -330,7 +330,7 @@ class GameLoaderThread(QThread):
                     try:
                         req = urllib.request.Request(
                             cover_url,
-                            headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                            headers={'User-Agent': 'Meta-Injector/1.0'}
                         )
                         with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                             cover_data = response.read()
@@ -378,7 +378,7 @@ class GameLoaderThread(QThread):
                     # Download icon
                     req = urllib.request.Request(
                         icon_url,
-                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                        headers={'User-Agent': 'Meta-Injector/1.0'}
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         icon_data = response.read()
@@ -389,7 +389,7 @@ class GameLoaderThread(QThread):
                     # Download banner
                     req = urllib.request.Request(
                         banner_url,
-                        headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                        headers={'User-Agent': 'Meta-Injector/1.0'}
                     )
                     with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                         banner_data = response.read()
@@ -595,7 +595,7 @@ class SimpleKeysDialog(QDialog):
             'output_directory': output_dir
         }
 
-        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        settings_file = Path.home() / ".meta_injector_settings.json"
         print(f"[DEBUG] Saving settings to: {settings_file}")
         print(f"[DEBUG] Settings: {settings}")
 
@@ -617,7 +617,7 @@ class SimpleKeysDialog(QDialog):
         """Load existing settings from file."""
         import json
 
-        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        settings_file = Path.home() / ".meta_injector_settings.json"
         if not settings_file.exists():
             return
 
@@ -1573,7 +1573,7 @@ class BatchWindow(QMainWindow):
         """Start batch building."""
         # Get keys from settings
         import json
-        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        settings_file = Path.home() / ".meta_injector_settings.json"
 
         # If settings don't exist, show dialog to enter keys
         if not settings_file.exists():
@@ -1616,7 +1616,7 @@ class BatchWindow(QMainWindow):
             return
 
         # Get output directory from settings or use default
-        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        settings_file = Path.home() / ".meta_injector_settings.json"
         output_dir = None
 
         if settings_file.exists():
@@ -1761,7 +1761,7 @@ class BatchWindow(QMainWindow):
         import json
         from pathlib import Path
 
-        settings_file = Path.home() / ".wiivc_injector_settings.json"
+        settings_file = Path.home() / ".meta_injector_settings.json"
         if not settings_file.exists():
             return
 

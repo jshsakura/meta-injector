@@ -29,7 +29,7 @@ args = [
     str(run_py),  # Main entry point
     '--onefile',  # Single executable
     '--windowed',  # No console window (GUI app)
-    '--name=WiiU-Expedition-VC',
+    '--name=Meta-Injector',
     f'--icon={icon_path}' if icon_path.exists() else '--icon=NONE',
 
     # Hidden imports (PyQt5 submodules)

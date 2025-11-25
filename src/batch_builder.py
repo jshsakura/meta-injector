@@ -68,8 +68,8 @@ class BatchBuilder(QThread):
             self.job_started.emit(idx, job.title_name)
             job.status = "processing"
 
-            # Download icons if needed
-            if self.auto_icons:
+            # Download icons if needed (skip if already downloaded by batch_window)
+            if self.auto_icons and not (job.icon_path and job.icon_path.exists()):
                 self.download_icons(job, job.game_info.get('game_id', ''))
 
             # Build
@@ -146,44 +146,64 @@ class BatchBuilder(QThread):
             cache_drc = None
 
             if job.icon_path and job.icon_path.exists():
-                cache_icon = paths.images_cache / game_id / "iconTex.png"
+                cache_icon = paths.images_cache / game_id / "icon.png"
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
-                print(f"  Icon: {job.icon_path} -> {cache_icon}")
-                if badge_type:
-                    print(f"  Adding {badge_type} badge to icon")
-                image_processor.process_icon(job.icon_path, cache_icon, badge_type=badge_type)
-                if cache_icon.exists():
-                    print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
+
+                # Only process if not already in cache (avoid reading/writing same file)
+                if job.icon_path.resolve() != cache_icon.resolve():
+                    print(f"  Icon: {job.icon_path} -> {cache_icon}")
+                    if badge_type:
+                        print(f"  Adding {badge_type} badge to icon")
+                    image_processor.process_icon(job.icon_path, cache_icon, badge_type=badge_type)
+                    if cache_icon.exists():
+                        print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
+                    else:
+                        print(f"  ✗ Icon processing failed!")
+                        cache_icon = None
                 else:
-                    print(f"  ✗ Icon processing failed!")
-                    cache_icon = None
+                    print(f"  [CACHE] Icon already cached: {cache_icon}")
             else:
                 print(f"  ✗ Icon not found: {job.icon_path}")
 
             if job.banner_path and job.banner_path.exists():
-                cache_banner = paths.images_cache / game_id / "bootTvTex.png"
+                cache_banner = paths.images_cache / game_id / "banner.png"
                 cache_banner.parent.mkdir(parents=True, exist_ok=True)
-                print(f"  Banner: {job.banner_path} -> {cache_banner}")
-                image_processor.process_banner(job.banner_path, cache_banner)
-                if cache_banner.exists():
-                    print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
+
+                # Only process if not already in cache
+                if job.banner_path.resolve() != cache_banner.resolve():
+                    print(f"  Banner: {job.banner_path} -> {cache_banner}")
+                    image_processor.process_banner(job.banner_path, cache_banner)
+                    if cache_banner.exists():
+                        print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
+                    else:
+                        print(f"  ✗ Banner processing failed!")
+                        cache_banner = None
                 else:
-                    print(f"  ✗ Banner processing failed!")
-                    cache_banner = None
+                    print(f"  [CACHE] Banner already cached: {cache_banner}")
             else:
                 print(f"  ✗ Banner not found: {job.banner_path}")
 
             # Use separate DRC if available, otherwise generate from banner
             if job.drc_path and job.drc_path.exists():
-                cache_drc = paths.images_cache / game_id / "bootDrcTex.png"
+                cache_drc = paths.images_cache / game_id / "drc.png"
                 cache_drc.parent.mkdir(parents=True, exist_ok=True)
-                print(f"  DRC: {job.drc_path} -> {cache_drc}")
-                image_processor.process_drc(job.drc_path, cache_drc)
+
+                # Only process if not already in cache
+                if job.drc_path.resolve() != cache_drc.resolve():
+                    print(f"  DRC: {job.drc_path} -> {cache_drc}")
+                    image_processor.process_drc(job.drc_path, cache_drc)
+                else:
+                    print(f"  [CACHE] DRC already cached: {cache_drc}")
             elif job.banner_path and job.banner_path.exists():
-                cache_drc = paths.images_cache / game_id / "bootDrcTex.png"
+                cache_drc = paths.images_cache / game_id / "drc.png"
                 cache_drc.parent.mkdir(parents=True, exist_ok=True)
-                print(f"  DRC: {job.banner_path} -> {cache_drc}")
-                image_processor.process_drc(job.banner_path, cache_drc)
+
+                # Only process if source is different
+                if job.banner_path.resolve() != cache_drc.resolve():
+                    print(f"  DRC: {job.banner_path} -> {cache_drc}")
+                    image_processor.process_drc(job.banner_path, cache_drc)
+                else:
+                    print(f"  [CACHE] DRC already cached: {cache_drc}")
 
             if cache_drc and cache_drc.exists():
                 print(f"  ✓ DRC cached: {cache_drc.stat().st_size} bytes")

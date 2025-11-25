@@ -1,4 +1,4 @@
-"""Multi-language support for WiiVC Injector."""
+"""Multi-language support for Meta-Injector."""
 
 class Translations:
     """Translation manager for multi-language support."""
@@ -10,8 +10,8 @@ class Translations:
     STRINGS = {
         # Window titles
         "app_title": {
-            "en": "WiiU Expedition VC Injector",
-            "ko": "WiiU Expedition VC 인젝터"
+            "en": "Meta-Injector",
+            "ko": "Meta-Injector"
         },
 
         # Main menu and buttons
@@ -582,8 +582,8 @@ class Translations:
             "ko": "빌드 완료!"
         },
         "build_complete_msg": {
-            "en": "Your WiiVC injection is ready!\n\nOutput: {output}\n\nInstall using WUP Installer GX2 with signature patches enabled.",
-            "ko": "WiiVC 인젝션이 준비되었습니다!\n\n출력: {output}\n\n서명 패치가 활성화된 WUP Installer GX2를 사용하여 설치하세요."
+            "en": "Your Wii VC injection is ready!\n\nOutput: {output}\n\nInstall using WUP Installer GX2 with signature patches enabled.",
+            "ko": "Wii VC 인젝션이 준비되었습니다!\n\n출력: {output}\n\n서명 패치가 활성화된 WUP Installer GX2를 사용하여 설치하세요."
         },
         "build_failed": {
             "en": "Build Failed",

@@ -1,5 +1,5 @@
 """
-WiiVC Injector Build Engine
+Meta-Injector Build Engine
 Based on TeconMoon + UWUVCI logic for robust Wii game packaging.
 """
 import os
@@ -757,7 +757,7 @@ class BuildEngine:
             self.system_type = system_type  # Store for use in other methods
             self.update_progress(0, tr.get("progress_initializing"))
             print("\n" + "="*80)
-            print(f"WiiVC Injector - Enhanced Build Process ({'GameCube' if system_type == 'gc' else 'Wii'})")
+            print(f"Meta-Injector - Enhanced Build Process ({'GameCube' if system_type == 'gc' else 'Wii'})")
             print("="*80 + "\n")
 
             # Clean temp directories first (important for consecutive builds)
