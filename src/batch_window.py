@@ -589,7 +589,6 @@ class SimpleKeysDialog(QDialog):
                 padding: 10px 16px; /* Consistent padding */
                 border-radius: 6px;
                 font-size: 13px;
-                font-weight: 600; /* Consistent font weight */
             }
             QPushButton:hover {
                 background-color: #e8e8e8; /* Slightly darker on hover */
@@ -950,19 +949,19 @@ class EditGameDialog(QDialog):
         else:
             self.base_combo = None
 
-        # Wiimmfi/Trucha patch option
-        wiimmfi_layout = QVBoxLayout()
-        self.wiimmfi_checkbox = QCheckBox(tr.get("wiimmfi_patch"))
-        self.wiimmfi_checkbox.setChecked(self.job.wiimmfi_patch)
-        self.wiimmfi_checkbox.setToolTip(tr.get("wiimmfi_description"))
-        wiimmfi_layout.addWidget(self.wiimmfi_checkbox)
+        # WiiLink WFC/Trucha patch option
+        online_layout = QVBoxLayout()
+        self.online_patch_checkbox = QCheckBox(tr.get("online_patch"))
+        self.online_patch_checkbox.setChecked(self.job.online_patch)
+        self.online_patch_checkbox.setToolTip(tr.get("online_patch_description"))
+        online_layout.addWidget(self.online_patch_checkbox)
 
         # Add description as label (smaller font)
-        desc_label = QLabel(tr.get("wiimmfi_description"))
+        desc_label = QLabel(tr.get("online_patch_description"))
         desc_label.setWordWrap(True)
         desc_label.setStyleSheet("color: #666; font-size: 10px;")
-        wiimmfi_layout.addWidget(desc_label)
-        layout.addLayout(wiimmfi_layout)
+        online_layout.addWidget(desc_label)
+        layout.addLayout(online_layout)
 
         # Buttons
         btn_layout = QHBoxLayout()
@@ -1010,8 +1009,8 @@ class EditGameDialog(QDialog):
         if self.base_combo:
             self.job.host_game = self.base_combo.currentText()
 
-        # Save Wiimmfi patch option
-        self.job.wiimmfi_patch = self.wiimmfi_checkbox.isChecked()
+        # Save WiiLink WFC patch option
+        self.job.online_patch = self.online_patch_checkbox.isChecked()
 
         self.accept()
 
@@ -1501,9 +1500,9 @@ class BatchWindow(QMainWindow):
         self.table.setColumnCount(7)
 
         if tr.current_language == "ko":
-            headers = ["게임 제목 / 파일명", "게임 ID", "아이콘", "배너", "호환성 / 패드옵션", "상태", "작업"]
+            headers = ["게임제목 (파일명)", "게임 ID", "아이콘", "배너", "호환성 및 게임패드", "상태", "작업"]
         else:
-            headers = ["Game Title / Filename", "Game ID", "Icon", "Banner", "Compatibility / Pad Option", "Status", "Actions"]
+            headers = ["Game Title (Filename)", "Game ID", "Icon", "Banner", "Compatibility & Gamepad", "Status", "Actions"]
 
         self.table.setHorizontalHeaderLabels(headers)
         # Header styling - modern flat design with vertical separators
