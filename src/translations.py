@@ -1037,6 +1037,10 @@ class Translations:
                 "ISO 트리밍 중... 사무스가 제거 가능한 섹터를 스캔 중...",
             ]
         },
+        "controller_mapping_info": {
+            "en": "Gamepad Patch Mapping Info ?",
+            "ko": "게임패드 패치시 매핑 정보 ?"
+        },
         "progress_initializing": {
             "en": "Initializing...",
             "ko": "초기화 중..."
@@ -1074,8 +1078,8 @@ class Translations:
             "ko": "ISO 준비 중..."
         },
         "output_folder": {
-            "en": "Output Folder:",
-            "ko": "출력 폴더:"
+            "en": "Build Result Save Path:",
+            "ko": "빌드 결과 저장 경로:"
         },
         "output_folder_placeholder": {
             "en": "Leave empty to use game file directory",

@@ -506,9 +506,9 @@ class SimpleKeysDialog(QDialog):
         self.db_update_btn.clicked.connect(self.update_compatibility_db)
         top_layout.addWidget(self.db_update_btn)
         top_layout.addStretch()
-        layout.addLayout(top_layout)
+        # layout.addLayout(top_layout)
 
-        layout.addSpacing(10)
+        # layout.addSpacing(10)
 
         # Form layout for aligned inputs
         form = QFormLayout()
@@ -577,6 +577,31 @@ class SimpleKeysDialog(QDialog):
         # Buttons
         layout.addSpacing(15)
         btn_layout = QHBoxLayout()
+
+        # Controller Mapping Info button (left)
+        self.mapping_info_btn = QPushButton(tr.get("controller_mapping_info"))
+        self.mapping_info_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+        self.mapping_info_btn.clicked.connect(self.show_mapping_info)
+        self.mapping_info_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FFD700; /* Medium Yellow */
+                color: #333;
+                border: 1px solid #ddd;
+                padding: 8px 16px 8px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                text-align: left;
+            }
+            QPushButton:hover {
+                background-color: #FFC107; /* Slightly darker yellow on hover */
+                border-color: #bbb;
+            }
+            QPushButton:pressed {
+                background-color: #E0B000; /* Even darker yellow on pressed */
+            }
+        """)
+        btn_layout.addWidget(self.mapping_info_btn)
+
         btn_layout.addStretch()
         save_btn = QPushButton(tr.get("save"))
         save_btn.clicked.connect(self.save)
@@ -585,6 +610,11 @@ class SimpleKeysDialog(QDialog):
         btn_layout.addWidget(save_btn)
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
+
+    def show_mapping_info(self):
+        """Show the gamepad mapping help dialog."""
+        dialog = GamepadHelpDialog(self)
+        dialog.exec_()
 
     def browse_output_dir(self):
         """Browse for output directory."""
