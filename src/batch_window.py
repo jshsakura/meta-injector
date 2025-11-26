@@ -579,25 +579,23 @@ class SimpleKeysDialog(QDialog):
         btn_layout = QHBoxLayout()
 
         # Controller Mapping Info button (left)
-        self.mapping_info_btn = QPushButton(tr.get("controller_mapping_info"))
-        self.mapping_info_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogHelpButton))
+        self.mapping_info_btn = QPushButton("🎮 " + tr.get("controller_mapping_info"))
         self.mapping_info_btn.clicked.connect(self.show_mapping_info)
         self.mapping_info_btn.setStyleSheet("""
             QPushButton {
-                background-color: #FFD700; /* Medium Yellow */
-                color: #333;
-                border: 1px solid #ddd;
-                padding: 8px 16px 8px 12px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFB74D, stop:1 #FF9800); /* Soft Orange Gradient */
+                color: white;
+                border: 1px solid #F57C00;
+                padding: 10px 16px;
                 border-radius: 6px;
                 font-size: 13px;
-                text-align: left;
+                font-weight: 600;
             }
             QPushButton:hover {
-                background-color: #FFC107; /* Slightly darker yellow on hover */
-                border-color: #bbb;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFB74D, stop:1 #FB8C00); /* Darker on hover */
             }
             QPushButton:pressed {
-                background-color: #E0B000; /* Even darker yellow on pressed */
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FB8C00, stop:1 #F57C00); /* Darkest on press */
             }
         """)
         btn_layout.addWidget(self.mapping_info_btn)
@@ -605,8 +603,44 @@ class SimpleKeysDialog(QDialog):
         btn_layout.addStretch()
         save_btn = QPushButton(tr.get("save"))
         save_btn.clicked.connect(self.save)
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5cb85c, stop:1 #4cae4c);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 16px;
+                border: 1px solid #3d8b3d;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6cc76c, stop:1 #5cb85c);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a9d4a, stop:1 #3d8b3d);
+            }
+        """)
+
         cancel_btn = QPushButton(tr.get("cancel"))
         cancel_btn.clicked.connect(self.reject)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #ee5555);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 16px;
+                border: 1px solid #dd4444;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff5555, stop:1 #ee3333);
+                border-color: #cc2222;
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ee3333, stop:1 #dd2222);
+            }
+        """)
         btn_layout.addWidget(save_btn)
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
@@ -1441,13 +1475,6 @@ class BatchWindow(QMainWindow):
 
         top_layout.addStretch()
 
-        # Settings button (with gear icon)
-        settings_text = "⚙  설정" if tr.current_language == "ko" else "⚙  Settings"
-        self.settings_btn = QPushButton(settings_text)
-        self.settings_btn.setStyleSheet(btn_style)
-        self.settings_btn.clicked.connect(self.show_settings)
-        top_layout.addWidget(self.settings_btn)
-
         self.auto_icons_check = QCheckBox(tr.get("auto_download"))
         self.auto_icons_check.setChecked(True)
         top_layout.addWidget(self.auto_icons_check)
@@ -1457,6 +1484,13 @@ class BatchWindow(QMainWindow):
         self.keep_temp_check.setChecked(False) # Default to not keeping temp files
         top_layout.addWidget(self.keep_temp_check)
         self.keep_temp_check.setVisible(False)
+
+        # Settings button (with gear icon)
+        settings_text = "⚙  설정" if tr.current_language == "ko" else "⚙  Settings"
+        self.settings_btn = QPushButton(settings_text)
+        self.settings_btn.setStyleSheet(btn_style)
+        self.settings_btn.clicked.connect(self.show_settings)
+        top_layout.addWidget(self.settings_btn)
 
         layout.addLayout(top_layout)
 
@@ -1542,7 +1576,7 @@ class BatchWindow(QMainWindow):
                 font-size: 13px;
                 font-weight: 600;
                 padding: 10px 24px;
-                border: none;
+                border: 1px solid #3d8b3d;
                 border-radius: 6px;
             }
             QPushButton:hover {
@@ -1556,6 +1590,7 @@ class BatchWindow(QMainWindow):
             QPushButton:disabled {
                 background: #e0e0e0;
                 color: #999;
+                border: 1px solid #ccc;
             }
         """)
         self.build_btn.clicked.connect(self.start_batch_build)

@@ -1038,8 +1038,8 @@ class Translations:
             ]
         },
         "controller_mapping_info": {
-            "en": "Gamepad Patch Mapping Info ?",
-            "ko": "게임패드 패치시 매핑 정보 ?"
+            "en": "Gamepad Patch Mapping Info",
+            "ko": "게임패드 패치시 매핑 정보"
         },
         "progress_initializing": {
             "en": "Initializing...",
