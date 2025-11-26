@@ -583,19 +583,20 @@ class SimpleKeysDialog(QDialog):
         self.mapping_info_btn.clicked.connect(self.show_mapping_info)
         self.mapping_info_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFB74D, stop:1 #FF9800); /* Soft Orange Gradient */
-                color: white;
-                border: 1px solid #F57C00;
-                padding: 10px 16px;
+                background-color: #f5f5f5; /* Light gray */
+                color: #333; /* Dark text */
+                border: 1px solid #ccc; /* Light gray border */
+                padding: 10px 16px; /* Consistent padding */
                 border-radius: 6px;
                 font-size: 13px;
-                font-weight: 600;
+                font-weight: 600; /* Consistent font weight */
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFB74D, stop:1 #FB8C00); /* Darker on hover */
+                background-color: #e8e8e8; /* Slightly darker on hover */
+                border-color: #bbb;
             }
             QPushButton:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FB8C00, stop:1 #F57C00); /* Darkest on press */
+                background-color: #ddd; /* Even darker on pressed */
             }
         """)
         btn_layout.addWidget(self.mapping_info_btn)
