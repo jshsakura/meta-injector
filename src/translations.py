@@ -102,8 +102,8 @@ class Translations:
             "ko": "수동 배너"
         },
         "auto_download": {
-            "en": "Auto Download",
-            "ko": "자동 다운로드"
+            "en": "Auto Download Images",
+            "ko": "이미지 자동 다운로드"
         },
         "no_icon": {
             "en": "No icon",
@@ -284,8 +284,12 @@ class Translations:
             "ko": "Wii 비디오 모드 체인저"
         },
         "wiimmfi_patch": {
-            "en": "Wiimmfi Patch",
-            "ko": "Wiimmfi 패치"
+            "en": "Apply Wiimmfi/Trucha Patches",
+            "ko": "Wiimmfi/Trucha 패치 적용"
+        },
+        "wiimmfi_description": {
+            "en": "Enables online play via Wiimmfi servers and bypasses signature checks (fixes errors 20100/22000). Recommended for all games.",
+            "ko": "Wiimmfi 서버를 통한 온라인 플레이 활성화 및 서명 검증 우회 (오류 20100/22000 해결). 모든 게임에 권장됩니다."
         },
         "c2w_description": {
             "en": "Enables GameCube to Wii controller patching for better compatibility",
@@ -943,6 +947,32 @@ class Translations:
             "en": "Converting ISO to NFS format (this will take several minutes)...",
             "ko": "ISO를 NFS 형식으로 변환 중 (시간이 상당히 소요될 수 있습니다. 잠시만 기다려주세요)"
         },
+
+        # Fun rotating messages for NFS conversion (long operation)
+        "fun_nfs_messages": {
+            "en": [
+                "Converting to NFS... Boss battle in progress! HP: ████████ 80%",
+                "Converting to NFS... Your ISO is evolving! B Button not working...",
+                "Converting to NFS... Summoning Bahamut to encrypt your data!",
+                "Converting to NFS... Save point ahead! (Just kidding, keep waiting...)",
+                "Converting to NFS... Collecting all 7 dragon balls of conversion!",
+                "Converting to NFS... Chocobo is running... but very slowly...",
+                "Converting to NFS... Loading the next area... (this isn't a hint)",
+                "Converting to NFS... Crafting Legendary-tier NFS file! +999 patience",
+                "Converting to NFS... Victory fanfare will play soon! Probably...",
+            ],
+            "ko": [
+                "NFS 변환 중... 보스전 진행 중! HP: ████████ 80%",
+                "NFS 변환 중... ISO가 진화하고 있어요! B 버튼이 안 먹혀요...",
+                "NFS 변환 중... 바하무트를 소환해서 데이터를 암호화 중!",
+                "NFS 변환 중... 앞에 세이브 포인트 발견! (농담이에요, 계속 기다리세요...)",
+                "NFS 변환 중... 변환의 드래곤볼 7개를 모으는 중!",
+                "NFS 변환 중... 초코보가 달리는 중... 하지만 아주 천천히...",
+                "NFS 변환 중... 다음 구역 로딩 중... (힌트 아닙니다)",
+                "NFS 변환 중... 전설등급 NFS 파일 제작 중! +999 인내",
+                "NFS 변환 중... 승리 팡파레가 곧 연주될 거예요! 아마도...",
+            ]
+        },
         "progress_nfs_complete": {
             "en": "NFS conversion complete",
             "ko": "NFS 변환 완료"
@@ -982,6 +1012,30 @@ class Translations:
         "progress_trimming_iso": {
             "en": "Trimming game ISO...",
             "ko": "게임 ISO 트리밍 중..."
+        },
+
+        # Fun rotating messages for long operations
+        "fun_trimming_messages": {
+            "en": [
+                "Trimming ISO... Your party is fighting unnecessary data! Critical hit!",
+                "Trimming ISO... Defeating padding slimes for EXP... 99 to go!",
+                "Trimming ISO... Casting Materia magic to optimize space!",
+                "Trimming ISO... Link is cutting the grass... finding hidden space!",
+                "Trimming ISO... Pikachu used Compress! It's super effective!",
+                "Trimming ISO... Collecting chaos emeralds of efficiency!",
+                "Trimming ISO... Mario is jumping on bloated blocks!",
+                "Trimming ISO... Samus is scanning for removable sectors...",
+            ],
+            "ko": [
+                "ISO 트리밍 중... 파티가 불필요한 데이터와 전투 중! 크리티컬 히트!",
+                "ISO 트리밍 중... 패딩 슬라임을 처치하고 경험치 획득... 99마리 남음!",
+                "ISO 트리밍 중... 마테리아 마법으로 용량 최적화 시전!",
+                "ISO 트리밍 중... 링크가 풀을 베고 있습니다... 숨겨진 공간 발견!",
+                "ISO 트리밍 중... 피카츄가 압축을 사용했다! 효과가 굉장했다!",
+                "ISO 트리밍 중... 효율성의 카오스 에메랄드 수집 중!",
+                "ISO 트리밍 중... 마리오가 부풀려진 블록을 밟고 있어요!",
+                "ISO 트리밍 중... 사무스가 제거 가능한 섹터를 스캔 중...",
+            ]
         },
         "progress_initializing": {
             "en": "Initializing...",

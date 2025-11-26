@@ -6,9 +6,12 @@ import os
 import random
 import shutil
 import subprocess
+import threading
+import time
 from pathlib import Path
 from typing import Callable, Optional
 from .translations import tr
+from .wiivc_patcher import auto_patch_wiimmfi
 
 
 class BuildEngine:
@@ -25,6 +28,7 @@ class BuildEngine:
         self.generated_title_id = None
         self.generated_product_code = None
         self.should_stop = False
+        self.message_rotator_stop = False
 
     def stop(self):
         """Request build to stop."""
@@ -42,20 +46,64 @@ class BuildEngine:
         if self.progress_callback:
             self.progress_callback(percent, message)
 
-    def run_tool(self, exe_path: Path, args: str, cwd: Optional[Path] = None, timeout: int = 300, show_output: bool = False) -> bool:
+    def start_message_rotation(self, message_key: str, base_progress: int, interval: int = 4):
+        """
+        Start rotating fun messages in a background thread.
+
+        Args:
+            message_key: Translation key for fun messages (e.g., "fun_trimming_messages")
+            base_progress: Progress percentage to maintain during rotation
+            interval: Seconds between message changes (default 4)
+        """
+        self.message_rotator_stop = False
+
+        def rotate_messages():
+            messages = tr.get(message_key, [])
+            if not messages:
+                return
+
+            index = 0
+            while not self.message_rotator_stop:
+                if self.should_stop:
+                    break
+
+                message = messages[index % len(messages)]
+                self.update_progress(base_progress, message)
+
+                index += 1
+                time.sleep(interval)
+
+        # Start rotation thread
+        rotation_thread = threading.Thread(target=rotate_messages, daemon=True)
+        rotation_thread.start()
+        self._rotation_thread = rotation_thread
+
+    def stop_message_rotation(self):
+        """Stop the message rotation thread."""
+        self.message_rotator_stop = True
+        if hasattr(self, '_rotation_thread'):
+            self._rotation_thread.join(timeout=1)
+
+    def run_tool(self, exe_path: Path, args: str, cwd: Optional[Path] = None, timeout: int = 300,
+                 show_output: bool = False, parse_progress: bool = False, base_progress: int = 0,
+                 progress_range: int = 10, fun_messages_key: str = None) -> bool:
         """
         Run external tool (mimics TeconMoon's LaunchProgram()).
 
         Args:
             timeout: Timeout in seconds (default 300 = 5 minutes)
             show_output: Show real-time output for long-running operations
+            parse_progress: Parse output for progress (e.g., WIT trimming)
+            base_progress: Starting progress percentage
+            progress_range: Range of progress to cover (e.g., 10 means base+0 to base+10)
+            fun_messages_key: Optional key for rotating fun messages during parse_progress
         """
         try:
             cmd = f'"{exe_path}" {args}'
 
             startupinfo = None
             creationflags = 0
-            if os.name == 'nt' and not show_output:
+            if os.name == 'nt' and not show_output and not parse_progress:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = 0  # SW_HIDE
@@ -64,8 +112,57 @@ class BuildEngine:
             print(f"\nRunning: {exe_path.name}")
             print(f"Command: {cmd}")
 
+            # For long operations with progress parsing
+            if parse_progress:
+                import re
+                process = subprocess.Popen(
+                    cmd,
+                    shell=True,
+                    cwd=str(cwd) if cwd else None,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1
+                )
+
+                # Get fun messages if key provided
+                fun_messages = tr.get(fun_messages_key, []) if fun_messages_key else []
+                message_index = 0
+                last_message_time = time.time()
+                message_interval = 4  # Change message every 4 seconds
+
+                last_percent = 0
+                for line in iter(process.stdout.readline, ''):
+                    if not line:
+                        break
+
+                    # Parse WIT progress: "74% copied in 0:30 (65.4 MiB/sec) -> ETA 0:10"
+                    match = re.search(r'(\d+)%\s+copied', line)
+                    if match:
+                        percent = int(match.group(1))
+                        if percent != last_percent:
+                            # Map WIT's 0-100% to our progress_range
+                            actual_progress = base_progress + int((percent / 100.0) * progress_range)
+
+                            # Rotate fun messages if available
+                            current_time = time.time()
+                            if fun_messages and (current_time - last_message_time) >= message_interval:
+                                message = fun_messages[message_index % len(fun_messages)]
+                                message_index += 1
+                                last_message_time = current_time
+                            else:
+                                message = fun_messages[message_index % len(fun_messages)] if fun_messages else tr.get("progress_trimming_iso")
+
+                            self.update_progress(actual_progress, message)
+                            last_percent = percent
+
+                    print(line.rstrip())  # Still print for console
+
+                process.wait(timeout=timeout)
+                return process.returncode == 0
+
             # For long operations, show real-time output
-            if show_output:
+            elif show_output:
                 result = subprocess.run(
                     cmd,
                     shell=True,
@@ -551,11 +648,12 @@ class BuildEngine:
 
         # Trim ISO if not disabled (UWUVCI style)
         if not disable_trimming:
-            self.update_progress(65, tr.get("progress_trimming_iso"))
+            self.update_progress(60, tr.get("progress_trimming_iso"))
 
             # Extract with --psel WHOLE (UWUVCI trim mode)
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel WHOLE -vv1'
-            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+            if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
+                                base_progress=60, progress_range=5, fun_messages_key="fun_trimming_messages"):
                 raise RuntimeError("WIT extract failed")
 
             # Apply Galaxy patch if specified
@@ -570,7 +668,8 @@ class BuildEngine:
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --links --iso'
-            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+            if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
+                                base_progress=65, progress_range=3, fun_messages_key="fun_trimming_messages"):
                 raise RuntimeError("WIT copy failed")
 
             processed_path = game_iso
@@ -671,8 +770,9 @@ class BuildEngine:
     def convert_iso_to_nfs(self, iso_path: Path, pad_option: str = "no_gamepad") -> bool:
         """
         Convert ISO to NFS format using nfs2iso2nfs.exe (TeconMoon style).
+        Note: This is a long operation (10-30 minutes for large games).
         """
-        self.update_progress(70, tr.get("progress_converting_nfs"))
+        self.update_progress(75, tr.get("progress_converting_nfs"))
 
         nfs_tool = self.paths.temp_tools / "EXE" / "nfs2iso2nfs.exe"
         content_dir = self.paths.temp_build / "content"
@@ -710,8 +810,16 @@ class BuildEngine:
                 if f.exists():
                     shutil.copy(f, content_dir)
 
+            # Start fun message rotation for long NFS conversion
+            self.start_message_rotation("fun_nfs_messages", base_progress=75, interval=4)
+
             # Large games like Smash Bros need more time (30 minutes)
-            if not self.run_tool(nfs_tool, args, cwd=content_dir, timeout=1800):
+            result = self.run_tool(nfs_tool, args, cwd=content_dir, timeout=1800)
+
+            # Stop message rotation
+            self.stop_message_rotation()
+
+            if not result:
                 return False
         finally:
             # Clean up temp files
@@ -720,6 +828,8 @@ class BuildEngine:
                 if temp_file.exists():
                     temp_file.unlink()
 
+        # Show completion message
+        self.update_progress(80, tr.get("progress_nfs_complete"))
         print("NFS conversion complete")
         return True
 
@@ -834,6 +944,42 @@ class BuildEngine:
             # Extract game ID from ISO for output folder name
             with open(processed_iso, 'rb') as f:
                 game_id = f.read(6).decode('ascii', errors='ignore')  # e.g., RUUK01
+
+            # Apply Wiimmfi patches (fw.img + ISO)
+            # This enables online play for network-enabled games
+            # and doesn't harm games without network features
+            self.update_progress(68, "Applying Wiimmfi patches...")
+            print("\n" + "="*70)
+            print("[Wiimmfi] Applying patches for enhanced compatibility...")
+            print("="*70)
+
+            fw_img_path = self.paths.temp_build / "code" / "fw.img"
+            wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
+            base_game = options.get("base_game", "Rhythm Heaven Fever (USA)")
+
+            # Apply Wiimmfi/Trucha patches if enabled (default: True)
+            if options.get("wiimmfi_patch", True):
+                try:
+                    fw_patched, iso_patched = auto_patch_wiimmfi(
+                        iso_path=processed_iso,
+                        fw_img_path=fw_img_path,
+                        game_id=game_id,
+                        game_title=title_name,
+                        wit_path=wit_exe,
+                        base_game=base_game,
+                        progress_callback=self.update_progress
+                    )
+
+                    if fw_patched:
+                        print("[Wiimmfi] fw.img patched - signature checks bypassed")
+                    if iso_patched:
+                        print("[Wiimmfi] ISO patched - Wiimmfi server support enabled")
+
+                except Exception as e:
+                    print(f"[Wiimmfi] Warning: Patch failed - {e}")
+                    print("[Wiimmfi] Game will still work, but online play may not function")
+            else:
+                print("[Wiimmfi] Patches disabled by user - skipping")
 
             # Add prefix based on controller option
             pad_option = options.get("pad_option", "none")

@@ -1,0 +1,460 @@
+{
+  "compatibility": [
+    {
+      "game_name": "7 Grand Dad",
+      "game_region": "Any",
+      "base_name": "EarthBound Beginnings/Mother",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "ROM hack of The Flintstones: The Rescue of Dino and Hoppy"
+    },
+    {
+      "game_name": "7 Grand Dad (ROM hack of The Flintstones: The Rescue of Dino and Hoppy)",
+      "game_region": "",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Region Unknown"
+    },
+    {
+      "game_name": "7 Grand Dad (ROM hack of The Flintstones: The Rescue of Dino and Hoppy)",
+      "game_region": "",
+      "base_name": "Mother",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Region Unknown"
+    },
+    {
+      "game_name": "Adventures of Lolo 2",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Akumajou Densetsu",
+      "game_region": "JPN",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Tested with Loadiine v4. Game is playable with moderate graphical errors, but the extra VRC6 sound channels are poorly emulated, resulting in bad music"
+    },
+    {
+      "game_name": "Bases Loaded II: Second Season",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, able to exit. Tested in Loadiine GX2"
+    },
+    {
+      "game_name": "Bomberman",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "When starting stage 1, freezes on a green screen."
+    },
+    {
+      "game_name": "Bomberman 2",
+      "game_region": "USA",
+      "base_name": "Punch Out",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "The game just stays at a black screen"
+    },
+    {
+      "game_name": "Bubble Bobble",
+      "game_region": "USA",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't work if base is Punch Out!!"
+    },
+    {
+      "game_name": "Castlevania",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Castlevania Chorus of Mysteries",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly."
+    },
+    {
+      "game_name": "Castlevania II: Simon's Quest",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly with redaction patch, also saves."
+    },
+    {
+      "game_name": "Castlevania III: Dracula's Curse",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "USB storage error."
+    },
+    {
+      "game_name": "Contra",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Contra",
+      "game_region": "USA",
+      "base_name": "Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Contra Force",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly."
+    },
+    {
+      "game_name": "Donkey Kong Classics",
+      "game_region": "USA",
+      "base_name": "Kirby's Adventure",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "DuckTales",
+      "game_region": "USA",
+      "base_name": "Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Faxanadu",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy II",
+      "game_region": "USA",
+      "base_name": "Punch-Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only tested to title screen."
+    },
+    {
+      "game_name": "Final Fantasy II",
+      "game_region": "USA",
+      "base_name": "Kirby's Adventure",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only tested to title screen."
+    },
+    {
+      "game_name": "Final Fantasy III",
+      "game_region": "USA",
+      "base_name": "PFinal Fantasy III",
+      "base_region": "JPN",
+      "status": 2,
+      "notes": "Only tested to title screen. The rom is too large to be used with any of the available bases in UWUVCI so it will only work with JPN Final Fantasy III or another base of equal size or larger."
+    },
+    {
+      "game_name": "Gaplus",
+      "game_region": "",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Isn't the region World?"
+    },
+    {
+      "game_name": "Godzilla - Monster of Monsters",
+      "game_region": "USA",
+      "base_name": "Kirby's Adventure",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Gradius (Arcade Hack)",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Gradius II (Arcade Hack)",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Shows a USB storage error screen, no workaround for the moment."
+    },
+    {
+      "game_name": "Gyromite/Robot Gyro",
+      "game_region": "",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Region unknown. ROB/Famicom Robot is compatible if used with a CRT TV and NES to Wii Remote adapter with the Wii Remote set to player 2."
+    },
+    {
+      "game_name": "Hello Kitty World",
+      "game_region": "JPN",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Ironsword: Wizards and Warriors II",
+      "game_region": "USA",
+      "base_name": "Earthound Beginnings",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Tested with Loadiine v4. Black screen on boot. Can exit ot the Wii U Menu safely."
+    },
+    {
+      "game_name": "King's Knight",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Lagrange Point",
+      "game_region": "JPN",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Tested with Loadiine v4. Boots to a gray screen, which turns purple after a while. No VRC7 support(?)."
+    },
+    {
+      "game_name": "Mega Man 3",
+      "game_region": "USA",
+      "base_name": "Earthound Beginnings",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "There is a bug where the weapon layout can sometimes get messed up on the pause menu, not sure exactly what causes it. But weapons are still selectable, and other than that, the game plays well with no other issues. Can also use a Wii Remote horizontally as a controller."
+    },
+    {
+      "game_name": "Mega Man ULTRA (hack)",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly."
+    },
+    {
+      "game_name": "Metroid + Saving (hack)",
+      "game_region": "USA",
+      "base_name": "Metal Slader Glory",
+      "base_region": "JPN",
+      "status": 2,
+      "notes": "Hack used to replace Metroid's password system with a saving system. Link: https://www.romhacking.net/hacks/1186/"
+    },
+    {
+      "game_name": "Metroid MOTHER (hack)",
+      "game_region": "USA",
+      "base_name": "Metal Slade Glory",
+      "base_region": "JPN",
+      "status": 1,
+      "notes": "The game will sometimes break if you try to load a save state forcing you to reset the game, everything else works just fine. Patch Version 1.0. Link: https://www.romhacking.net/hacks/1988/"
+    },
+    {
+      "game_name": "Metroid MOTHER (Hack)",
+      "game_region": "USA",
+      "base_name": "Dr. Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Shows a USB storage error screen, no woarkaround for the moment. Patch version unknown."
+    },
+    {
+      "game_name": "Monopoly",
+      "game_region": "USA",
+      "base_name": "Punch-Out!! Featuring Mr. Dream US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Pixels Perfect works"
+    },
+    {
+      "game_name": "Paperboy",
+      "game_region": "USA",
+      "base_name": "Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Puyo Puyo",
+      "game_region": "JPN",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Rugrats: Adventures in Gameland",
+      "game_region": "Any",
+      "base_name": "EarthBound Beginnings/Mother",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Music plays incorrectly, same issues as using Metal Slader Glory as a base. Everything else is OK."
+    },
+    {
+      "game_name": "Rugrats: Adventures in Gameland",
+      "game_region": "Any",
+      "base_name": "Metal Slader Glory",
+      "base_region": "JPN",
+      "status": 1,
+      "notes": "Music plays incorrectly, same issues as using EarthBound Beginnings/Mother as a base. Everything else is OK."
+    },
+    {
+      "game_name": "Shanghai",
+      "game_region": "JPN",
+      "base_name": "Mother",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen"
+    },
+    {
+      "game_name": "Star Solider",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario Bros",
+      "game_region": "USA",
+      "base_name": "Kirby's Adventure",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Pixel Perfect Mode: Yes"
+    },
+    {
+      "game_name": "Super Mario Bros 2",
+      "game_region": "USA",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "User states this doesn't work, but shows a picture of them playing and stated It works so far but for some reason the water turns black, there may be some other graphical glitches I am not sure of yet. But otherwise runs well, with minor issues. Because of this I'm marking it as Issues."
+    },
+    {
+      "game_name": "Super Mario Bros 2",
+      "game_region": "USA",
+      "base_name": "Metal Slader Glory",
+      "base_region": "JPN",
+      "status": 1,
+      "notes": "User states this doesn't work, but shows a picture of them playing and stated It works with minor graphical issues like the sky isn't correct, and nor is the water. Use Earthbound Beginnings (USA) instead. Because of this I'm marking it as Issues."
+    },
+    {
+      "game_name": "Super Mario Bros 3",
+      "game_region": "USA",
+      "base_name": "Metal Slader Glory",
+      "base_region": "JPN",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Super Mario Bros 3",
+      "game_region": "USA",
+      "base_name": "Super Mario Bros 3",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Super Mario Bros 3",
+      "game_region": "USA",
+      "base_name": "EarthBound Beginnings",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Super Mario Bros Special 35 aniversary edition",
+      "game_region": "USA",
+      "base_name": "Kirby Adventure's",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Teenage Mutant Ninja Turtles",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Doesn't work if injected into Earthbound Beginnings."
+    },
+    {
+      "game_name": "The Legend of Zelda",
+      "game_region": "USA",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "User wrote some weird notes, so I'm unsure of what to mark it as. Works with minor issues, such as the ground being a slight pink (unlike how it should be), its hard to see on camera, and I found that going back into the game after playing for abit, the save point loaded, but the game was a black screen."
+    },
+    {
+      "game_name": "The Super Mario Bros. Super Show!",
+      "game_region": "USA",
+      "base_name": "EarthBound Beginnings/Mother",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "ROM hack of Super Mario Bros. 2. Title screen is glitchy, freezes after pressing start. Can exit."
+    },
+    {
+      "game_name": "Virus",
+      "game_region": "",
+      "base_name": "Dr Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Region Unknown. PlayChoice-10 prototype of Dr. Mario"
+    },
+    {
+      "game_name": "Wizards and Warriors III: Kuros: Visions of Power",
+      "game_region": "USA",
+      "base_name": "Earthbound Beginnings",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Tested with Loadiine v4. Black screen on boot. Can exit to the Wii U Menu safely."
+    },
+    {
+      "game_name": "Zanac",
+      "game_region": "USA",
+      "base_name": "Punch Out!!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    }
+  ]
+}

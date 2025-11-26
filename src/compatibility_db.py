@@ -62,6 +62,7 @@ class CompatibilityDB:
                 notes TEXT,
                 title_key TEXT,
                 user_notes TEXT,
+                category TEXT DEFAULT 'Wii',
                 UNIQUE(title, region)
             )
         """)
@@ -73,6 +74,15 @@ class CompatibilityDB:
             # Column doesn't exist, add it
             cursor.execute("ALTER TABLE games ADD COLUMN game_id TEXT")
             print("Migrated database: added game_id column")
+
+        # Migrate: Add category column if it doesn't exist
+        try:
+            cursor.execute("SELECT category FROM games LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            cursor.execute("ALTER TABLE games ADD COLUMN category TEXT DEFAULT 'Wii'")
+            cursor.execute("UPDATE games SET category = 'Wii' WHERE category IS NULL")
+            print("Migrated database: added category column")
 
         # Host games table (for quick reference)
         cursor.execute("""

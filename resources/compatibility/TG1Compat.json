@@ -1,0 +1,316 @@
+{
+   "compatibility":[
+      {
+         "game_name":"4 in 1 Super CD",
+         "game_region":"USA",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Occasionally there's a really annoying hum on Gate of Thunder title screen, however it goes away once you start the game. Same graphical issues present in the Gate of Thunder intro as in the Japanese stand alone game."
+      },
+      {
+         "game_name":"After Burner II",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Batman",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Bonanza Bros.",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Castlevania: Rondo of Blood",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Translation patch works as well, although you'll need to mess with the hcd file to get the audio to line up correctly."
+      },
+      {
+         "game_name":"Columns",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Darius Alpha",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Optional SuperGrafx enhancements are not supported."
+      },
+      {
+         "game_name":"Darius Plus",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Optional SuperGrafx enhancements are not supported."
+      },
+      {
+         "game_name":"Dragon Spirit",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Fantasy Zone",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Gate of Thunder",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Some graphical problems in the intro, seems fully playable though."
+      },
+      {
+         "game_name":"Gradius II: Gofer no Yabou",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Galaga '90",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Juuouki",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Keith Courage in Alpha Zones",
+         "game_region":"USA",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Legendary Axe, The",
+         "game_region":"USA",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Lemmings",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Minor graphic glitches during gameplay, several audio tracks may can or cannot be played at random."
+      },
+      {
+         "game_name":"Lord of Thunder",
+         "game_region":"USA",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Madou Monogatari I: Honoo no Sotsuenji",
+         "game_region":"JPN",
+         "base_name":"LORDS OF THUNDER",
+         "base_region":"USA",
+         "status":1,
+         "notes":"The emulator does not support CD games that require the Arcade Card and a message appears to insert them."
+      },
+      {
+         "game_name":"OutRun",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":1,
+         "notes":"Minor graphic glitches on the Map Screen"
+      },
+      {
+         "game_name":"Pac-Land",
+         "game_region":"USA",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":1,
+         "notes":"Minor graphical glitches appear close to the top status bar when scrolling."
+      },
+      {
+         "game_name":"Parasol Stars: The Story of Bubble Bobble III",
+         "game_region":"USA",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Parodius Da! ~Shinwa kara Owarai he~",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Populous",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"No in-game sound. The game crashes when it tries to load a map. Major graphic glitches in the demo/staff roll screen."
+      },
+      {
+         "game_name":"Power Drift",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Raiden",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Side Arms",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Shin Megami Tensi",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"In-game saving does not work, it must be beaten by using Restore Points."
+      },
+      {
+         "game_name":"Shinobi",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Snatcher CD-ROMantic",
+         "game_region":"JPN",
+         "base_name":"LORDS OF THUNDER",
+         "base_region":"USA",
+         "status":0,
+         "notes":"Black screen after the Konami logo. Soft Reset (Select + Run) and VC Menu still works as usual."
+      },
+      {
+         "game_name":"Space Harrier",
+         "game_region":"USA",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Street Fighter II: Champion Edition",
+         "game_region":"JPN",
+         "base_name":"BOMBERMAN '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"No Avenue Pad 6 support, must be played in standard 2-button mode regardless of Wii U or Wii controller used."
+      },
+      {
+         "game_name":"Super Darius",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Super Darius II",
+         "game_region":"JPN",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"The Dynastic Hero",
+         "game_region":"USA",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Thunder Blade",
+         "game_region":"JPN",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"World Class Baseball",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":2,
+         "notes":"Part of the baseball can be seen spinning at the top-left corner of the screen."
+      },
+      {
+         "game_name":"World Class Tennis",
+         "game_region":"USA",
+         "base_name":"Bomberman '94",
+         "base_region":"USA",
+         "status":1,
+         "notes":"Some graphics in menus are missing, music timing issues in the Quest mode."
+      },
+      {
+         "game_name":"Ys Book I & II",
+         "game_region":"USA",
+         "base_name":"Lords of Thunder",
+         "base_region":"USA",
+         "status":2,
+         "notes":"None"
+      }
+   ]
+}

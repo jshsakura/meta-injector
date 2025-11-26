@@ -25,6 +25,7 @@ class BatchBuildJob:
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
+        self.wiimmfi_patch = True  # Enable Wiimmfi/Trucha patches by default
 
 
 class BatchBuilder(QThread):
@@ -239,6 +240,8 @@ class BatchBuilder(QThread):
                 "drc_path": paths.temp_drc,
                 # Controller option for folder naming
                 "pad_option": job.pad_option,
+                # Wiimmfi/Trucha patch option
+                "wiimmfi_patch": job.wiimmfi_patch,
             }
 
             # Apply selected profile

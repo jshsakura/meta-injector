@@ -9,6 +9,7 @@ src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
 from src.batch_window import BatchWindow
 from src.translations import tr
 
@@ -17,6 +18,13 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("WiiVC Injector Batch")
     app.setOrganizationName("TeconMoon")
+
+    # Set application icon
+    icon_path = Path(__file__).parent / "resources" / "images" / "icon.png"
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
+    else:
+        print(f"[WARN] App icon not found at: {icon_path}")
 
     # Auto-detect language based on system locale
     try:

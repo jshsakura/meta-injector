@@ -1,0 +1,2884 @@
+{
+  "compatibility": [
+    {
+      "rendersize": null,
+      "game_name": "101-in-1 Explosive Megamix",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "4 Game Fun Pack - Clue/Mouse Trap/Perfection/Aggravation",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "7th Dragon",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will also work with the translation patch from https://www.romhacking.net/translations/2176/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "9 Hours, 9 Persons, 9 Doors",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch &amp; Go / New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "A Witch's Tale",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Advance Wars: Days of Ruin",
+      "game_region": "USA",
+      "base_name": "Advance Wars: Days of Ruin",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Major graphical glitches and slowdown on maps."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Alex Rider: Stormbreaker",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Anno 1701",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Textures of Trees and Buildings don't load and stay black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Another Super Mario 3D",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Just a Black Screen"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Another Super Mario 3D",
+      "game_region": "EUR",
+      "base_name": "Zelda Spirt Tracks",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Just a Black Screen"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Another Super Mario 3D",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Just a Black Screen"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Another Super Mario 3D",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS US",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Hard crashes Wii U"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Apollo Justice Ace Attorney",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Arkanoid DS",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Asphalt Urban GT",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Intro video sequence is sped up."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Assassin's Creed: Altaïrs Chronicles",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Atari Greatest Hits: Volume 1",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "The main menu takes a couple seconds to become visible. Games only appear after pausing and resuming the game. Other than that, the games are completely playable."
+    },
+    {
+      "rendersize": null,
+      "game_name": "ATX Quad Kings",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Avalon Code",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Bangai-O Spirits",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Batman: The Brave",
+      "game_region": "USA",
+      "base_name": "WarioWare: Touched!",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Bottom screen is black on the title screen. Top screen is freezes randomly for long periods of time on the tutorial level - if you can beat it blind, it fixes, but in some areas of the game it comes back but fixes when you open the pause menu."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Batman: The Brave",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Bottom screen is black on the title screen. Top screen is freezes randomly for long periods of time on the tutorial level - if you can beat it blind, it fixes, but in some areas of the game it comes back but fixes when you open the pause menu."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Bella Sara",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Big Bang Mini",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Blood of Bahamut",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will also work with the translation patch from https://www.romhacking.net/translations/2560/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Blue Dragon: Awakened Shadow",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirt Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Bold: The Video Game",
+      "game_region": "USA",
+      "base_name": "WarioWare: Touched!",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Bottom screen is black on the title screen. Top screen is freezes randomly for long periods of time on the tutorial level - if you can beat it blind, it fixes, but in some areas of the game it comes back but fixes when you open the pause menu."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Bold: The Video Game",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Bottom screen is black on the title screen. Top screen is freezes randomly for long periods of time on the tutorial level - if you can beat it blind, it fixes, but in some areas of the game it comes back but fixes when you open the pause menu."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Burnout Legends",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "C.O.P: The Recruit",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Blackscreen after Ubisoft logo"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Call of Duty 4: Modern Warfare",
+      "game_region": "EUR",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Call of Duty: Black Ops",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Dawn of Sorrow",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Dawn of Sorrow",
+      "game_region": "USA",
+      "base_name": "Wario Ware: Touched",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Dawn of Sorrow",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also compatible with the playable Link patch: https://www.romhacking.net/hacks/7646/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Order of Ecclesia",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Order of Ecclesia",
+      "game_region": "USA",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Order of Ecclesia",
+      "game_region": "USA",
+      "base_name": "Wario Ware: Touched",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Castlevania: Potrait of Ruin",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Chibi-Robo: Park Patrol",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Chrono Trigger",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Chuck E. Cheese's Party Games",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Club Penguin: Elite Penguin Force v1.2",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Clubhouse Games",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Contra 4",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Cooking Guide: Can't Decide What to Eat?",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Microphone instructions seem to not work properly: the game picks up the voice, but can't understand the words, and this makes vocal advancing through the recipes impossible."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Cooking Mama",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Phantom Hourglass",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Cooking Mama 2: Dinner with Friends",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Phantom Hourglass",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Cooking Mama 3: Shop & Chop",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Phantom Hourglass",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Cory in the House",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Crash Boom Bang!",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Crash of the Titans",
+      "game_region": "EUR",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "CTGP Nitro",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "The game will boot but when you select single player it will crash the console"
+    },
+    {
+      "rendersize": null,
+      "game_name": "CTGP Nitro",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda Spirit Tracks",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "The game will boot but when you select single player it will crash the console"
+    },
+    {
+      "rendersize": null,
+      "game_name": "CTGP Nitro",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "The game will boot but when you select single player it will crash the console"
+    },
+    {
+      "rendersize": null,
+      "game_name": "CTGP Nitro",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Is ROM Hack. Crashes when going into any menu option, but does allow you to create an emblem and confirm your nickname. After that, a crashed"
+    },
+    {
+      "rendersize": null,
+      "game_name": "CTGP Nitro Release 1.1.0",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Culdcept DS",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will also work with the translation patch from https://www.romhacking.net/translations/2579"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Custom Robo",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Phantom Hourglass",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dementium II",
+      "game_region": "EUR",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen somehow. It worked fine first but its a white screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dementium II",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen somehow. It worked fine first but its a white screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Diddy Kong Racing DS",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dig Dug: Digging Strike",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in cutscenes."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Digimon World DS",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in cutscenes."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Digimon World Lost Evolution (English Patch)",
+      "game_region": "JPN",
+      "base_name": "Super Mario 64 DS ",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Crashes after first transition of the opening cutscene (black screen with music still playing indefinitely)"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Digimon World Lost Evolution (English Patch)",
+      "game_region": "JPN",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Crashes after first transition of the opening cutscene (black screen with music still playing indefinitely) (Same issue as stated with other base ROM)"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Doctor Who: Evacuation Earth",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros ",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Doodle Jump",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dora the Explorer Saves the Snow Princess",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Ball Z: Harakaranu Densetsu",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Ball: Origins",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest IV: Chapters of the Chosen",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest IV: Chapters of the Chosen",
+      "game_region": "USA",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest IX: Sentinels of the starry Skies",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest Monsters: Joker 2",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest V: Hand of the Heavenly Blade",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Dragon Quest VI: Realms of Revelation",
+      "game_region": "USA",
+      "base_name": "Kirby's Squeak Squad",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!",
+      "game_region": "USA",
+      "base_name": "WarioWare Touch",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!: Collection",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!: Collection",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Drawn to Life!: Collection",
+      "game_region": "USA",
+      "base_name": "WarioWare Touch",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It runs but when you get into the level, the background when it's suppost to move it turns black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "DTM Race Driver 3: Create & Race",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "eCDP McDonalds Training Game",
+      "game_region": "JPN",
+      "base_name": "WarioWare: Touched",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "You're gonna want Mario Kart DS for the serial number obtainer"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Electronic Arts, Sudoku",
+      "game_region": "USA",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Electroplankton",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Elite Beat Agents",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Elite Beat Agents",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Enchanted Folk and the School of Wizardy",
+      "game_region": "USA",
+      "base_name": "Mew Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ermii Kart DS: Legacy Edition",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Gets past the in-game screen, then crashes and no sound."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Etrian Odyssey",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Etrian Odyssey II",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Etrian Odyssey III",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Feel the Magic XY/XX",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "FIFA 10",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Final Fantasy III",
+      "game_region": "USA",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Final Fantasy IV",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor graphical glitches in screen transitions."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Final Fantasy Tactics A2: Grimoire of the Rift",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Final Fantasy XII: Revenant Wings",
+      "game_region": "USA",
+      "base_name": "Zelda Phantom Hourglass",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Final Fantasy: The 4 Heroes of Light",
+      "game_region": "USA",
+      "base_name": "Brain Age: Train Your Brain in Minutes a Day!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Fire Emblem: Heroes of Light and Shadow",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Shows a white screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Fire Emblem: Shadow Dragon - Full Content Patch",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Compatible with the full content patch https://www.romhacking.net/hacks/4054/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Flower, Sun, and Rain",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested briefly, runs as it should from what i could tell, would recommend as a pre-NMH suda51 title with vibes unmatched by any other on the DS"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Freshly Picked! Tingle's Rosy Rupeeland",
+      "game_region": "EUR",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Front Mission DS",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ghost Trick: Phantom Detective",
+      "game_region": "EUR",
+      "base_name": "Fire Emblem: Shadow Dragon",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "A couple of extremely minor graphical glithces: 1 pixel high line at the top of the touch screen at certain points and a whole screen mess flashes for a split second just before the animation for when you transport between areas."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Giana Sisters DS",
+      "game_region": "EUR",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Golden Sun: Dark Dawn",
+      "game_region": "EUR",
+      "base_name": "Pokémon Mystery Dungeon: Explorers of the Sky",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Gormiti: The Lords of Nature!",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros:",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Soft-locks Wii U."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Gormiti: The Lords of Nature!",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros!",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Soft-locks Wii U."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Grand Theft Auto: Chinatown Wars",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Grand Theft Auto: Chinatown Wars",
+      "game_region": "USA",
+      "base_name": ": Mario Kart DS US \\ Yoshi's Island US \\ Legend of Zelda: Spirit Tracks US \\ New Super Mario Bros. US \\ Super Mario 64 DS US  \\ Love Plus DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Same result on every injection attempt. Game loads and cutscenes run normally. NPC and player models work fine, but there are invisible walls, cars, buildings, roads and etc, making it almost unplayable"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Grand Theft Auto: Chinatown Wars",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "User listed this as doesn't work, but wrote 'Boots fine, but missing assets'"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Guinness World Records: The Video Game",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "On some menus, the touch screen and upper screen will switch. Touch screen is still functional when switched."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Gunpey DS",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Gyakuten Kenji 2",
+      "game_region": "JPN",
+      "base_name": "Fire Emblem: Shadow DRagon",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Works until the end of case 5 where you have to use the microphone to blow fingerprint powder away. The animation for blowing is there, but it doesn't get rid of it."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Hajime No Ippo the Fighting",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Harry Potter and the Order of the Phoenix",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Has graphical glitches during parts where people talk to each other, text readable and not game breaking. Objects (including people) can be seen through walls, confusing at times."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Harvest Moon DS",
+      "game_region": "EUR",
+      "base_name": "Fire Emblem: Shadow Dragon",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Harvest Moon DS: Island of Happiness",
+      "game_region": "USA",
+      "base_name": "Fire Emblem: Shadow Dragon",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Henry Hatsworth in the Puzzling Adventure",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Hero's Saga Laevatein Tactics",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Hotel Dusk: Room 215",
+      "game_region": "USA",
+      "base_name": "Mario Hoops 3-on-3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Change the fold_on_pause following setting in the configuration_cafe.json to true to solve the puzzle with Mila later in the game (pause the game with ZR or Home to 'close' the emulated DS)."
+    },
+    {
+      "rendersize": null,
+      "game_name": "House M.D.-The Official Game",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "I only did it cuz i thought it was funny lol"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ice Age 3: Dawn of the Dinosaurs",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game doesn't start."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ice Age 4: Continental Drift: Arctic Games",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Inazuma Eleven",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Infinite Space",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "InuYasha: Secret of the Divine",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Irozuki Tingle no Koi no Balloon Trip",
+      "game_region": "JPN",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will also work with the translation patch from https://www.romhacking.net/translations/3376/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ivy the Kiwi?",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Izuna 2: The Unemployed Ninja Returns",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Izuna: Legend of the Unemployed Ninja",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Jump Ultimate Stars",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will also work with the translation patch from https://www.romhacking.net/translations/1636/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ketsui Death Label",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kingdom Hearts 358/2 Days",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kingdom Hearts 358/2 Days",
+      "game_region": "USA",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kingdom Hearts 358/2 Days",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kingdom Hearts RE: Coded",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kirby Super Star Ultra",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Blank ini. Game runs perfectly for Spring Breeze, but then the controls permanently lock up aftewards when entering the main menu again."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kirby Super Star Ultra",
+      "game_region": "USA",
+      "base_name": "Yoshi Toch & Go",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Cut-scenes play way too fast. Controls lock up when new games are unlocked."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Knights in the Nightmare",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Kung Fu Panda",
+      "game_region": "USA",
+      "base_name": "Picross",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Last Window: The Secret of Cape West",
+      "game_region": "EUR",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Legay of Ys: Books I && II",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Lego Battles",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Lego Indiana Jones 2: The Adventure Continues",
+      "game_region": "EUR",
+      "base_name": "WarioWare: Touched! ",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Invisible UI Elements in title screen until ZR (Suspend Menu) is opened but most are still invisible do this a lot to get past the title screen, after that it works perfectly fine."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Lego Star Wars: The Complete Saga",
+      "game_region": "EUR",
+      "base_name": "WarioWare: Touched! ",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Flickering UI Elements in the Title Screen, After going through that it works perfectly fine."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Lego Star Wars: The Complete Saga",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "UI on main menu and in between menus flickers a bit, but otherwise everything is fine"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Lufia: Curse of the Sinistrals",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly, surprisingly fun game"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi Bowser's Inside Story",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "A few graphical errors like screen flickering, and the occasional soft-lock. Use Restore Points often. (Requires more testing). Playable."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi Bowser's Inside Story",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Anti-Piracy kicks in when you get to the first Bowser, the game just deletes all the sprites, and can't do anything."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi Bowser's Inside Story",
+      "game_region": "USA",
+      "base_name": "Animal Crossing Wild World",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Anti-Piracy kicks in when you get to the first Bowser, the game just deletes all the sprites, and can't do anything."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi Bowser's Inside Story (Anti-Piracy Patch Applied)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Some strange graphical issues on occasion, and bad loading times, still playable though."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi Bowser's Inside Story (Patched with Xdelta)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Long load times, but playable."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario & Luigi: Bowsers Inside Story",
+      "game_region": "USA",
+      "base_name": "Mario Hoops 3-on-3",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Fixes softlock bug in Bowser's stomach. HOwever, the game hard-locks at the Midbus Battle in Cavi Cape."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario and Sonic at the Olympic Winter Games (Sochi 2010)",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Story mode Cutscene visuals are glitched, but you can mash the a button through them to get to the gameplay Edit: the visuals for ski jump and moguls do not work. This halts story progression right at the start since you can not unlock Tails. That is so weird. I’ve tried pretty much every other sport and only the 3D skiing ones don’t  work. Might have something to do with the camera, since the cutscenes didn’t work either. Same results with loadiine. However, the game works just fine with NDS2WiiU"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario Hoops 3-on-3",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario Kart DS",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mario Kart DS Deluxe 0.1",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Unsure if Loadiine or Wup Installable. The frames sometimes drop."
+    },
+    {
+      "rendersize": "1x",
+      "game_name": "Mario vs. Donkey Kong: Mini-Land Mayhem!",
+      "game_region": "USA",
+      "base_name": "Any",
+      "base_region": "Unknown",
+      "status": 0,
+      "notes": "This is a DSi enhanced game, and currently no DSi enhanced games work in VC since there is no DSi base to use. (UWUVCI Version: 3.200.1)"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Marvel Nemesis: Rise of the Imperfects",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "I did not find this game enjoyable."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Meccha Taiko no Tatsujin DS - 7tsu no Shima no Daibouken",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Other base roms I tried had different issues, from flickering, black lower screen and soft lock on exit. But this combination has worked fine so far."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mega Man Star Force 2: Zerker x Saurian ",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mega Man Star Force 3: Black Ace ",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Mega Man Star Force Dragon",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": "1x",
+      "game_name": "MegaMan Battle Network Operate Star Force",
+      "game_region": "JPN",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "This is patched with the fan translation (https://forums.therockmanexezone.com/rockman-exe-operate-shooting-star-translation-proj-t4427.html) of the game Rockman EXE Operate Shooting Star. (UWUVCI Version: 3.200.1)"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Megaman Zero Collection",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Megaman ZX",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Megaman ZX Advent",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Megami Ibunroku Devil Survivor",
+      "game_region": "JPN",
+      "base_name": "Mario Kart DS ",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Metal Slug 7",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Miles Edgeworth: Ace Attorney Investigations",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Momo Waliou Zhizao",
+      "game_region": "China",
+      "base_name": "WarioWare: Touched",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Chinese version of WarioWare: Touched! just remember to change hex value at 1D from 80 to 00 to bypass the ONLY FOR iQue DS screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Moon",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Namco Museum DS",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor SFX and GFX issues."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nanostray",
+      "game_region": "USA",
+      "base_name": "Mario and Luigi: Partners in Time",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Only 3D objects are rendered."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Need For Speed: Most Wanted",
+      "game_region": "USA",
+      "base_name": "Mario and Luigi: Partners in Time",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "In-game locks up console."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Need For Speed: Undercover",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Need For Speed: Undercover 2",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Neighbours From Hell",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Most of the textures don't load and stay black."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nervous Brickdown",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "New Chaoji Maliou Xiongdi",
+      "game_region": "China",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Chinese version of New Super Mario Bros. Just remember to change the hex value at 1D from 80 to 00 to bypass the ONLY FOR iQue DS screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "New Super Mario Bros 3 DS",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "New Super Mario Bros DS",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "New Super Mario Bros. U DS",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros. DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Mod created by Skylander Productions. Edit the \"configuration_cafe.json\" to increase the brightness."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Newer Super Mario Bros DS",
+      "game_region": "EUR",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Get the romhack here: https://www.romhacking.net/hacks/3892/. Use this Patch (https://drive.google.com/file/d/1-0P7es7PX8YTc6bBoMBivjdBfGo5m5a2/view) on the Rom before Injecting."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Newer Super Mario Bros DS",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Romhack from: https://www.romhacking.net/hacks/3892/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ni No Kuni: The Jet Black Manage / Ni no Kuni: Shikkoku no Madoushi",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to blackscreen. Wii U freezes on booting the game."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nicktoons: Attack of the Toybots!",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nicktoons: Battle for Volcano Island",
+      "game_region": "USA",
+      "base_name": "WarioWare: Touched!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "This is my favorite DS game of the year. The Japanese ROM (SpongeBob to Nakama-tachi) has also been tested, and it works. It should be ported to other platforms once its decompiled!!"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nictoons MLB",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Voice clips stutter at last second from each clip."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Nintendo Presents: Style Boutique",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Region unknown."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Okamiden",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Touch seems to be invisible."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ontamarama",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Osu! Tatakae! Ouendan",
+      "game_region": "JPN",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pac-Pix",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Panzer Tactics DS",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Peggle Dual Shot",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "I found minor graphical glitches in menus but nothing game-breaking."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phantasy Star Zero",
+      "game_region": "USA",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phineas & Ferb",
+      "game_region": "USA",
+      "base_name": "Picross",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game crashes when trying to start a new game :("
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phoenix Wright - Ace Attorney (de,es,it)",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phoenix Wright: Ace Attorney",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phoenix Wright: Ace Attorney - Justice For All",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Phoenix Wright: Ace Attorney - Trials and Tribulations",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "PictoChat",
+      "game_region": "Any",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen. Won't boot."
+    },
+    {
+      "rendersize": null,
+      "game_name": "PictoChat",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Region unknown. White screen. Won't boot."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Planet Puzzle LeagueB",
+      "game_region": "USA",
+      "base_name": "Dr. Kawashima's Brain Training: How Old Is Your Brain?",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Plants VS. Zombies",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Black Version",
+      "game_region": "USA",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Does not load and locks the console on a black screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Black Version 2",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Does not load and locks the console on a black screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Conquest",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Does not load and locks hte console on a black screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Diamond",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Diamond",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Diamond & Pearl GameStop Deoxys Distribution",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Will only work if the clock is set to either June 20 or 27, 2008. Also, it can't distribute as the Wii U can't connect to ther DS & 3DS systems."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon HeartGold",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Pearl",
+      "game_region": "USA",
+      "base_name": "Mario and Luigi: Partners in Time",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Platinum",
+      "game_region": "EUR",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Platinum",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon Platinum",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Online compatibility list for general VC injections claims Platinum has graphical issues. They are not present on this build. Game renders perfectly fine."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon SoulSilver",
+      "game_region": "USA",
+      "base_name": "Yoshi's Island",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches in ground."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Pokémon StormSilver v1.1 (Rom Hack)",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Character + Pokémon graphical glitches can happen in hubworld often but nothing game breaking."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Polarium",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Power Rangers: Super Legends",
+      "game_region": "USA",
+      "base_name": "Mario Hoops 3-on-3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Powerful Golf",
+      "game_region": "JPN",
+      "base_name": "Mario Kart DS ",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and Pandoras Box",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and The Curious Village",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and the Last Specter",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use DS-Scene ROM Tool to Anti-Piracy Patch the game, otherwise the first puzzle cannot be solved."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and The Lost Future",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and The Lost Spectre's Call",
+      "game_region": "EUR",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton and The Spectre's Call",
+      "game_region": "EUR",
+      "base_name": "Zelda Spirit Tracks",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "When you Submit during the first puzzle it just brings you back to the start of the puzzle, thereby trapping you in an infinite loop, game works on melonDS, so likely an issue with the Wii U's Emulator, might try different Base Rom later"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton und die Schatulle der Pandora",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Professor Layton und die Verlorene Zukunft",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puchi Puchi Virus",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puyo Puyo 15th Anniversary",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puyo Puyo 7",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puyo Puyo Fever",
+      "game_region": "JPN",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puyo Puyo Fever",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Puzzle Quest - Challenge of the Warlords",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Radiant Historia",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ragnarok",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Resident Evil Deadly Silence",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Resident Evil Deadly Silence",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Retro Game Challenge",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Retro Game Challenge 2",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rhapsody - A Music Adventure",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rhythm Heaven",
+      "game_region": "USA",
+      "base_name": "Dr. Kawashima's Brain Training: How Old Is Your Brain?",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rhythm Heaven",
+      "game_region": "USA",
+      "base_name": "Dr. Kawashima's Brain Training: How Old Is Your Brain?",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rondo of Swords",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rosario + Vampire",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros. ",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patch also works too."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rune Factory",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rune Factory 2",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Rune Factory 3",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "SaGa 2: Hihou Densetsu - Goddess of Destiny",
+      "game_region": "JPN",
+      "base_name": "Kirby's Squeak Squad",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "SaGa 3 - Shadow or Light",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Scribblenauts",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great. No issues so far."
+    },
+    {
+      "rendersize": null,
+      "game_name": "SEGA Superstars Tennis",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor GFX glitches."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Shenyou Maliou DS",
+      "game_region": "China",
+      "base_name": "Super Mario 64 DS",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Chinese version of Super Mario 64 DS. Changing hex value at 1D from 80 to 00 does bypass the ONLY FOR iQue DS screen. The touchscreen doesn't work, so you can't touch the star."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Shin Megami Tensei: Devil Survivor",
+      "game_region": "USA",
+      "base_name": "Brain Age: Train Your Brain in Minutes a Day!",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Shin Megami Tensei: Devil Survivor 2",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Shin Megami Tensei: Strange Journey",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Shiren the Wanderer",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Solatorbo",
+      "game_region": "EUR",
+      "base_name": "Fire Emblem - Shadow Dragon",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic & All Stars Racing",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "The Bottom screen flashes for a second while going into a Race, Time trial and Mission. Working great."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Chronicles: The Dark Brotherhood",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Colors",
+      "game_region": "EUR",
+      "base_name": "WarioWare: Touched!",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Works perfectly fine with no gameplay or graphical issues until a boss battle, Namely the first boss at Tropical Resort, At the Start of it, The bottom screen glitches to black, even tried to change the layout of the screens and still freezes the bottom screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Colours",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Rush",
+      "game_region": "EUR",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Rush",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Rush",
+      "game_region": "USA",
+      "base_name": "Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Sonic Rush Adventure",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Space Invaders Extreme 2",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Spider-Man: Web of Shadows",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Play this game if you love Metroidvania games, you owe it to yourself"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Star Wars Episode III: Revenge of the Sith",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Maybe some graphical errors from time to time but they also occur on the physical cartridge so not a massive problem"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Suikoden - Tierkreis",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Suikoden Tierkreis",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Summon Night - Twin Age",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Super Mario 256",
+      "game_region": "EUR",
+      "base_name": "New Super Mario Bros",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Unsure if Loadiine or Wup Installable. The frames sometimes drop."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Super Monkey Ball: Touch & Roll",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Super Princess Peach",
+      "game_region": "EUR",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes at white screen after loading the game."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Super Robot Taisen Mugen no Frontier Exceed (English Patch)",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English Patch from https://www.romhacking.net/translations/5492/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Taiko no Tatsujin DS - Dororon Yokai Daikessen",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Other base roms I tried had different issues, from flickering, black lower screen and soft lock on exit. But this combination has worked fine so far."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Taiko no Tatsujin DS - Touch de Dokodon",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Other base roms I tried had different issues, from flickering, black lower screen and soft lock on exit. But this combination has worked fine so far."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tales of Innocence",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphical glitches."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tales of the Tempest",
+      "game_region": "JPN",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tengen Toppa Gurren Lagann",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English Patch also works too"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tetris DS",
+      "game_region": "USA",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine tested only"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tetris DS",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Dark Spire",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Legend of Zelda: Phantom Hourglass",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Compatible with the D-pad patch: https://www.romhacking.net/hacks/2248/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Legend of Zelda: Spirit Tracks",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Spirit Tracks US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Compatible with the D-pad patch: https://www.romhacking.net/hacks/2248/"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Legendary Starfy",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Whole Dementium Duology",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunter",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "The game runs pretty well haven’t experienced any problems and it feels nice with the gamepad as bottom screen and game as top screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "The Wizard of Oz: Beyond the Yellow Brick Road",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "System crashes at the D3Publisher intro logo screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "The World Ends With You",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda Phantom Hourglass",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Same issue as listed on the compatibility list for the US version (crashes after the first battle). You need to import a save after the first Battle to bypass the crash. This makes Day 1 unplayable on Wii U"
+    },
+    {
+      "rendersize": null,
+      "game_name": "The World Ends With You",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda Phantom Hourglass",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes after first battle."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Theresia, Dear Emile",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Time Hollow",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tom and Jerry Tales",
+      "game_region": "EUR",
+      "base_name": "Mario Kart DS",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor graphical glitches"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Tomodachi Collection",
+      "game_region": "JPN",
+      "base_name": "Kirby's Canvas Curse",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Trackmania DS",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Transformers Revenge of the Fallen: Autobots",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "BGM Audio is broken."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Transformers Revenge of the Fallen: Decepticons",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "BGM Audio is broken."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Transformers: Deceptions",
+      "game_region": "USA",
+      "base_name": "Pictocross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Some glitches will happen when I tried using New Super Mario Bros as base, but not really anymore with Picross as base, game works just fine. I keep you updated"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Transformers: The Game Autobots",
+      "game_region": "USA",
+      "base_name": "Pictocross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Trauma Center: Under the Knife",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Trauma Center: Under the Knife 2",
+      "game_region": "USA",
+      "base_name": "Yoshi Touch & Go",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ultimate Spider-Man",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "WarioWare D.I.Y.",
+      "game_region": "USA",
+      "base_name": "Kirby Squeak Squad",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Can't save in-game, so you have to use a VC Restore Point."
+    },
+    {
+      "rendersize": null,
+      "game_name": "What's Cooking? with Jamie Oliver",
+      "game_region": "EUR",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Winx Club - Quest for the Codex",
+      "game_region": "USA",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Xenosaga I & II",
+      "game_region": "JPN",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Ys Strategy",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros.",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Yu-Gi-Oh 5D's World Championship 2010",
+      "game_region": "USA",
+      "base_name": "The Legend of zelda: Spirit Tracks",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Softlocks on black screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Yu-Gi-Oh! World Championship 2008",
+      "game_region": "USA",
+      "base_name": "Kirby Mass Attack",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Zhigan Yi Bi",
+      "game_region": "China",
+      "base_name": "Metroid Prime Hunters",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Chinese version of Polarium. Just change hex value at 1D from 80 to 00 to bypass the ONLY FOR iQue DS screen."
+    },
+    {
+      "rendersize": null,
+      "game_name": "Zhu Zhu pets 2",
+      "game_region": "USA",
+      "base_name": "New Super Mario Bros",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Zombie Shiki - Eigo Ryoku Sosei Jutsu - English of the Dead",
+      "game_region": "JPN",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "rendersize": null,
+      "game_name": "Zuma's Revenge",
+      "game_region": "USA",
+      "base_name": "Picross 3D",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    }
+  ]
+}

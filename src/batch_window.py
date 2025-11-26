@@ -492,16 +492,31 @@ class SimpleKeysDialog(QDialog):
 
     def init_ui(self):
         """Initialize UI."""
-        self.setWindowTitle(tr.get("encryption_keys"))
-        self.setMinimumWidth(500)
+        settings_title = "설정" if tr.current_language == "ko" else "Settings"
+        self.setWindowTitle(settings_title)
+        self.setMinimumWidth(550)
 
         layout = QVBoxLayout(self)
+
+        # Compatibility DB Update button (top left)
+        top_layout = QHBoxLayout()
+        db_update_text = "호환성 DB 업데이트" if tr.current_language == "ko" else "Update Compatibility DB"
+        self.db_update_btn = QPushButton(db_update_text)
+        self.db_update_btn.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
+        self.db_update_btn.clicked.connect(self.update_compatibility_db)
+        top_layout.addWidget(self.db_update_btn)
+        top_layout.addStretch()
+        layout.addLayout(top_layout)
+
+        layout.addSpacing(10)
+
+        # Form layout for aligned inputs
         form = QFormLayout()
 
         # Common Key
         self.common_key_input = QLineEdit()
         self.common_key_input.setPlaceholderText(tr.get("common_key_placeholder"))
-        form.addRow(tr.get("wii_u_common_key"), self.common_key_input)
+        form.addRow("Wii U Common Key:", self.common_key_input)
 
         # Title Keys
         self.rhythm_key_input = QLineEdit()
@@ -516,36 +531,53 @@ class SimpleKeysDialog(QDialog):
         self.galaxy_key_input.setPlaceholderText("선택 - Super Mario Galaxy 2 (EUR)")
         form.addRow("Mario Galaxy 2:", self.galaxy_key_input)
 
-        layout.addLayout(form)
+        # Output directory (in FormLayout with buttons)
+        output_widget = QWidget()
+        output_layout = QHBoxLayout(output_widget)
+        output_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Output directory setting
-        output_layout = QHBoxLayout()
         self.output_dir_input = QLineEdit()
         self.output_dir_input.setPlaceholderText(tr.get("output_folder_placeholder"))
+
         browse_btn = QPushButton(tr.get("browse"))
         browse_btn.clicked.connect(self.browse_output_dir)
+
         clear_btn = QPushButton(tr.get("clear"))
         clear_btn.clicked.connect(self.clear_output_dir)
-        output_layout.addWidget(self.output_dir_input)
+
+        output_layout.addWidget(self.output_dir_input, 1)
         output_layout.addWidget(browse_btn)
         output_layout.addWidget(clear_btn)
 
-        output_label = QLabel(tr.get("output_folder"))
-        layout.addWidget(output_label)
-        layout.addLayout(output_layout)
+        form.addRow(tr.get("output_folder"), output_widget)
 
-        # Info label
+        layout.addLayout(form)
+
+        # Info box with improved design
+        layout.addSpacing(15)
         if tr.current_language == "ko":
-            info_text = "참고: Rhythm Heaven 키는 필수입니다. 나머지는 선택사항이며 없으면 Rhythm Heaven으로 빌드됩니다."
+            info_text = """<b>참고:</b> Rhythm Heaven 키는 필수입니다. 나머지는 선택사항이며 없으면 Rhythm Heaven으로 빌드됩니다."""
         else:
-            info_text = "Note: Rhythm Heaven key is required. Others are optional, will fallback to Rhythm Heaven if not set."
+            info_text = """<b>Note:</b> Rhythm Heaven key is required. Others are optional, will fallback to Rhythm Heaven if not set."""
+
         info_label = QLabel(info_text)
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("color: #666; font-size: 11px; margin: 10px 0;")
+        info_label.setStyleSheet("""
+            QLabel {
+                background-color: #e3f2fd;
+                border: 1px solid #90caf9;
+                border-radius: 4px;
+                padding: 10px;
+                color: #1565c0;
+                font-size: 11px;
+            }
+        """)
         layout.addWidget(info_label)
 
         # Buttons
+        layout.addSpacing(15)
         btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
         save_btn = QPushButton(tr.get("save"))
         save_btn.clicked.connect(self.save)
         cancel_btn = QPushButton(tr.get("cancel"))
@@ -564,6 +596,93 @@ class SimpleKeysDialog(QDialog):
     def clear_output_dir(self):
         """Clear output directory setting to use default."""
         self.output_dir_input.clear()
+
+    def update_compatibility_db(self):
+        """Update compatibility database from UWUVCI repository."""
+        from PyQt5.QtCore import QThread, pyqtSignal
+        import urllib.request
+        import json as json_lib
+        import time
+
+        # Confirm with user
+        if tr.current_language == "ko":
+            msg = "UWUVCI-PRIME 리포지토리에서 최신 호환성 데이터를 다운로드합니다.\n\nGameTDB에서 게임 ID를 검색하므로 시간이 걸릴 수 있습니다.\n계속하시겠습니까?"
+            title = "호환성 DB 업데이트"
+        else:
+            msg = "Download latest compatibility data from UWUVCI-PRIME repository.\n\nThis may take time as it searches game IDs from GameTDB.\nContinue?"
+            title = "Update Compatibility DB"
+
+        reply = QMessageBox.question(self, title, msg,
+                                      QMessageBox.Yes | QMessageBox.No,
+                                      QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return
+
+        # Disable button during update
+        self.db_update_btn.setEnabled(False)
+        self.db_update_btn.setText("업데이트 중..." if tr.current_language == "ko" else "Updating...")
+
+        # Import the update function
+        try:
+            # Run import script
+            import subprocess
+            import sys
+
+            script_path = Path(__file__).parent.parent / "import_uwuvci_compat.py"
+
+            # Create progress dialog
+            progress = QMessageBox(self)
+            progress.setWindowTitle(title)
+            progress.setText("다운로드 중..." if tr.current_language == "ko" else "Downloading...")
+            progress.setStandardButtons(QMessageBox.NoButton)
+            progress.setModal(True)
+            progress.show()
+
+            # Process events to show the dialog
+            from PyQt5.QtWidgets import QApplication
+            QApplication.processEvents()
+
+            # Run import script
+            result = subprocess.run(
+                [sys.executable, str(script_path)],
+                capture_output=True,
+                text=True,
+                encoding='utf-8'
+            )
+
+            progress.close()
+
+            # Re-enable button
+            self.db_update_btn.setEnabled(True)
+            db_update_text = "호환성 DB 업데이트" if tr.current_language == "ko" else "Update Compatibility DB"
+            self.db_update_btn.setText(db_update_text)
+
+            if result.returncode == 0:
+                # Success
+                if tr.current_language == "ko":
+                    success_msg = "호환성 DB가 성공적으로 업데이트되었습니다!"
+                else:
+                    success_msg = "Compatibility DB updated successfully!"
+
+                QMessageBox.information(self, title, success_msg)
+            else:
+                # Error
+                error_msg = result.stderr if result.stderr else result.stdout
+                if tr.current_language == "ko":
+                    fail_msg = f"업데이트 실패:\n\n{error_msg}"
+                else:
+                    fail_msg = f"Update failed:\n\n{error_msg}"
+
+                QMessageBox.warning(self, title, fail_msg)
+
+        except Exception as e:
+            # Re-enable button
+            self.db_update_btn.setEnabled(True)
+            db_update_text = "호환성 DB 업데이트" if tr.current_language == "ko" else "Update Compatibility DB"
+            self.db_update_btn.setText(db_update_text)
+
+            error_msg = f"업데이트 실패: {e}" if tr.current_language == "ko" else f"Update failed: {e}"
+            QMessageBox.warning(self, title, error_msg)
 
     def save(self):
         """Save keys and close."""
@@ -766,6 +885,20 @@ class EditGameDialog(QDialog):
         else:
             self.base_combo = None
 
+        # Wiimmfi/Trucha patch option
+        wiimmfi_layout = QVBoxLayout()
+        self.wiimmfi_checkbox = QCheckBox(tr.get("wiimmfi_patch"))
+        self.wiimmfi_checkbox.setChecked(self.job.wiimmfi_patch)
+        self.wiimmfi_checkbox.setToolTip(tr.get("wiimmfi_description"))
+        wiimmfi_layout.addWidget(self.wiimmfi_checkbox)
+
+        # Add description as label (smaller font)
+        desc_label = QLabel(tr.get("wiimmfi_description"))
+        desc_label.setWordWrap(True)
+        desc_label.setStyleSheet("color: #666; font-size: 10px;")
+        wiimmfi_layout.addWidget(desc_label)
+        layout.addLayout(wiimmfi_layout)
+
         # Buttons
         btn_layout = QHBoxLayout()
         save_btn = QPushButton(tr.get("save"))
@@ -812,7 +945,189 @@ class EditGameDialog(QDialog):
         if self.base_combo:
             self.job.host_game = self.base_combo.currentText()
 
+        # Save Wiimmfi patch option
+        self.job.wiimmfi_patch = self.wiimmfi_checkbox.isChecked()
+
         self.accept()
+
+
+class GamepadHelpDialog(QDialog):
+    """Dialog to show gamepad mapping images with left/right navigation."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.current_index = 0
+        self.images = []
+        self.init_ui()
+        self.load_images()
+
+    def init_ui(self):
+        """Initialize UI."""
+        title = "컨트롤러 매핑 안내" if tr.current_language == "ko" else "Controller Mapping"
+        self.setWindowTitle(title)
+        self.resize(550, 400)  # Compact size
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(4)
+
+        # Title label
+        self.title_label = QLabel()
+        self.title_label.setAlignment(Qt.AlignCenter)
+        self.title_label.setStyleSheet("font-size: 12px; font-weight: bold; padding: 4px;")
+        layout.addWidget(self.title_label)
+
+        # Image display area with navigation
+        image_layout = QHBoxLayout()
+        image_layout.setSpacing(4)
+
+        # Left arrow button
+        self.prev_btn = QPushButton("◀")
+        self.prev_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 16px;
+                padding: 8px;
+                background-color: #f0f0f0;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                min-width: 30px;
+                max-width: 30px;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+            QPushButton:pressed {
+                background-color: #d0d0d0;
+            }
+            QPushButton:disabled {
+                background-color: #f8f8f8;
+                color: #ccc;
+            }
+        """)
+        self.prev_btn.clicked.connect(self.prev_image)
+        image_layout.addWidget(self.prev_btn)
+
+        # Image label
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setStyleSheet("background-color: white; border: 1px solid #ddd;")
+        self.image_label.setScaledContents(False)
+        image_layout.addWidget(self.image_label, 1)
+
+        # Right arrow button
+        self.next_btn = QPushButton("▶")
+        self.next_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 16px;
+                padding: 8px;
+                background-color: #f0f0f0;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                min-width: 30px;
+                max-width: 30px;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+            QPushButton:pressed {
+                background-color: #d0d0d0;
+            }
+            QPushButton:disabled {
+                background-color: #f8f8f8;
+                color: #ccc;
+            }
+        """)
+        self.next_btn.clicked.connect(self.next_image)
+        image_layout.addWidget(self.next_btn)
+
+        layout.addLayout(image_layout)
+
+        # Page indicator
+        self.page_label = QLabel()
+        self.page_label.setAlignment(Qt.AlignCenter)
+        self.page_label.setStyleSheet("font-size: 11px; color: #666; padding: 3px;")
+        layout.addWidget(self.page_label)
+
+        # Close button
+        close_btn = QPushButton(tr.get("close"))
+        close_btn.clicked.connect(self.accept)
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4a90e2;
+                color: white;
+                padding: 6px 16px;
+                border: none;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #357abd;
+            }
+        """)
+        layout.addWidget(close_btn, 0, Qt.AlignCenter)
+
+    def load_images(self):
+        """Load gamepad mapping images."""
+        from .resources import resources
+        images_dir = resources.resources_dir / "images"
+
+        # Load images in order
+        image_files = [
+            ("gamepad_allstar_mapping.jpg", "Galaxy AllStars 매핑" if tr.current_language == "ko" else "Galaxy AllStars Mapping"),
+            ("gamepad_nvidia_mapping.jpg", "Galaxy Nvidia 매핑" if tr.current_language == "ko" else "Galaxy Nvidia Mapping"),
+        ]
+
+        for filename, title in image_files:
+            img_path = images_dir / filename
+            if img_path.exists():
+                self.images.append((str(img_path), title))
+
+        if self.images:
+            self.show_image(0)
+        else:
+            self.image_label.setText("이미지를 찾을 수 없습니다" if tr.current_language == "ko" else "Images not found")
+
+    def show_image(self, index):
+        """Display image at given index."""
+        if 0 <= index < len(self.images):
+            self.current_index = index
+            img_path, title = self.images[index]
+
+            # Load and display image
+            pixmap = QPixmap(img_path)
+            if not pixmap.isNull():
+                # Scale to fit window width (fill horizontally)
+                scaled_pixmap = pixmap.scaled(
+                    500, 330,  # Compact size to fit the dialog
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation
+                )
+                self.image_label.setPixmap(scaled_pixmap)
+            else:
+                self.image_label.setText("이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image")
+
+            # Update title
+            self.title_label.setText(title)
+
+            # Update page indicator
+            page_text = f"{index + 1} / {len(self.images)}"
+            self.page_label.setText(page_text)
+
+            # Update button states
+            self.prev_btn.setEnabled(index > 0)
+            self.next_btn.setEnabled(index < len(self.images) - 1)
+
+    def prev_image(self):
+        """Show previous image."""
+        if self.current_index > 0:
+            self.show_image(self.current_index - 1)
+
+    def next_image(self):
+        """Show next image."""
+        if self.current_index < len(self.images) - 1:
+            self.show_image(self.current_index + 1)
 
 
 class CompatibilityListDialog(QDialog):
@@ -833,30 +1148,48 @@ class CompatibilityListDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Search bar
+        # Search and filter bar
         search_layout = QHBoxLayout()
+
+        # Category filter
+        category_label = QLabel("카테고리:" if tr.current_language == "ko" else "Category:")
+        self.category_combo = QComboBox()
+        self.category_combo.addItems([
+            "전체" if tr.current_language == "ko" else "All",
+            "Wii",
+            "GameCube",
+            "NDS"
+        ])
+        self.category_combo.currentTextChanged.connect(self.filter_table)
+        search_layout.addWidget(category_label)
+        search_layout.addWidget(self.category_combo)
+
+        search_layout.addSpacing(20)
+
+        # Search box
         search_label = QLabel("검색:" if tr.current_language == "ko" else "Search:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("게임 이름 또는 ID 입력..." if tr.current_language == "ko" else "Enter game name or ID...")
         self.search_input.textChanged.connect(self.filter_table)
         search_layout.addWidget(search_label)
-        search_layout.addWidget(self.search_input)
+        search_layout.addWidget(self.search_input, 1)
         layout.addLayout(search_layout)
 
         # Table
         self.table = QTableWidget()
-        self.table.setColumnCount(5)
+        self.table.setColumnCount(6)  # Added category column
         if tr.current_language == "ko":
-            headers = ["게임 ID", "게임 제목", "지역", "게임패드 호환", "호스트 게임"]
+            headers = ["카테고리", "게임 ID", "게임 제목", "지역", "게임패드 호환", "호스트 게임"]
         else:
-            headers = ["Game ID", "Game Title", "Region", "Gamepad Compat", "Host Game"]
+            headers = ["Category", "Game ID", "Game Title", "Region", "Gamepad Compat", "Host Game"]
         self.table.setHorizontalHeaderLabels(headers)
-        self.table.setColumnWidth(0, 80)
-        self.table.setColumnWidth(2, 60)
-        self.table.setColumnWidth(3, 150)  # Gamepad Compat - fixed size
-        self.table.setColumnWidth(4, 150)  # Host Game - fixed size
+        self.table.setColumnWidth(0, 80)   # Category
+        self.table.setColumnWidth(1, 80)   # Game ID
+        self.table.setColumnWidth(3, 60)   # Region
+        self.table.setColumnWidth(4, 150)  # Gamepad Compat
+        self.table.setColumnWidth(5, 150)  # Host Game
         # Use stretch for title column only
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)  # Game Title
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)  # Game Title
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         # Allow editing only game_id column (column 0)
         self.table.setEditTriggers(QTableWidget.DoubleClicked)
@@ -890,11 +1223,20 @@ class CompatibilityListDialog(QDialog):
 
         self.table.setRowCount(len(games))
         for row, game in enumerate(games):
-            self.table.setItem(row, 0, QTableWidgetItem(game.get('game_id', '')))
-            self.table.setItem(row, 1, QTableWidgetItem(game.get('title', '')))
-            self.table.setItem(row, 2, QTableWidgetItem(game.get('region', '')))
+            # Category (column 0)
+            category = game.get('category', 'Wii')
+            self.table.setItem(row, 0, QTableWidgetItem(category))
 
-            # Gamepad compatibility with color
+            # Game ID (column 1)
+            self.table.setItem(row, 1, QTableWidgetItem(game.get('game_id', '')))
+
+            # Title (column 2)
+            self.table.setItem(row, 2, QTableWidgetItem(game.get('title', '')))
+
+            # Region (column 3)
+            self.table.setItem(row, 3, QTableWidgetItem(game.get('region', '')))
+
+            # Gamepad compatibility with color (column 4)
             gamepad = game.get('gamepad_compatibility', 'Unknown')
             gamepad_item = QTableWidgetItem(gamepad)
             if 'works' in gamepad.lower() and 'doesn\'t' not in gamepad.lower():
@@ -903,24 +1245,25 @@ class CompatibilityListDialog(QDialog):
                 gamepad_item.setBackground(QColor(220, 220, 220))
             else:
                 gamepad_item.setBackground(QColor(255, 200, 200))
-            self.table.setItem(row, 3, gamepad_item)
+            self.table.setItem(row, 4, gamepad_item)
 
-            self.table.setItem(row, 4, QTableWidgetItem(game.get('host_game', '')))
+            # Host game (column 5)
+            self.table.setItem(row, 5, QTableWidgetItem(game.get('host_game', '')))
 
     def on_item_changed(self, item):
         """Track changes to game_id or title column."""
         row = item.row()
-        if item.column() == 0:  # game_id column
-            title_item = self.table.item(row, 1)
-            region_item = self.table.item(row, 2)
+        if item.column() == 1:  # game_id column
+            title_item = self.table.item(row, 2)
+            region_item = self.table.item(row, 3)
             if title_item and region_item:
                 # Use original title from all_games
                 orig_title = self.all_games[row]['title']
                 region = region_item.text()
                 key = ('game_id', orig_title, region)
                 self.changes[key] = item.text()
-        elif item.column() == 1:  # title column
-            region_item = self.table.item(row, 2)
+        elif item.column() == 2:  # title column
+            region_item = self.table.item(row, 3)
             if region_item:
                 orig_title = self.all_games[row]['title']
                 region = region_item.text()
@@ -950,17 +1293,32 @@ class CompatibilityListDialog(QDialog):
         msg = f"{count}개 항목이 저장되었습니다." if tr.current_language == "ko" else f"{count} item(s) saved."
         show_message(self, "info", "Info", msg)
 
-    def filter_table(self, text):
-        """Filter table by search text."""
-        text = text.lower()
+    def filter_table(self, text=None):
+        """Filter table by category and search text."""
+        search_text = self.search_input.text().lower()
+        selected_category = self.category_combo.currentText()
+
         for row in range(self.table.rowCount()):
-            match = False
-            for col in range(self.table.columnCount()):
-                item = self.table.item(row, col)
-                if item and text in item.text().lower():
-                    match = True
-                    break
-            self.table.setRowHidden(row, not match)
+            # Get category from first column
+            category_item = self.table.item(row, 0)
+            category = category_item.text() if category_item else "Wii"
+
+            # Filter by category first
+            if selected_category not in ["전체", "All"] and category != selected_category:
+                self.table.setRowHidden(row, True)
+                continue
+
+            # Then filter by search text
+            if search_text:
+                match = False
+                for col in range(self.table.columnCount()):
+                    item = self.table.item(row, col)
+                    if item and search_text in item.text().lower():
+                        match = True
+                        break
+                self.table.setRowHidden(row, not match)
+            else:
+                self.table.setRowHidden(row, False)
 
 
 class BatchWindow(QMainWindow):
@@ -987,10 +1345,12 @@ class BatchWindow(QMainWindow):
             icon_path = Path(sys._MEIPASS) / "resources" / "images" / "icon.png"
         else:
             # Running as script
-            icon_path = Path(__file__).parent.parent.parent / "resources" / "images" / "icon.png"
+            icon_path = Path(__file__).parent.parent / "resources" / "images" / "icon.png"
 
         if icon_path.exists():
             self.setWindowIcon(QIcon(str(icon_path)))
+        else:
+            print(f"[WARN] Icon not found at: {icon_path}")
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -1000,15 +1360,16 @@ class BatchWindow(QMainWindow):
         top_layout = QHBoxLayout()
         top_layout.setSpacing(8)
 
-        # Modern button style
+        # Modern button style with icon spacing
         btn_style = """
             QPushButton {
                 background-color: #f5f5f5;
                 color: #333;
                 border: 1px solid #ddd;
-                padding: 8px 16px;
+                padding: 8px 16px 8px 12px;
                 border-radius: 6px;
                 font-size: 13px;
+                text-align: left;
             }
             QPushButton:hover {
                 background-color: #e8e8e8;
@@ -1019,19 +1380,22 @@ class BatchWindow(QMainWindow):
             }
         """
 
-        self.add_btn = QPushButton(tr.get("add_files"))
-        self.add_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogNewFolder))
+        # Add Files button
+        self.add_btn = QPushButton("  " + tr.get("add_files"))  # Add spacing before text
+        self.add_btn.setIcon(self.style().standardIcon(QStyle.SP_DirOpenIcon))
         self.add_btn.setStyleSheet(btn_style)
         self.add_btn.clicked.connect(self.add_games)
         top_layout.addWidget(self.add_btn)
 
-        self.remove_btn = QPushButton(tr.get("remove_selected"))
-        self.remove_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogCancelButton))
+        # Remove Selected button
+        self.remove_btn = QPushButton("  " + tr.get("remove_selected"))  # Add spacing
+        self.remove_btn.setIcon(self.style().standardIcon(QStyle.SP_BrowserStop))
         self.remove_btn.setStyleSheet(btn_style)
         self.remove_btn.clicked.connect(self.remove_selected)
         top_layout.addWidget(self.remove_btn)
 
-        self.clear_btn = QPushButton(tr.get("clear_all"))
+        # Clear All button
+        self.clear_btn = QPushButton("  " + tr.get("clear_all"))  # Add spacing
         self.clear_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
         self.clear_btn.setStyleSheet(btn_style)
         self.clear_btn.clicked.connect(self.clear_all)
@@ -1039,23 +1403,22 @@ class BatchWindow(QMainWindow):
 
         # Compatibility list button
         compat_text = "호환성 목록" if tr.current_language == "ko" else "Compatibility"
-        self.compat_btn = QPushButton(compat_text)
-        self.compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogInfoView))
+        self.compat_btn = QPushButton("  " + compat_text)  # Add spacing
+        self.compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
         self.compat_btn.setStyleSheet(btn_style)
         self.compat_btn.clicked.connect(self.show_compatibility_list)
         top_layout.addWidget(self.compat_btn)
 
         top_layout.addStretch()
 
-        # Settings button
-        settings_text = "⚙ 설정" if tr.current_language == "ko" else "⚙ Settings"
+        # Settings button (with gear icon)
+        settings_text = "⚙  설정" if tr.current_language == "ko" else "⚙  Settings"
         self.settings_btn = QPushButton(settings_text)
         self.settings_btn.setStyleSheet(btn_style)
         self.settings_btn.clicked.connect(self.show_settings)
         top_layout.addWidget(self.settings_btn)
 
-        auto_download_text = "아이콘 자동 다운로드" if tr.current_language == "ko" else "Auto Download Icons"
-        self.auto_icons_check = QCheckBox(auto_download_text)
+        self.auto_icons_check = QCheckBox(tr.get("auto_download"))
         self.auto_icons_check.setChecked(True)
         top_layout.addWidget(self.auto_icons_check)
 
@@ -1067,6 +1430,7 @@ class BatchWindow(QMainWindow):
 
         layout.addLayout(top_layout)
 
+        # Table header with help button
         # Game list table (파일명/게임제목 통합, 게임 ID 별도 표시, 호환성/패드옵션 통합)
         self.table = QTableWidget()
         self.table.setColumnCount(7)
@@ -1138,7 +1502,7 @@ class BatchWindow(QMainWindow):
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
 
-        build_text = "빌드" if tr.current_language == "ko" else "Start Build"
+        build_text = "빌드" if tr.current_language == "ko" else "Build"
         self.build_btn = QPushButton(build_text)
         self.build_btn.setStyleSheet("""
             QPushButton {
@@ -1168,7 +1532,7 @@ class BatchWindow(QMainWindow):
         self.build_btn.setEnabled(False)
         bottom_layout.addWidget(self.build_btn)
 
-        stop_text = "■ 중지" if tr.current_language == "ko" else "■ Stop"
+        stop_text = "중지" if tr.current_language == "ko" else "Stop"
         self.stop_btn = QPushButton(stop_text)
         self.stop_btn.setStyleSheet("""
             QPushButton {
