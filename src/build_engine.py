@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 from .translations import tr
-from .wiivc_patcher import auto_patch_wiimmfi
+from .wiivc_patcher import auto_patch_wiilink_wfc
 
 
 class BuildEngine:
@@ -58,7 +58,9 @@ class BuildEngine:
         self.message_rotator_stop = False
 
         def rotate_messages():
-            messages = tr.get(message_key, [])
+            # Get messages list from translations (returns key if not found)
+            messages_result = tr.get(message_key)
+            messages = messages_result if isinstance(messages_result, list) else []
             if not messages:
                 return
 
@@ -126,7 +128,11 @@ class BuildEngine:
                 )
 
                 # Get fun messages if key provided
-                fun_messages = tr.get(fun_messages_key, []) if fun_messages_key else []
+                if fun_messages_key:
+                    fun_messages_result = tr.get(fun_messages_key)
+                    fun_messages = fun_messages_result if isinstance(fun_messages_result, list) else []
+                else:
+                    fun_messages = []
                 message_index = 0
                 last_message_time = time.time()
                 message_interval = 4  # Change message every 4 seconds
@@ -420,8 +426,8 @@ class BuildEngine:
   <ext_dev_etc_name type="string" length="512"></ext_dev_etc_name>
   <eula_version type="unsignedInt" length="4">0</eula_version>
   <drc_use type="unsignedInt" length="4">{drc_use}</drc_use>
-  <network_use type="unsignedInt" length="4">0</network_use>
-  <online_account_use type="unsignedInt" length="4">0</online_account_use>
+  <network_use type="unsignedInt" length="4">1</network_use>
+  <online_account_use type="unsignedInt" length="4">1</online_account_use>
   <direct_boot type="hexBinary" length="4">00000000</direct_boot>
   <reserved_flag0 type="hexBinary" length="4">00010001</reserved_flag0>
   <reserved_flag1 type="hexBinary" length="4">00080023</reserved_flag1>
@@ -837,8 +843,6 @@ class BuildEngine:
         """
         Pack final WUP using NUSPacker (uses generated random IDs).
         """
-        self.update_progress(85, tr.get("progress_packing_wup"))
-
         nuspacker_exe = self.paths.temp_tools / "JAR" / "nuspacker.exe"
         build_dir = self.paths.temp_build
 
@@ -854,7 +858,16 @@ class BuildEngine:
 
         args = f'-in "{build_dir}" -out "{final_output}" -encryptKeyWith {common_key}'
 
-        if not self.run_tool(nuspacker_exe, args, cwd=self.paths.temp_root):
+        # Start fun message rotation for WUP packing (takes a while!)
+        self.start_message_rotation("fun_packing_messages", base_progress=85, interval=4)
+
+        try:
+            result = self.run_tool(nuspacker_exe, args, cwd=self.paths.temp_root)
+        finally:
+            # Stop message rotation
+            self.stop_message_rotation()
+
+        if not result:
             return False
 
         # Verify output
@@ -945,22 +958,28 @@ class BuildEngine:
             with open(processed_iso, 'rb') as f:
                 game_id = f.read(6).decode('ascii', errors='ignore')  # e.g., RUUK01
 
-            # Apply Wiimmfi patches (fw.img + ISO)
-            # This enables online play for network-enabled games
+            # Apply WiiLink WFC patches (fw.img + ISO)
+            # This enables online play via WiiLink WFC servers (HTTP-based, WiiVC compatible!)
             # and doesn't harm games without network features
-            self.update_progress(68, "Applying Wiimmfi patches...")
+            self.update_progress(68, "Applying WiiLink WFC patches...")
             print("\n" + "="*70)
-            print("[Wiimmfi] Applying patches for enhanced compatibility...")
+            print("[WiiLink WFC] Applying patches for online play...")
             print("="*70)
 
             fw_img_path = self.paths.temp_build / "code" / "fw.img"
             wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
             base_game = options.get("base_game", "Rhythm Heaven Fever (USA)")
 
-            # Apply Wiimmfi/Trucha patches if enabled (default: True)
-            if options.get("wiimmfi_patch", True):
+            # Apply Trucha bug patch if enabled (default: True)
+            # Trucha patch: Bypasses signature verification, required for modified games
+            if options.get("trucha_patch", True):
+                self.update_progress(68, "Applying Trucha bug patch...")
+                print("\n" + "="*70)
+                print("[Trucha] Applying signature bypass patch...")
+                print("="*70)
+
                 try:
-                    fw_patched, iso_patched = auto_patch_wiimmfi(
+                    fw_patched, iso_patched = auto_patch_wiilink_wfc(
                         iso_path=processed_iso,
                         fw_img_path=fw_img_path,
                         game_id=game_id,
@@ -971,15 +990,53 @@ class BuildEngine:
                     )
 
                     if fw_patched:
-                        print("[Wiimmfi] fw.img patched - signature checks bypassed")
+                        print("[Trucha] fw.img patched - signature checks bypassed")
                     if iso_patched:
-                        print("[Wiimmfi] ISO patched - Wiimmfi server support enabled")
+                        print("[WiiLink WFC] ISO patched - WiiLink WFC server support enabled")
+                        print("[WiiLink WFC] Compatible with WiiVC! (HTTP-based)")
 
                 except Exception as e:
-                    print(f"[Wiimmfi] Warning: Patch failed - {e}")
-                    print("[Wiimmfi] Game will still work, but online play may not function")
+                    print(f"[Trucha] Warning: Patch failed - {e}")
+                    print("[Trucha] Game may not work if modified")
             else:
-                print("[Wiimmfi] Patches disabled by user - skipping")
+                print("[Trucha] Trucha patch disabled by user - skipping")
+
+            # Apply C2W (Cafe2Wii) CPU clock unlock patch if enabled and Ancast key is provided
+            # C2W patch: Unlocks CPU from 729MHz to 1.215GHz for better performance
+            ancast_key = options.get("ancast_key", "").strip()
+            c2w_enabled = options.get("c2w_patch", True)
+
+            if c2w_enabled and ancast_key and len(ancast_key) == 32:
+                self.update_progress(70, "Applying C2W CPU clock unlock...")
+                print("\n" + "="*70)
+                print("[C2W] Applying CPU clock unlock patch...")
+                print("="*70)
+
+                try:
+                    from wiivc_patcher import WiiVCPatcher
+                    build_code_dir = self.paths.temp_build / "code"
+                    c2w_patched = WiiVCPatcher.apply_c2w_patch(
+                        ancast_key=ancast_key,
+                        build_code_dir=build_code_dir,
+                        core_dir=self.paths.core
+                    )
+
+                    if c2w_patched:
+                        print("[C2W] CPU clock unlock applied successfully!")
+                        print("[C2W] Game will run at 1.215GHz (up from 729MHz)")
+                    else:
+                        print("[C2W] Warning: C2W patch failed - game will run at normal clock speed")
+
+                except Exception as e:
+                    print(f"[C2W] Warning: C2W patch failed - {e}")
+                    print("[C2W] Game will still work at normal clock speed (729MHz)")
+            else:
+                if not c2w_enabled:
+                    print("[C2W] C2W patch disabled by user - skipping")
+                elif not ancast_key:
+                    print("[C2W] No Ancast key provided - skipping C2W CPU unlock")
+                elif len(ancast_key) != 32:
+                    print("[C2W] Invalid Ancast key (must be 32 hex characters) - skipping C2W patch")
 
             # Add prefix based on controller option
             pad_option = options.get("pad_option", "none")

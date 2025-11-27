@@ -25,7 +25,8 @@ class BatchBuildJob:
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
-        self.wiimmfi_patch = True  # Enable Wiimmfi/Trucha patches by default
+        self.trucha_patch = True  # Enable Trucha bug patch by default
+        self.c2w_patch = True  # Enable C2W CPU unlock patch by default (if Ancast key available)
 
 
 class BatchBuilder(QThread):
@@ -38,11 +39,13 @@ class BatchBuilder(QThread):
     all_finished = pyqtSignal(int, int)  # success_count, total_count
 
     def __init__(self, jobs: List[BatchBuildJob], common_key: str, title_keys: Dict[str, str],
-                 output_dir: Path, auto_icons: bool = True, keep_temp_for_debug: bool = False):
+                 output_dir: Path, auto_icons: bool = True, keep_temp_for_debug: bool = False,
+                 ancast_key: str = ''):
         super().__init__()
         self.jobs = jobs
         self.common_key = common_key
         self.title_keys = title_keys  # Dict mapping host game name to title key
+        self.ancast_key = ancast_key  # Ancast key for C2W CPU unlock patch
         self.output_dir = output_dir
         self.auto_icons = auto_icons
         self.keep_temp_for_debug = keep_temp_for_debug
@@ -240,8 +243,11 @@ class BatchBuilder(QThread):
                 "drc_path": paths.temp_drc,
                 # Controller option for folder naming
                 "pad_option": job.pad_option,
-                # Wiimmfi/Trucha patch option
-                "wiimmfi_patch": job.wiimmfi_patch,
+                # Patch options
+                "trucha_patch": job.trucha_patch,
+                "c2w_patch": job.c2w_patch,
+                # Ancast key for C2W CPU unlock patch
+                "ancast_key": self.ancast_key,
             }
 
             # Apply selected profile
