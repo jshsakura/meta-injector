@@ -11,7 +11,7 @@ class Translations:
         # Window titles
         "app_title": {
             "en": "Meta-Injector",
-            "ko": "Meta-Injector"
+            "ko": "위유 원정대 - 메타 인젝터"
         },
 
         # Main menu and buttons
@@ -228,8 +228,8 @@ class Translations:
 
         # Advanced Tab
         "ancast_key": {
-            "en": "Ancast Key (for C2W Patcher)",
-            "ko": "Ancast 키 (C2W 패처용)"
+            "en": "Ancast Key (Wii U Starbuck Key)",
+            "ko": "Ancast 키 (Wii U Starbuck 키)"
         },
         "enter_ancast_key": {
             "en": "Enter Ancast key...",
@@ -308,8 +308,8 @@ class Translations:
             "ko": "CPU를 729MHz에서 1.215GHz로 상향 (설정에서 Ancast 키 필요)"
         },
         "c2w_description": {
-            "en": "• C2W (Cafe2Wii) CPU clock unlock patch\n• Unlocks CPU from 729MHz to 1.215GHz\n• Improves performance for demanding games\n• Requires Ancast key",
-            "ko": "• C2W (Cafe2Wii) CPU 클럭 제한 해제 패치\n• CPU를 729MHz에서 1.215GHz로 상향\n• 고사양 게임의 성능 향상\n• Ancast 키 필요"
+            "en": "• C2W (Cafe2Wii) CPU clock unlock patch\n• Unlocks CPU from 729MHz to 1.215GHz\n• Improves performance for demanding games\n• Requires Ancast (Starbuck) key",
+            "ko": "• C2W (Cafe2Wii) CPU 클럭 제한 해제 패치\n• CPU를 729MHz에서 1.215GHz로 상향\n• 고사양 게임의 성능 향상\n• Ancast (Starbuck) 키 필요"
         },
         "trimming_description": {
             "en": "Keep full ISO without trimming unused space (may improve compatibility)",
@@ -412,8 +412,8 @@ class Translations:
             "ko": "확인"
         },
         "cancel": {
-            "en": "Cancel",
-            "ko": "취소"
+            "en": "Close",
+            "ko": "닫기"
         },
         "yes": {
             "en": "Yes",
@@ -775,7 +775,7 @@ class Translations:
         # Batch Converter
         "batch_converter_title": {
             "en": "Batch WBFS/ISO Converter",
-            "ko": "일괄 WBFS/ISO 변환기"
+            "ko": ""
         },
         "batch_converter_header": {
             "en": "Batch Game File Converter",
@@ -794,8 +794,8 @@ class Translations:
             "ko": "선택 제거"
         },
         "clear_all": {
-            "en": "Clear All",
-            "ko": "전체 삭제"
+            "en": "Remove All",
+            "ko": "전체 제거"
         },
         "clear_all_confirm": {
             "en": "Are you sure you want to clear all files?",

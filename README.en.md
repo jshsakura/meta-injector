@@ -63,10 +63,12 @@ python run.py
 
 1. Click **⚙ Settings** button
 2. Enter your encryption keys:
-   - **Wii U Common Key** (required)
-   - **Rhythm Heaven Fever Title Key** (required)
+   - **Wii U Common Key** (required) - Red/Green highlight
+   - **Rhythm Heaven Fever Title Key** (required) - Red/Green highlight
    - **Xenoblade Chronicles Title Key** (optional)
    - **Super Mario Galaxy 2 Title Key** (optional)
+   - **Ancast Key (Wii U Starbuck Key)** (required for C2W) - Yellow highlight
+     - Needed for CPU clock unlock patch (729MHz → 1.215GHz)
 3. Set output directory (optional - defaults to game directory)
 4. Click **Save**
 
@@ -75,7 +77,12 @@ python run.py
 #### Single Game Build
 1. Click **Add Files** and select your Wii game(s)
 2. Wait for automatic metadata and image download
-3. (Optional) Click **Edit** to customize title, images, or base ROM
+3. (Optional) Click **Edit** to customize:
+   - Game title, images, or base ROM
+   - **✅ Trucha Bug Patch** (default: enabled)
+     - Bypasses signature verification, required for modified games
+   - **✅ C2W CPU Unlock Patch** (default: enabled, requires Ancast key)
+     - Unlocks CPU from 729MHz to 1.215GHz
 4. Select gamepad profile from the dropdown
 5. Click **Start Build**
 
@@ -156,19 +163,29 @@ The build engine follows this workflow:
    - Extracts and trims using WIT
    - Preserves TIK/TMD files
 
-5. **Apply Controller Patches** (if selected)
+5. **Apply Firmware Patches**
+   - **Trucha Bug Patch** (default: enabled)
+     - fw.img signature verification bypass
+     - Fixes error 22000
+     - Required for modified games to run
+   - **C2W CPU Unlock** (when Ancast key provided)
+     - c2w.img patch
+     - CPU clock: 729MHz → 1.215GHz
+     - Improves performance for demanding games
+
+6. **Apply Controller Patches** (if selected)
    - Injects gamepad profile GCT codes
    - Supports 7 different profiles
    - Special Galaxy 1 patches available
 
-6. **Convert Images**
+7. **Convert Images**
    - Converts PNG to TGA format
    - Resizes: icon (128x128), TV banner (1280x720), DRC (854x480)
 
-7. **Convert to NFS Format**
+8. **Convert to NFS Format**
    - Uses nfs2iso2nfs for Wii U filesystem
 
-8. **Pack WUP Installable**
+9. **Pack WUP Installable**
    - Creates installable package with NUSPacker
    - Outputs to configured directory
 

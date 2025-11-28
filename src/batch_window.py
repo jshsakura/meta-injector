@@ -504,7 +504,7 @@ class SimpleKeysDialog(QDialog):
         top_layout = QHBoxLayout()
         db_update_text = "호환성 DB 업데이트" if tr.current_language == "ko" else "Update Compatibility DB"
         self.db_update_btn = QPushButton(db_update_text)
-        self.db_update_btn.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
+        self.db_update_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogApplyButton))
         self.db_update_btn.clicked.connect(self.update_compatibility_db)
         top_layout.addWidget(self.db_update_btn)
         top_layout.addStretch()
@@ -519,6 +519,7 @@ class SimpleKeysDialog(QDialog):
         self.common_key_input = QLineEdit()
         self.common_key_input.setPlaceholderText(tr.get("common_key_placeholder"))
         self.common_key_input.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
+        self.common_key_input.textChanged.connect(self.update_common_key_style)
         form.addRow("Wii U Common Key:", self.common_key_input)
 
         # Title Keys
@@ -526,6 +527,7 @@ class SimpleKeysDialog(QDialog):
         self.rhythm_key_input = QLineEdit()
         self.rhythm_key_input.setPlaceholderText("필수 - Rhythm Heaven Fever (USA)")
         self.rhythm_key_input.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
+        self.rhythm_key_input.textChanged.connect(self.update_rhythm_key_style)
         form.addRow("Rhythm Heaven Fever:", self.rhythm_key_input)
 
         self.xenoblade_key_input = QLineEdit()
@@ -544,6 +546,9 @@ class SimpleKeysDialog(QDialog):
 
         self.ancast_key_input = QLineEdit()
         self.ancast_key_input.setPlaceholderText(tr.get("enter_ancast_key"))
+        # Initial style for Ancast Key, indicating it's a required field
+        self.ancast_key_input.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
+        self.ancast_key_input.textChanged.connect(self.update_ancast_key_style) # Connect signal
         ancast_layout.addWidget(self.ancast_key_input)
 
         # C2W description
@@ -667,6 +672,27 @@ class SimpleKeysDialog(QDialog):
         btn_layout.addWidget(save_btn)
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
+
+    def _update_required_field_style(self, line_edit: QLineEdit):
+        """
+        Generic method to update the style of a required QLineEdit based on content.
+        """
+        if line_edit.text():
+            line_edit.setStyleSheet("QLineEdit { background-color: #e6ffe6; border: 2px solid #66bb66; }")
+        else:
+            line_edit.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
+
+    def update_ancast_key_style(self):
+        """Updates the style for the Ancast key input."""
+        self._update_required_field_style(self.ancast_key_input)
+
+    def update_common_key_style(self):
+        """Updates the style for the Wii U Common key input."""
+        self._update_required_field_style(self.common_key_input)
+
+    def update_rhythm_key_style(self):
+        """Updates the style for the Rhythm Heaven Fever key input."""
+        self._update_required_field_style(self.rhythm_key_input)
 
     def show_mapping_info(self):
         """Show the gamepad mapping help dialog."""
@@ -833,14 +859,16 @@ class SimpleKeysDialog(QDialog):
             with open(settings_file, 'r', encoding='utf-8') as f:
                 settings = json.load(f)
 
-                # Fill in existing values
+                # Fill in existing values and update styles
                 common_key = settings.get('wii_u_common_key', '')
                 if common_key:
                     self.common_key_input.setText(common_key)
+                self.update_common_key_style()
 
                 rhythm_key = settings.get('title_key_rhythm_heaven', '')
                 if rhythm_key:
                     self.rhythm_key_input.setText(rhythm_key)
+                self.update_rhythm_key_style()
 
                 xenoblade_key = settings.get('title_key_xenoblade', '')
                 if xenoblade_key:
@@ -853,6 +881,7 @@ class SimpleKeysDialog(QDialog):
                 ancast_key = settings.get('ancast_key', '')
                 if ancast_key:
                     self.ancast_key_input.setText(ancast_key)
+                self.update_ancast_key_style()
 
                 output_dir = settings.get('output_directory', '')
                 if output_dir:
@@ -1026,11 +1055,49 @@ class EditGameDialog(QDialog):
 
         # Buttons
         btn_layout = QHBoxLayout()
+        btn_layout.addStretch() # Align buttons to the right
+
         save_btn = QPushButton(tr.get("save"))
         save_btn.clicked.connect(self.save)
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5cb85c, stop:1 #4cae4c);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 12px; /* Consistent padding */
+                border: 1px solid #3d8b3d;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6cc76c, stop:1 #5cb85c);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a9d4a, stop:1 #3d8b3d);
+            }
+        """)
+        btn_layout.addWidget(save_btn)
+
         cancel_btn = QPushButton(tr.get("cancel"))
         cancel_btn.clicked.connect(self.reject)
-        btn_layout.addWidget(save_btn)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #ee5555);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 12px; /* Consistent padding */
+                border: 1px solid #dd4444;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff5555, stop:1 #ee3333);
+                border-color: #cc2222;
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ee3333, stop:1 #dd2222);
+            }
+        """)
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
 
@@ -1169,23 +1236,31 @@ class GamepadHelpDialog(QDialog):
         layout.addWidget(self.page_label)
 
         # Close button
+        close_layout = QHBoxLayout()
+        close_layout.addStretch() # Push button to the right
+
         close_btn = QPushButton(tr.get("close"))
         close_btn.clicked.connect(self.accept)
         close_btn.setStyleSheet("""
             QPushButton {
-                background-color: #4a90e2;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #ee5555);
                 color: white;
-                padding: 6px 16px;
-                border: none;
-                border-radius: 4px;
-                font-size: 11px;
+                font-size: 13px;
                 font-weight: 600;
+                padding: 10px 12px; /* Consistent padding */
+                border: 1px solid #dd4444;
+                border-radius: 6px;
             }
             QPushButton:hover {
-                background-color: #357abd;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff5555, stop:1 #ee3333);
+                border-color: #cc2222;
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ee3333, stop:1 #dd2222);
             }
         """)
-        layout.addWidget(close_btn, 0, Qt.AlignCenter)
+        close_layout.addWidget(close_btn)
+        layout.addLayout(close_layout)
 
     def load_images(self):
         """Load gamepad mapping images."""
@@ -1317,13 +1392,49 @@ class CompatibilityListDialog(QDialog):
 
         # Buttons
         btn_layout = QHBoxLayout()
+        btn_layout.addStretch() # Push buttons to the right
 
         save_btn = QPushButton("저장" if tr.current_language == "ko" else "Save")
         save_btn.clicked.connect(self.save_changes)
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5cb85c, stop:1 #4cae4c);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 12px; /* Reduced horizontal padding */
+                border: 1px solid #3d8b3d;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6cc76c, stop:1 #5cb85c);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a9d4a, stop:1 #3d8b3d);
+            }
+        """)
         btn_layout.addWidget(save_btn)
 
         close_btn = QPushButton(tr.get("close") if tr.current_language == "ko" else "Close")
         close_btn.clicked.connect(self.accept)
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff6b6b, stop:1 #ee5555);
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                padding: 10px 12px; /* Reduced horizontal padding */
+                border: 1px solid #dd4444;
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff5555, stop:1 #ee3333);
+                border-color: #cc2222;
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ee3333, stop:1 #dd2222);
+            }
+        """)
         btn_layout.addWidget(close_btn)
 
         layout.addLayout(btn_layout)
@@ -1453,7 +1564,7 @@ class BatchWindow(QMainWindow):
 
     def init_ui(self):
         """Initialize UI."""
-        self.setWindowTitle(tr.get("app_title") + " - " + (tr.get("batch_converter_title") if tr.current_language == "ko" else "Batch Mode"))
+        self.setWindowTitle(tr.get("app_title") + ("" if tr.current_language == "ko" else " - Batch Mode"))
         self.setGeometry(100, 100, 800, 500)  # 타이틀 ID 컬럼 제거로 너비 복원
 
         # Set window icon
@@ -1496,6 +1607,11 @@ class BatchWindow(QMainWindow):
             QPushButton:pressed {
                 background-color: #ddd;
             }
+            QPushButton[interactive="false"] {
+                background-color: #f0f0f0;
+                color: #aaa;
+                border-color: #e0e0e0;
+            }
         """
 
         # Add Files button
@@ -1522,10 +1638,27 @@ class BatchWindow(QMainWindow):
         # Compatibility list button
         compat_text = "호환성 목록" if tr.current_language == "ko" else "Compatibility"
         self.compat_btn = QPushButton("  " + compat_text)  # Add spacing
-        self.compat_btn.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
-        self.compat_btn.setStyleSheet(btn_style)
+        self.compat_btn.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        self.compat_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #E3F2FD; /* Very light blue background */
+                color: #2196F3; /* Blue text */
+                border: 1px solid #90CAF9; /* Light blue border */
+                padding: 8px 16px 8px 12px; /* Match other buttons */
+                border-radius: 6px; /* Match other buttons */
+                font-size: 13px; /* Match other buttons */
+                text-align: left; /* Match other buttons */
+            }
+            QPushButton:hover {
+                background-color: #BBDEFB; /* Slightly darker blue on hover */
+                border-color: #64B5F6;
+            }
+            QPushButton:pressed {
+                background-color: #90CAF9; /* Even darker on pressed */
+                border-color: #42A5F5;
+            }
+        """)
         self.compat_btn.clicked.connect(self.show_compatibility_list)
-        top_layout.addWidget(self.compat_btn)
 
         top_layout.addStretch()
 
@@ -1590,17 +1723,12 @@ class BatchWindow(QMainWindow):
         self.table.setColumnWidth(4, 150)  # Compatibility / Pad Option (통합 컬럼, 180→150)
         self.table.setColumnWidth(5, 90)   # Actions
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
-        # 아이콘/배너 컬럼 중앙 정렬을 위한 스타일시트
-        self.table.setStyleSheet("""
-            QTableWidget::item {
-                padding: 2px;
-            }
-        """)
-        # 더블클릭 편집 제거 - 편집 버튼에서만 수정 가능
-        # self.table.cellDoubleClicked.connect(self.edit_game)
-        # self.table.cellClicked.connect(self.on_cell_clicked)
-        # 셀 편집 불가능하게 설정
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setEditTriggers(QTableWidget.DoubleClicked)
+
+        # Connect signals for button state updates
+        self.table.selectionModel().selectionChanged.connect(self.update_main_buttons_state)
+        self.table.itemChanged.connect(self.update_main_buttons_state) # Update if item data changes (e.g., editing)
+        self.update_main_buttons_state() # Set initial state of buttons
         layout.addWidget(self.table)
 
         # Progress
@@ -1611,12 +1739,14 @@ class BatchWindow(QMainWindow):
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
+        self.progress_bar.hide() # Initially hide the progress bar
         progress_layout.addWidget(self.progress_bar)
 
         layout.addLayout(progress_layout)
 
         # Bottom controls
         bottom_layout = QHBoxLayout()
+        bottom_layout.addWidget(self.compat_btn)
         bottom_layout.addStretch()
 
         build_text = "빌드" if tr.current_language == "ko" else "Build"
@@ -1939,16 +2069,17 @@ class BatchWindow(QMainWindow):
         status_label = QLabel(status_text)
         status_label.setAlignment(Qt.AlignCenter)
         status_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        status_label.setStyleSheet("background-color: #fff9c4; border: 1px solid #fbc02d; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
+        status_label.setStyleSheet("background-color: #fff9c4; border: 1px solid #fbc02d; color: #8c6b00; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
         action_layout.addWidget(status_label)
         edit_text = "편집" if tr.current_language == "ko" else "Edit"
         edit_btn = QPushButton(edit_text)
         edit_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        edit_btn.setStyleSheet("QPushButton { background-color: #fafafa; color: #555; border: 1px solid #ddd; padding: 4px 12px; border-radius: 4px; font-size: 12px; } QPushButton:hover { background-color: #f0f0f0; color: #333; border-color: #bbb; }")
+        edit_btn.setStyleSheet("QPushButton { background-color: #fafafa; color: #555; border: 1px solid #ddd; padding: 4px 12px; border-radius: 4px; font-size: 11px; } QPushButton:hover { background-color: #f0f0f0; color: #333; border-color: #bbb; } QPushButton:disabled { background-color: #f0f0f0; color: #aaa; border-color: #e0e0e0; }")
         edit_btn.clicked.connect(lambda checked, btn=edit_btn: self.edit_game_by_button(btn))
         action_layout.addWidget(edit_btn)
         self.table.setCellWidget(row, 5, action_widget)
 
+        self.update_main_buttons_state() # Update button states after adding a job
         return row
 
     def edit_game(self, row, column):
@@ -1983,6 +2114,9 @@ class BatchWindow(QMainWindow):
 
     def remove_selected(self):
         """Remove selected rows."""
+        if not self.remove_btn.property("interactive"):
+            return
+
         selected_indexes = self.table.selectionModel().selectedRows()
         if not selected_indexes:
             return  # Nothing selected
@@ -1999,11 +2133,14 @@ class BatchWindow(QMainWindow):
 
     def clear_all(self):
         """Clear all jobs."""
+        if not self.clear_btn.property("interactive"):
+            return
+
         if tr.current_language == "ko":
-            title = "전체 삭제"
+            title = "전체 제거"
             msg = "목록에서 모든 게임을 제거하시겠습니까?"
         else:
-            title = "Clear All"
+            title = "Remove All"
             msg = "Remove all games from the list?"
 
         reply = show_message(self, "question", title, msg)
@@ -2011,7 +2148,51 @@ class BatchWindow(QMainWindow):
         if reply == QMessageBox.Yes:
             self.jobs.clear()
             self.table.setRowCount(0)
+            self.update_main_buttons_state() # Update button states after clearing
             self.update_ui_state()
+
+    def update_main_buttons_state(self):
+        """
+        Enables or disables the remove_btn based on whether there are selected items in the table,
+        and the clear_btn based on whether there are any rows in the table.
+        Also updates the cursor to indicate if the button is interactive.
+        """
+        has_selection = self.table.selectionModel().hasSelection()
+        has_rows = self.table.rowCount() > 0
+
+        # Use a custom property 'interactive' to fake the disabled state,
+        # which allows the widget to still receive mouse events for cursor changes.
+        self.remove_btn.setProperty("interactive", has_selection)
+        self.clear_btn.setProperty("interactive", has_rows)
+
+        # Get normal icons once
+        normal_remove_icon = self.style().standardIcon(QStyle.SP_BrowserStop)
+        normal_clear_icon = self.style().standardIcon(QStyle.SP_TrashIcon)
+        
+        # Update cursor and icon to give a clear visual cue for disabled buttons
+        if has_selection:
+            self.remove_btn.setCursor(Qt.ArrowCursor)
+            self.remove_btn.setIcon(normal_remove_icon)
+        else:
+            # Create a disabled icon: get pixmap from normal icon and apply disabled mode
+            pixmap = normal_remove_icon.pixmap(self.remove_btn.iconSize(), QIcon.Disabled)
+            self.remove_btn.setIcon(QIcon(pixmap))
+            self.remove_btn.setCursor(Qt.ForbiddenCursor)
+
+        if has_rows:
+            self.clear_btn.setCursor(Qt.ArrowCursor)
+            self.clear_btn.setIcon(normal_clear_icon)
+        else:
+            # Create a disabled icon: get pixmap from normal icon and apply disabled mode
+            pixmap = normal_clear_icon.pixmap(self.clear_btn.iconSize(), QIcon.Disabled)
+            self.clear_btn.setIcon(QIcon(pixmap))
+            self.clear_btn.setCursor(Qt.ForbiddenCursor)
+        
+        # Re-polish the widgets to apply the new style based on the property
+        self.style().unpolish(self.remove_btn)
+        self.style().polish(self.remove_btn)
+        self.style().unpolish(self.clear_btn)
+        self.style().polish(self.clear_btn)
 
     def update_ui_state(self):
         """Update UI state based on jobs."""
@@ -2021,9 +2202,11 @@ class BatchWindow(QMainWindow):
             self.status_label.setText(f"준비 완료 - {len(self.jobs)}개 게임 대기 중")
         else:
             self.status_label.setText(f"Ready - {len(self.jobs)} game(s) in queue")
+        self.update_main_buttons_state() # Update main buttons state consistently
 
     def start_batch_build(self):
         """Start batch building."""
+        self.progress_bar.show() # Show progress bar when build starts
         # Get keys from settings
         import json
         settings_file = Path.home() / ".meta_injector_settings.json"
@@ -2156,7 +2339,7 @@ class BatchWindow(QMainWindow):
                 if status_label: # Check if the status label exists within the widget
                     status_text = "빌드 중..." if tr.current_language == "ko" else "Building..."
                     status_label.setText(status_text)
-                    status_label.setStyleSheet("background-color: #bbdefb; border: 1px solid #90caf9; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
+                    status_label.setStyleSheet("background-color: #bbdefb; border: 1px solid #90caf9; color: #1e3a5f; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
 
     def on_job_finished(self, idx, success, message):
         """Handle job finished."""
@@ -2168,12 +2351,12 @@ class BatchWindow(QMainWindow):
                     if success:
                         status_text = "완료" if tr.current_language == "ko" else "Completed"
                         status_label.setText(status_text)
-                        status_label.setStyleSheet("background-color: #c8e6c9; border: 1px solid #a5d6a7; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
+                        status_label.setStyleSheet("background-color: #c8e6c9; border: 1px solid #a5d6a7; color: #256029; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
                     else:
                         failed_text = "실패" if tr.current_language == "ko" else "Failed"
                         status_label.setText(f"{failed_text}")
                         status_label.setToolTip(message) # Add full error to tooltip
-                        status_label.setStyleSheet("background-color: #ffcdd2; border: 1px solid #ef9a9a; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
+                        status_label.setStyleSheet("background-color: #ffcdd2; border: 1px solid #ef9a9a; color: #b71c1c; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
 
     def on_all_finished(self, success_count, total_count):
         """Handle all jobs finished."""
@@ -2194,6 +2377,7 @@ class BatchWindow(QMainWindow):
             msg = f"Batch build completed!\n\nSuccess: {success_count}\nFailed: {total_count - success_count}\nTotal: {total_count}"
 
         show_message(self, "info", title, msg, min_width=500)
+        self.progress_bar.hide() # Hide progress bar after build finishes
 
     def set_ui_enabled(self, enabled: bool):
         """Enable or disable UI elements during build."""
@@ -2201,7 +2385,6 @@ class BatchWindow(QMainWindow):
         self.add_btn.setEnabled(enabled)
         self.remove_btn.setEnabled(enabled)
         self.clear_btn.setEnabled(enabled)
-        self.compat_btn.setEnabled(enabled)
         self.settings_btn.setEnabled(enabled)
         self.auto_icons_check.setEnabled(enabled)
 

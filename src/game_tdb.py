@@ -22,7 +22,7 @@ class GameTdb:
         # In the packaged version, this will be in the resources directory
         resource_path = os.path.join(
             os.path.dirname(__file__),
-            '..', '..', 'resources',
+            '..', 'resources',
             cls._RESOURCE_FILE
         )
 
