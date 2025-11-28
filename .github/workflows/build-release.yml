@@ -84,9 +84,7 @@ jobs:
           draft: true
           prerelease: false
           generate_release_notes: true
-          files: |
-            release/Meta-Injector-v${{ steps.version.outputs.version }}-Windows.zip
-            dist/Meta-Injector.exe
+          files: release/Meta-Injector-v${{ steps.version.outputs.version }}-Windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
