@@ -150,11 +150,20 @@ class BatchBuilder(QThread):
             cache_drc = None
 
             if job.icon_path and job.icon_path.exists():
-                cache_icon = paths.images_cache / game_id / "icon.png"
+                # Different cache filenames based on badge type
+                if badge_type == "galaxy_allstars":
+                    cache_icon = paths.images_cache / game_id / "icon_allstars.png"
+                elif badge_type == "galaxy_nvidia":
+                    cache_icon = paths.images_cache / game_id / "icon_nvidia.png"
+                else:
+                    cache_icon = paths.images_cache / game_id / "icon.png"
+
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
-                # Only process if not already in cache (avoid reading/writing same file)
-                if job.icon_path.resolve() != cache_icon.resolve():
+                # Always process if badge_type is set, or if not already in cache
+                should_process = (badge_type is not None) or (job.icon_path.resolve() != cache_icon.resolve())
+
+                if should_process:
                     print(f"  Icon: {job.icon_path} -> {cache_icon}")
                     if badge_type:
                         print(f"  Adding {badge_type} badge to icon")

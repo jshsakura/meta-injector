@@ -63,6 +63,7 @@ class CompatibilityDB:
                 title_key TEXT,
                 user_notes TEXT,
                 category TEXT DEFAULT 'Wii',
+                korean_title TEXT,
                 UNIQUE(title, region)
             )
         """)
@@ -83,6 +84,14 @@ class CompatibilityDB:
             cursor.execute("ALTER TABLE games ADD COLUMN category TEXT DEFAULT 'Wii'")
             cursor.execute("UPDATE games SET category = 'Wii' WHERE category IS NULL")
             print("Migrated database: added category column")
+
+        # Migrate: Add korean_title column if it doesn't exist
+        try:
+            cursor.execute("SELECT korean_title FROM games LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            cursor.execute("ALTER TABLE games ADD COLUMN korean_title TEXT")
+            print("Migrated database: added korean_title column")
 
         # Host games table (for quick reference)
         cursor.execute("""
@@ -215,6 +224,34 @@ class CompatibilityDB:
 
         conn.commit()
         print(f"Updated title: {old_title} ({region}) -> {new_title}")
+
+    def update_korean_title(self, game_id: str, korean_title: str):
+        """Update Korean title for a game by game_id."""
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE games
+            SET korean_title = ?
+            WHERE game_id = ?
+        """, (korean_title, game_id))
+
+        conn.commit()
+        if cursor.rowcount > 0:
+            print(f"Updated Korean title for {game_id}: {korean_title}")
+
+    def update_korean_title_by_title(self, title: str, region: str, korean_title: str):
+        """Update Korean title for a game by title and region."""
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE games
+            SET korean_title = ?
+            WHERE title = ? AND region = ?
+        """, (korean_title, title, region))
+
+        conn.commit()
 
     def update_title_key(self, title: str, region: str, title_key: str):
         """Update title key for a game."""

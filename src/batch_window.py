@@ -86,7 +86,7 @@ class GameLoaderThread(QThread):
 
             # Second pass: Download icons in parallel (multiple games at once)
             if self.auto_download_icons and jobs_to_process:
-                with ThreadPoolExecutor(max_workers=4) as executor:
+                with ThreadPoolExecutor(max_workers=8) as executor:
                     # Submit all download jobs
                     future_to_job = {}
                     for idx, job in jobs_to_process:
@@ -151,15 +151,25 @@ class GameLoaderThread(QThread):
             if games:
                 found_game = games[0]
 
-        # Set title name - will be updated from GameTDB later if available
-        # For now, use DB title or game_info title as fallback
-        if found_game and found_game['title']:
-            db_title = found_game['title'].split('(')[0].strip()
-            job.title_name = db_title
-            job.db_title = db_title  # Save for fallback
+        # Set title name - prioritize Korean title from DB, fallback to GameTDB later
+        if found_game:
+            # Check if we have a Korean title in the DB
+            korean_title = found_game.get('korean_title', '')
+            if korean_title:
+                # Use Korean title from DB (no need to fetch from GameTDB)
+                job.title_name = korean_title
+                job.db_title = korean_title
+                job.has_korean_title = True  # Mark that we already have Korean title
+            else:
+                # No Korean title in DB, use English title for now
+                db_title = found_game['title'].split('(')[0].strip() if found_game['title'] else game_title
+                job.title_name = db_title
+                job.db_title = db_title
+                job.has_korean_title = False  # Will fetch from GameTDB later
         else:
             job.title_name = game_title
             job.db_title = game_title
+            job.has_korean_title = False
 
         # Get gamepad compatibility and host game from DB
         if found_game:
@@ -199,6 +209,11 @@ class GameLoaderThread(QThread):
         full_id = game_id[:6] if len(game_id) >= 6 else game_id
         system_type = job.game_info.get('system', 'wii')
 
+        # Create SSL context early (needed for GameTDB title fetch)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
         # Use permanent cache directory (not temp - survives across builds)
         cache_dir = paths.images_cache / game_id
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -215,6 +230,33 @@ class GameLoaderThread(QThread):
                 job.drc_path = cached_drc
             else:
                 job.drc_path = cached_banner  # Use banner as DRC
+
+            # Check if we already have Korean title from DB
+            if hasattr(job, 'has_korean_title') and job.has_korean_title:
+                print(f"  [DB] Using Korean title from DB: {job.title_name}")
+                return True
+
+            # Check if we have cached title
+            cached_title_file = cache_dir / "title.txt"
+            if cached_title_file.exists():
+                try:
+                    cached_title = cached_title_file.read_text(encoding='utf-8').strip()
+                    if cached_title:
+                        job.title_name = cached_title
+                        print(f"  [CACHE] Using cached title: {cached_title}")
+                        return True
+                except:
+                    pass
+
+            # No Korean title from DB or cache, fetch from GameTDB
+            self.fetch_gametdb_title(job, game_id, ssl_context)
+            # Save title to cache and DB
+            try:
+                cached_title_file.write_text(job.title_name, encoding='utf-8')
+                # Also update DB with Korean title
+                compatibility_db.update_korean_title(game_id, job.title_name)
+            except:
+                pass
             return True
 
         # First check local resources/wii/ directory
@@ -237,12 +279,20 @@ class GameLoaderThread(QThread):
                 shutil.copy(local_banner, banner_path)
                 job.banner_path = banner_path
 
-                return True
+                # Fetch title from GameTDB only if not already in DB
+                if not (hasattr(job, 'has_korean_title') and job.has_korean_title):
+                    self.fetch_gametdb_title(job, game_id, ssl_context)
 
-        # If not found locally, try remote download
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
+                    # Save title to cache and DB
+                    try:
+                        cached_title_file = cache_dir / "title.txt"
+                        cached_title_file.write_text(job.title_name, encoding='utf-8')
+                        # Also update DB with Korean title
+                        compatibility_db.update_korean_title(game_id, job.title_name)
+                    except:
+                        pass
+
+                return True
 
         # Try exact game_id first (highest priority), then full_id, then alternatives
         alternative_ids = [game_id]  # Start with exact game ID
@@ -408,6 +458,20 @@ class GameLoaderThread(QThread):
 
                     print(f"  [OK] Downloaded from UWUVCI for {try_id}")
                     download_success = True
+
+                    # Try to get title from GameTDB only if not already in DB
+                    if not (hasattr(job, 'has_korean_title') and job.has_korean_title):
+                        self.fetch_gametdb_title(job, try_id, ssl_context)
+
+                        # Save title to cache and DB
+                        try:
+                            cached_title_file = cache_dir / "title.txt"
+                            cached_title_file.write_text(job.title_name, encoding='utf-8')
+                            # Also update DB with Korean title
+                            compatibility_db.update_korean_title(try_id, job.title_name)
+                        except:
+                            pass
+
                     return True
 
                 except:
@@ -437,6 +501,13 @@ class GameLoaderThread(QThread):
                 shutil.copy(default_drc, drc_path)
                 job.drc_path = drc_path
 
+            # Save title to cache (using DB title as fallback)
+            try:
+                cached_title_file = cache_dir / "title.txt"
+                cached_title_file.write_text(job.title_name, encoding='utf-8')
+            except:
+                pass
+
         # Images are already saved to cache_dir during download, no need to copy again
         return True
 
@@ -444,42 +515,55 @@ class GameLoaderThread(QThread):
         """Fetch Korean title from GameTDB. Falls back to DB title if not found."""
         import urllib.request
         import re
+        import time
 
-        try:
-            # GameTDB game page
-            url = f"https://www.gametdb.com/Wii/{game_id}"
-            req = urllib.request.Request(
-                url,
-                headers={'User-Agent': 'WiiVC-Injector/1.0'}
-            )
-            with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
-                html = response.read().decode('utf-8', errors='ignore')
+        max_retries = 1
+        for attempt in range(max_retries):
+            try:
+                # Add small delay between requests to avoid rate limiting
+                if attempt > 0:
+                    time.sleep(0.5)
 
-                # Look for Korean title - pattern: title (KO)</td><td...>쿠킹 마마</td>
-                ko_match = re.search(r'title\s*\(KO\)</td><td[^>]*>([^<]+)</td>', html)
-                if ko_match:
-                    ko_title = ko_match.group(1).strip()
-                    if ko_title:
-                        job.title_name = ko_title
-                        print(f"  [TITLE] GameTDB Korean: {ko_title}")
-                        return
+                # GameTDB game page
+                url = f"https://www.gametdb.com/Wii/{game_id}"
+                req = urllib.request.Request(
+                    url,
+                    headers={'User-Agent': 'WiiVC-Injector/1.0'}
+                )
+                with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
+                    html = response.read().decode('utf-8', errors='ignore')
 
-                # Fallback to EN title - pattern: title (EN)</td><td...>Cooking Mama</td>
-                en_match = re.search(r'title\s*\(EN\)</td><td[^>]*>([^<]+)</td>', html)
-                if en_match:
-                    en_title = en_match.group(1).strip()
-                    if en_title:
-                        job.title_name = en_title
-                        print(f"  [TITLE] GameTDB English: {en_title}")
-                        return
+                    # Look for Korean title - pattern: title (KO)</td><td...>쿠킹 마마</td>
+                    ko_match = re.search(r'title\s*\(KO\)</td><td[^>]*>([^<]+)</td>', html)
+                    if ko_match:
+                        ko_title = ko_match.group(1).strip()
+                        if ko_title:
+                            job.title_name = ko_title
+                            print(f"  [TITLE] GameTDB Korean: {ko_title}")
+                            return
 
-                # No title found on GameTDB, keep DB title
-                print(f"  [TITLE] No GameTDB title, using DB: {job.title_name}")
+                    # Fallback to EN title - pattern: title (EN)</td><td...>Cooking Mama</td>
+                    en_match = re.search(r'title\s*\(EN\)</td><td[^>]*>([^<]+)</td>', html)
+                    if en_match:
+                        en_title = en_match.group(1).strip()
+                        if en_title:
+                            job.title_name = en_title
+                            print(f"  [TITLE] GameTDB English: {en_title}")
+                            return
 
-        except Exception as e:
-            # Keep DB title if fetch fails
-            db_title = getattr(job, 'db_title', job.title_name)
-            print(f"  [TITLE] GameTDB failed ({e}), using DB: {db_title}")
+                    # No title found on GameTDB, keep DB title
+                    print(f"  [TITLE] No GameTDB title, using DB: {job.title_name}")
+                    return
+
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"  [TITLE] GameTDB attempt {attempt + 1} failed, retrying...")
+                    continue
+                else:
+                    # Keep DB title if all retries fail
+                    db_title = getattr(job, 'db_title', job.title_name)
+                    print(f"  [TITLE] GameTDB failed after {max_retries} attempts ({e}), using DB: {db_title}")
+                    return
 
 
 class SimpleKeysDialog(QDialog):
@@ -605,30 +689,8 @@ class SimpleKeysDialog(QDialog):
         # Buttons
         layout.addSpacing(15)
         btn_layout = QHBoxLayout()
+        btn_layout.addStretch()  # Align buttons to the right
 
-        # Controller Mapping Info button (left)
-        self.mapping_info_btn = QPushButton("🎮 " + tr.get("controller_mapping_info"))
-        self.mapping_info_btn.clicked.connect(self.show_mapping_info)
-        self.mapping_info_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #f5f5f5; /* Light gray */
-                color: #333; /* Dark text */
-                border: 1px solid #ccc; /* Light gray border */
-                padding: 10px 16px; /* Consistent padding */
-                border-radius: 6px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #e8e8e8; /* Slightly darker on hover */
-                border-color: #bbb;
-            }
-            QPushButton:pressed {
-                background-color: #ddd; /* Even darker on pressed */
-            }
-        """)
-        btn_layout.addWidget(self.mapping_info_btn)
-
-        btn_layout.addStretch()
         save_btn = QPushButton(tr.get("save"))
         save_btn.clicked.connect(self.save)
         save_btn.setStyleSheet("""
@@ -693,11 +755,6 @@ class SimpleKeysDialog(QDialog):
     def update_rhythm_key_style(self):
         """Updates the style for the Rhythm Heaven Fever key input."""
         self._update_required_field_style(self.rhythm_key_input)
-
-    def show_mapping_info(self):
-        """Show the gamepad mapping help dialog."""
-        dialog = GamepadHelpDialog(self)
-        dialog.exec_()
 
     def browse_output_dir(self):
         """Browse for output directory."""
@@ -1147,11 +1204,13 @@ class EditGameDialog(QDialog):
 class GamepadHelpDialog(QDialog):
     """Dialog to show gamepad mapping images with left/right navigation."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, initial_index=0, single_image_mode=False):
         super().__init__(parent)
         # Remove ? button from title bar
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.current_index = 0
+        self.initial_index = initial_index
+        self.single_image_mode = single_image_mode  # If True, show only one image without navigation
         self.images = []
         self.init_ui()
         self.load_images()
@@ -1165,12 +1224,6 @@ class GamepadHelpDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(4)
-
-        # Title label
-        self.title_label = QLabel()
-        self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setStyleSheet("font-size: 12px; font-weight: bold; padding: 4px;")
-        layout.addWidget(self.title_label)
 
         # Image display area with navigation
         image_layout = QHBoxLayout()
@@ -1194,9 +1247,14 @@ class GamepadHelpDialog(QDialog):
             QPushButton:pressed {
                 background-color: #d0d0d0;
             }
+            QPushButton:disabled {
+                background-color: #f8f8f8;
+                color: #ccc;
+            }
         """)
         self.prev_btn.clicked.connect(self.prev_image)
-        image_layout.addWidget(self.prev_btn)
+        if not self.single_image_mode:
+            image_layout.addWidget(self.prev_btn)
 
         # Image label
         self.image_label = QLabel()
@@ -1223,9 +1281,14 @@ class GamepadHelpDialog(QDialog):
             QPushButton:pressed {
                 background-color: #d0d0d0;
             }
+            QPushButton:disabled {
+                background-color: #f8f8f8;
+                color: #ccc;
+            }
         """)
         self.next_btn.clicked.connect(self.next_image)
-        image_layout.addWidget(self.next_btn)
+        if not self.single_image_mode:
+            image_layout.addWidget(self.next_btn)
 
         layout.addLayout(image_layout)
 
@@ -1233,7 +1296,8 @@ class GamepadHelpDialog(QDialog):
         self.page_label = QLabel()
         self.page_label.setAlignment(Qt.AlignCenter)
         self.page_label.setStyleSheet("font-size: 11px; color: #666; padding: 3px;")
-        layout.addWidget(self.page_label)
+        if not self.single_image_mode:
+            layout.addWidget(self.page_label)
 
         # Close button
         close_layout = QHBoxLayout()
@@ -1273,13 +1337,24 @@ class GamepadHelpDialog(QDialog):
             ("gamepad_nvidia_mapping.jpg", "Galaxy Nvidia 매핑" if tr.current_language == "ko" else "Galaxy Nvidia Mapping"),
         ]
 
-        for filename, title in image_files:
-            img_path = images_dir / filename
-            if img_path.exists():
-                self.images.append((str(img_path), title))
+        if self.single_image_mode:
+            # Load only the specified image
+            if 0 <= self.initial_index < len(image_files):
+                filename, title = image_files[self.initial_index]
+                img_path = images_dir / filename
+                if img_path.exists():
+                    self.images.append((str(img_path), title))
+        else:
+            # Load all images
+            for filename, title in image_files:
+                img_path = images_dir / filename
+                if img_path.exists():
+                    self.images.append((str(img_path), title))
 
         if self.images:
-            self.show_image(0)
+            # Show initial image based on initial_index
+            start_index = 0 if self.single_image_mode else min(self.initial_index, len(self.images) - 1)
+            self.show_image(start_index)
         else:
             self.image_label.setText("이미지를 찾을 수 없습니다" if tr.current_language == "ko" else "Images not found")
 
@@ -1301,9 +1376,6 @@ class GamepadHelpDialog(QDialog):
                 self.image_label.setPixmap(scaled_pixmap)
             else:
                 self.image_label.setText("이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image")
-
-            # Update title
-            self.title_label.setText(title)
 
             # Update page indicator
             page_text = f"{index + 1} / {len(self.images)}"
@@ -2453,6 +2525,120 @@ class BatchWindow(QMainWindow):
             else:
                 job.pad_option = "galaxy_nvidia"  # Profile 7: 갤럭시 엔비디아
             print(f"[INFO] Pad option for {job.title_name}: {job.pad_option}")
+
+            # Update compatibility label/button for Galaxy patches
+            self.update_compat_widget_for_galaxy(row, index)
+
+    def update_compat_widget_for_galaxy(self, row, pad_index):
+        """Update compatibility widget to show mapping button for Galaxy patches."""
+        if row >= len(self.jobs):
+            return
+
+        job = self.jobs[row]
+        compat_widget = self.table.cellWidget(row, 4)
+        if not compat_widget:
+            return
+
+        layout = compat_widget.layout()
+        if not layout or layout.count() < 2:
+            return
+
+        # Get the first widget (compatibility label/button)
+        old_widget = layout.itemAt(0).widget()
+        if not old_widget:
+            return
+
+        # Check if Galaxy patch is selected (index 5 or 6)
+        is_galaxy_patch = pad_index in [5, 6]
+
+        if is_galaxy_patch:
+            # Replace label/button with updated mapping button for Galaxy patches
+            # Always update to ensure correct colors and images for AllStars/Nvidia
+            # Remove old widget (could be label or button from previous selection)
+            layout.removeWidget(old_widget)
+            old_widget.deleteLater()
+
+            # Create mapping button
+            mapping_btn = QPushButton()
+            if tr.current_language == "ko":
+                mapping_btn.setText("🎮 매핑 확인")
+            else:
+                mapping_btn.setText("🎮 View Mapping")
+
+            # Different colors for AllStars (blue) and Nvidia (green)
+            if pad_index == 5:  # AllStars - Blue
+                button_style = """
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5b9bd5, stop:1 #4a8bc2);
+                        color: white;
+                        font-size: 11px;
+                        font-weight: 600;
+                        padding: 4px 8px;
+                        border: 1px solid #3d7ba8;
+                        border-radius: 4px;
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6babe5, stop:1 #5b9bd5);
+                    }
+                    QPushButton:pressed {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a8bc2, stop:1 #3d7ba8);
+                    }
+                """
+            else:  # Nvidia - Green
+                button_style = """
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5cb85c, stop:1 #4cae4c);
+                        color: white;
+                        font-size: 11px;
+                        font-weight: 600;
+                        padding: 4px 8px;
+                        border: 1px solid #3d8b3d;
+                        border-radius: 4px;
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6cc76c, stop:1 #5cb85c);
+                    }
+                    QPushButton:pressed {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #4a9d4a, stop:1 #3d8b3d);
+                    }
+                """
+
+            mapping_btn.setStyleSheet(button_style)
+            mapping_btn.setCursor(Qt.PointingHandCursor)
+
+            # Determine which image to show (0=AllStars, 1=Nvidia)
+            image_index = 0 if pad_index == 5 else 1
+            mapping_btn.clicked.connect(lambda checked, idx=image_index: self.show_galaxy_mapping(idx))
+
+            layout.insertWidget(0, mapping_btn)
+        else:
+            # Restore compatibility label for non-Galaxy patches
+            if isinstance(old_widget, QPushButton):
+                # Remove button
+                layout.removeWidget(old_widget)
+                old_widget.deleteLater()
+
+                # Restore compatibility label
+                compat_label = QLabel(job.gamepad_compatibility)
+                compat_label.setAlignment(Qt.AlignCenter)
+                compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+                # Apply styling based on compatibility
+                if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
+                    compat_label.setStyleSheet("background-color: #c8ffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #80c080;")
+                elif 'classic' in job.gamepad_compatibility.lower() or 'lr' in job.gamepad_compatibility.lower():
+                    compat_label.setStyleSheet("background-color: #ffffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c0c080;")
+                elif 'unknown' in job.gamepad_compatibility.lower():
+                    compat_label.setStyleSheet("background-color: #dcdcdc; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #a0a0a0;")
+                else:
+                    compat_label.setStyleSheet("background-color: #ffc8c8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c08080;")
+
+                layout.insertWidget(0, compat_label)
+
+    def show_galaxy_mapping(self, image_index):
+        """Show Galaxy mapping dialog with only the specified image."""
+        dialog = GamepadHelpDialog(self, initial_index=image_index, single_image_mode=True)
+        dialog.exec_()
 
     def on_cell_clicked(self, row, column):
         """Handle cell click - allow manual icon/banner selection."""

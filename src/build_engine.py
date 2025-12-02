@@ -590,37 +590,77 @@ class BuildEngine:
         Returns:
             True if successful
         """
+        print(f"\n[GALAXY] ========================================")
         print(f"[GALAXY] Applying {galaxy_variant} patch to {game_id}...")
 
         # Find GCT file
         variant_name = "AllStars" if galaxy_variant == "allstars" else "Nvidia"
-        gct_filename = f"{game_id}-{variant_name}.gct"
 
-        # Try bundle_root first (for EXE), fallback to project_root
+        # Try exact game ID first
+        gct_filename = f"{game_id}-{variant_name}.gct"
         gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+        print(f"[GALAXY] Looking for exact match: {gct_path}")
+
         if not gct_path.exists():
             gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+            print(f"[GALAXY] Not found, trying: {gct_path}")
+
+        # If not found, try region-based fallback (use Super Mario Galaxy patch for same region)
+        if not gct_path.exists() and len(game_id) >= 4:
+            region_code = game_id[3]  # 4th character is region (E=USA, J=JPN, K=KOR, P=EUR)
+            region_map = {
+                'E': 'RMGE01',  # USA
+                'J': 'RMGJ01',  # Japan
+                'K': 'RMGK01',  # Korea
+                'P': 'RMGP01'   # Europe
+            }
+
+            if region_code in region_map:
+                fallback_id = region_map[region_code]
+                gct_filename = f"{fallback_id}-{variant_name}.gct"
+                print(f"[GALAXY] Exact patch not found, trying region fallback for '{region_code}' region: {gct_filename}")
+
+                gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+                if not gct_path.exists():
+                    gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
 
         if not gct_path.exists():
-            # Try without deflicker variant
-            print(f"[GALAXY] GCT not found: {gct_path}")
+            print(f"[GALAXY] ✗ GCT file not found!")
+            print(f"[GALAXY] No patch available for game ID: {game_id}")
+            print(f"[GALAXY] Tried: {game_id}-{variant_name}.gct")
+            if len(game_id) >= 4 and game_id[3] in ['E', 'J', 'K', 'P']:
+                print(f"[GALAXY] Also tried region fallback: {gct_filename}")
             return False
+
+        print(f"[GALAXY] ✓ Found GCT: {gct_path} ({gct_path.stat().st_size} bytes)")
 
         # Path to main.dol
         main_dol = extract_dir / "sys" / "main.dol"
         if not main_dol.exists():
-            print(f"[GALAXY] main.dol not found: {main_dol}")
+            print(f"[GALAXY] ✗ main.dol not found: {main_dol}")
             return False
+
+        original_size = main_dol.stat().st_size
+        print(f"[GALAXY] Original main.dol size: {original_size} bytes")
 
         # Apply patch using wstrt
         wstrt_exe = self.paths.temp_tools / "WIT" / "wstrt.exe"
-        args = f'patch "{main_dol}" --add-section "{gct_path}"'
-
-        if not self.run_tool(wstrt_exe, args):
-            print("[GALAXY] Failed to apply GCT patch")
+        if not wstrt_exe.exists():
+            print(f"[GALAXY] ✗ wstrt.exe not found: {wstrt_exe}")
             return False
 
-        print(f"✓ Galaxy {variant_name} patch applied successfully")
+        print(f"[GALAXY] Using wstrt: {wstrt_exe}")
+        args = f'patch "{main_dol}" --add-section "{gct_path}"'
+
+        print(f"[GALAXY] Executing: wstrt.exe {args}")
+        if not self.run_tool(wstrt_exe, args):
+            print("[GALAXY] ✗ Failed to apply GCT patch (wstrt error)")
+            return False
+
+        patched_size = main_dol.stat().st_size
+        print(f"[GALAXY] Patched main.dol size: {patched_size} bytes (delta: +{patched_size - original_size})")
+        print(f"[GALAXY] ✓ Galaxy {variant_name} patch applied successfully!")
+        print(f"[GALAXY] ========================================\n")
         return True
 
     def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None) -> Path:
@@ -669,7 +709,10 @@ class BuildEngine:
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
+                    if not self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch):
+                        raise RuntimeError(f"Galaxy patch failed! GCT file not found for game ID: {game_id}. Check if patch file exists in core/Galaxy1GamePad_v1.2/")
+                else:
+                    raise RuntimeError("Galaxy patch failed! Could not read game ID from disc.")
 
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
@@ -695,7 +738,10 @@ class BuildEngine:
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
+                    if not self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch):
+                        raise RuntimeError(f"Galaxy patch failed! GCT file not found for game ID: {game_id}. Check if patch file exists in core/Galaxy1GamePad_v1.2/")
+                else:
+                    raise RuntimeError("Galaxy patch failed! Could not read game ID from disc.")
 
             # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
             game_iso = self.paths.temp_source / "game.iso"
