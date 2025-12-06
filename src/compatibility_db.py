@@ -93,6 +93,14 @@ class CompatibilityDB:
             cursor.execute("ALTER TABLE games ADD COLUMN korean_title TEXT")
             print("Migrated database: added korean_title column")
 
+        # Migrate: Add english_title column if it doesn't exist
+        try:
+            cursor.execute("SELECT english_title FROM games LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            cursor.execute("ALTER TABLE games ADD COLUMN english_title TEXT")
+            print("Migrated database: added english_title column")
+
         # Host games table (for quick reference)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS host_games (
@@ -225,20 +233,51 @@ class CompatibilityDB:
         conn.commit()
         print(f"Updated title: {old_title} ({region}) -> {new_title}")
 
-    def update_korean_title(self, game_id: str, korean_title: str):
-        """Update Korean title for a game by game_id."""
+    def update_titles(self, game_id: str, korean_title: str = None, english_title: str = None):
+        """Update Korean and/or English title for a game by game_id. Insert if not exists."""
         conn = self.connect()
         cursor = conn.cursor()
 
+        # Check if game exists
         cursor.execute("""
-            UPDATE games
-            SET korean_title = ?
-            WHERE game_id = ?
-        """, (korean_title, game_id))
+            SELECT id FROM games WHERE game_id = ? LIMIT 1
+        """, (game_id,))
+
+        existing = cursor.fetchone()
+
+        if existing:
+            # Update existing record
+            updates = []
+            params = []
+            if korean_title:
+                updates.append("korean_title = ?")
+                params.append(korean_title)
+            if english_title:
+                updates.append("english_title = ?")
+                params.append(english_title)
+
+            if updates:
+                params.append(game_id)
+                cursor.execute(f"""
+                    UPDATE games
+                    SET {', '.join(updates)}
+                    WHERE game_id = ?
+                """, params)
+                print(f"Updated titles for {game_id}: KO={korean_title}, EN={english_title}")
+        else:
+            # Insert new minimal record
+            display_title = korean_title or english_title or game_id
+            cursor.execute("""
+                INSERT INTO games (title, region, game_id, host_game, korean_title, english_title, category)
+                VALUES (?, 'Unknown', ?, 'Rhythm Heaven Fever (USA)', ?, ?, 'Wii')
+            """, (display_title, game_id, korean_title, english_title))
+            print(f"Inserted new game {game_id}: KO={korean_title}, EN={english_title}")
 
         conn.commit()
-        if cursor.rowcount > 0:
-            print(f"Updated Korean title for {game_id}: {korean_title}")
+
+    def update_korean_title(self, game_id: str, korean_title: str):
+        """Update Korean title only (for backward compatibility)."""
+        self.update_titles(game_id, korean_title=korean_title)
 
     def update_korean_title_by_title(self, title: str, region: str, korean_title: str):
         """Update Korean title for a game by title and region."""

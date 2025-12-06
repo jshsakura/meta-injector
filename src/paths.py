@@ -21,6 +21,9 @@ class PathManager:
             self.project_root = Path(__file__).parent.parent
             self.bundle_root = self.project_root
 
+        # Core directory (tools and patches)
+        self.core = self.bundle_root / "core"
+
         # Base temp directory (system temp - TeconMoon/UWUVCI style)
         self.temp_root = Path(os.environ.get('TEMP', '/tmp')) / "MetaInjector"
 

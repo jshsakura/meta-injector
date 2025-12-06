@@ -29,8 +29,16 @@ def show_message(parent, msg_type, title, text, min_width=550):
         msg_box.setIcon(QMessageBox.Warning)
     elif msg_type == "question":
         msg_box.setIcon(QMessageBox.Question)
-        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        return msg_box.exec_()
+        # Use custom buttons with Korean text
+        ok_text = "확인" if tr.current_language == "ko" else "OK"
+        cancel_text = "취소" if tr.current_language == "ko" else "Cancel"
+        ok_btn = msg_box.addButton(ok_text, QMessageBox.AcceptRole)
+        cancel_btn = msg_box.addButton(cancel_text, QMessageBox.RejectRole)
+        msg_box.exec_()
+        if msg_box.clickedButton() == ok_btn:
+            return QMessageBox.Yes
+        else:
+            return QMessageBox.No
 
     msg_box.exec_()
 
@@ -151,17 +159,33 @@ class GameLoaderThread(QThread):
             if games:
                 found_game = games[0]
 
-        # Set title name - prioritize Korean title from DB, fallback to GameTDB later
+        # Set title name - read both Korean and English titles from DB
         if found_game:
-            # Check if we have a Korean title in the DB
+            # Get both titles from DB
             korean_title = found_game.get('korean_title', '')
+            english_title = found_game.get('english_title', '')
+
+            # Store both if available
             if korean_title:
-                # Use Korean title from DB (no need to fetch from GameTDB)
+                job.korean_title = korean_title
+            if english_title:
+                job.english_title = english_title
+
+            # Set display title based on current language
+            if tr.current_language == "ko" and korean_title:
                 job.title_name = korean_title
                 job.db_title = korean_title
-                job.has_korean_title = True  # Mark that we already have Korean title
+                job.has_korean_title = True
+            elif english_title:
+                job.title_name = english_title
+                job.db_title = english_title
+                job.has_korean_title = bool(korean_title or english_title)
+            elif korean_title:
+                job.title_name = korean_title
+                job.db_title = korean_title
+                job.has_korean_title = True
             else:
-                # No Korean title in DB, use English title for now
+                # No titles in DB, use original title
                 db_title = found_game['title'].split('(')[0].strip() if found_game['title'] else game_title
                 job.title_name = db_title
                 job.db_title = db_title
@@ -236,25 +260,55 @@ class GameLoaderThread(QThread):
                 print(f"  [DB] Using Korean title from DB: {job.title_name}")
                 return True
 
-            # Check if we have cached title
-            cached_title_file = cache_dir / "title.txt"
-            if cached_title_file.exists():
+            # Check if we have cached titles
+            cached_ko_file = cache_dir / "title_ko.txt"
+            cached_en_file = cache_dir / "title_en.txt"
+
+            has_cached = False
+            if cached_ko_file.exists():
                 try:
-                    cached_title = cached_title_file.read_text(encoding='utf-8').strip()
-                    if cached_title:
-                        job.title_name = cached_title
-                        print(f"  [CACHE] Using cached title: {cached_title}")
-                        return True
+                    ko_title = cached_ko_file.read_text(encoding='utf-8').strip()
+                    if ko_title:
+                        job.korean_title = ko_title
+                        has_cached = True
+                        print(f"  [CACHE] Using cached Korean title: {ko_title}")
                 except:
                     pass
 
+            if cached_en_file.exists():
+                try:
+                    en_title = cached_en_file.read_text(encoding='utf-8').strip()
+                    if en_title:
+                        job.english_title = en_title
+                        has_cached = True
+                        print(f"  [CACHE] Using cached English title: {en_title}")
+                except:
+                    pass
+
+            if has_cached:
+                # Set display title based on language
+                if tr.current_language == "ko" and hasattr(job, 'korean_title'):
+                    job.title_name = job.korean_title
+                elif hasattr(job, 'english_title'):
+                    job.title_name = job.english_title
+                elif hasattr(job, 'korean_title'):
+                    job.title_name = job.korean_title
+                return True
+
             # No Korean title from DB or cache, fetch from GameTDB
             self.fetch_gametdb_title(job, game_id, ssl_context)
-            # Save title to cache and DB
+            # Save titles to cache and DB
             try:
-                cached_title_file.write_text(job.title_name, encoding='utf-8')
-                # Also update DB with Korean title
-                compatibility_db.update_korean_title(game_id, job.title_name)
+                ko_title = getattr(job, 'korean_title', None)
+                en_title = getattr(job, 'english_title', None)
+
+                if ko_title:
+                    (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
+                if en_title:
+                    (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
+
+                # Update DB with both titles
+                compatibility_db.update_titles(game_id, korean_title=ko_title, english_title=en_title)
             except:
                 pass
             return True
@@ -283,12 +337,18 @@ class GameLoaderThread(QThread):
                 if not (hasattr(job, 'has_korean_title') and job.has_korean_title):
                     self.fetch_gametdb_title(job, game_id, ssl_context)
 
-                    # Save title to cache and DB
+                    # Save titles to cache and DB
                     try:
-                        cached_title_file = cache_dir / "title.txt"
-                        cached_title_file.write_text(job.title_name, encoding='utf-8')
-                        # Also update DB with Korean title
-                        compatibility_db.update_korean_title(game_id, job.title_name)
+                        ko_title = getattr(job, 'korean_title', None)
+                        en_title = getattr(job, 'english_title', None)
+
+                        if ko_title:
+                            (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
+                        if en_title:
+                            (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
+
+                        # Update DB with both titles
+                        compatibility_db.update_titles(game_id, korean_title=ko_title, english_title=en_title)
                     except:
                         pass
 
@@ -463,12 +523,18 @@ class GameLoaderThread(QThread):
                     if not (hasattr(job, 'has_korean_title') and job.has_korean_title):
                         self.fetch_gametdb_title(job, try_id, ssl_context)
 
-                        # Save title to cache and DB
+                        # Save titles to cache and DB
                         try:
-                            cached_title_file = cache_dir / "title.txt"
-                            cached_title_file.write_text(job.title_name, encoding='utf-8')
-                            # Also update DB with Korean title
-                            compatibility_db.update_korean_title(try_id, job.title_name)
+                            ko_title = getattr(job, 'korean_title', None)
+                            en_title = getattr(job, 'english_title', None)
+
+                            if ko_title:
+                                (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
+                            if en_title:
+                                (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
+
+                            # Update DB with both titles
+                            compatibility_db.update_titles(try_id, korean_title=ko_title, english_title=en_title)
                         except:
                             pass
 
@@ -501,10 +567,15 @@ class GameLoaderThread(QThread):
                 shutil.copy(default_drc, drc_path)
                 job.drc_path = drc_path
 
-            # Save title to cache (using DB title as fallback)
+            # Save titles to cache (using DB title as fallback)
             try:
-                cached_title_file = cache_dir / "title.txt"
-                cached_title_file.write_text(job.title_name, encoding='utf-8')
+                ko_title = getattr(job, 'korean_title', None)
+                en_title = getattr(job, 'english_title', None)
+
+                if ko_title:
+                    (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
+                if en_title:
+                    (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
             except:
                 pass
 
@@ -533,26 +604,39 @@ class GameLoaderThread(QThread):
                 with urllib.request.urlopen(req, context=ssl_context, timeout=5) as response:
                     html = response.read().decode('utf-8', errors='ignore')
 
+                    # Extract both Korean and English titles
+                    ko_title = None
+                    en_title = None
+
                     # Look for Korean title - pattern: title (KO)</td><td...>쿠킹 마마</td>
                     ko_match = re.search(r'title\s*\(KO\)</td><td[^>]*>([^<]+)</td>', html)
                     if ko_match:
                         ko_title = ko_match.group(1).strip()
-                        if ko_title:
-                            job.title_name = ko_title
-                            print(f"  [TITLE] GameTDB Korean: {ko_title}")
-                            return
 
-                    # Fallback to EN title - pattern: title (EN)</td><td...>Cooking Mama</td>
+                    # Look for EN title - pattern: title (EN)</td><td...>Cooking Mama</td>
                     en_match = re.search(r'title\s*\(EN\)</td><td[^>]*>([^<]+)</td>', html)
                     if en_match:
                         en_title = en_match.group(1).strip()
-                        if en_title:
-                            job.title_name = en_title
-                            print(f"  [TITLE] GameTDB English: {en_title}")
-                            return
 
-                    # No title found on GameTDB, keep DB title
-                    print(f"  [TITLE] No GameTDB title, using DB: {job.title_name}")
+                    # Store both titles in job
+                    if ko_title:
+                        job.korean_title = ko_title
+                        print(f"  [TITLE] GameTDB Korean: {ko_title}")
+                    if en_title:
+                        job.english_title = en_title
+                        print(f"  [TITLE] GameTDB English: {en_title}")
+
+                    # Set display title based on current language
+                    if tr.current_language == "ko" and ko_title:
+                        job.title_name = ko_title
+                    elif en_title:
+                        job.title_name = en_title
+                    elif ko_title:
+                        job.title_name = ko_title
+                    else:
+                        # No title found on GameTDB, keep DB title
+                        print(f"  [TITLE] No GameTDB title, using DB: {job.title_name}")
+
                     return
 
             except Exception as e:
@@ -621,27 +705,6 @@ class SimpleKeysDialog(QDialog):
         self.galaxy_key_input = QLineEdit()
         self.galaxy_key_input.setPlaceholderText("선택 - Super Mario Galaxy 2 (EUR)")
         form.addRow("Mario Galaxy 2:", self.galaxy_key_input)
-
-        # Ancast Key (for C2W Patcher) with description
-        ancast_widget = QWidget()
-        ancast_layout = QVBoxLayout(ancast_widget)
-        ancast_layout.setContentsMargins(0, 0, 0, 0)
-        ancast_layout.setSpacing(5)
-
-        self.ancast_key_input = QLineEdit()
-        self.ancast_key_input.setPlaceholderText(tr.get("enter_ancast_key"))
-        # Initial style for Ancast Key, indicating it's a required field
-        self.ancast_key_input.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
-        self.ancast_key_input.textChanged.connect(self.update_ancast_key_style) # Connect signal
-        ancast_layout.addWidget(self.ancast_key_input)
-
-        # C2W description
-        c2w_desc_label = QLabel(tr.get("c2w_description"))
-        c2w_desc_label.setWordWrap(True)
-        c2w_desc_label.setStyleSheet("color: #666; font-size: 11px;")
-        ancast_layout.addWidget(c2w_desc_label)
-
-        form.addRow(tr.get("ancast_key"), ancast_widget)
 
         # Output directory (in FormLayout with buttons)
         output_widget = QWidget()
@@ -744,10 +807,6 @@ class SimpleKeysDialog(QDialog):
         else:
             line_edit.setStyleSheet("QLineEdit { background-color: #fff8dc; border: 2px solid #ff6b6b; }")
 
-    def update_ancast_key_style(self):
-        """Updates the style for the Ancast key input."""
-        self._update_required_field_style(self.ancast_key_input)
-
     def update_common_key_style(self):
         """Updates the style for the Wii U Common key input."""
         self._update_required_field_style(self.common_key_input)
@@ -782,9 +841,22 @@ class SimpleKeysDialog(QDialog):
             msg = "Download latest compatibility data from UWUVCI-PRIME repository.\n\nThis may take time as it searches game IDs from GameTDB.\nContinue?"
             title = "Update Compatibility DB"
 
-        reply = QMessageBox.question(self, title, msg,
-                                      QMessageBox.Yes | QMessageBox.No,
-                                      QMessageBox.No)
+        # Create styled message box
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(msg)
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setWindowFlags(msg_box.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        # Use custom buttons with Korean text
+        ok_text = "확인" if tr.current_language == "ko" else "OK"
+        cancel_text = "취소" if tr.current_language == "ko" else "Cancel"
+        ok_btn = msg_box.addButton(ok_text, QMessageBox.AcceptRole)
+        cancel_btn = msg_box.addButton(cancel_text, QMessageBox.RejectRole)
+        msg_box.exec_()
+        if msg_box.clickedButton() == ok_btn:
+            reply = QMessageBox.Yes
+        else:
+            reply = QMessageBox.No
         if reply != QMessageBox.Yes:
             return
 
@@ -834,7 +906,7 @@ class SimpleKeysDialog(QDialog):
                 else:
                     success_msg = "Compatibility DB updated successfully!"
 
-                QMessageBox.information(self, title, success_msg)
+                show_message(self, "info", title, success_msg)
             else:
                 # Error
                 error_msg = result.stderr if result.stderr else result.stdout
@@ -843,7 +915,7 @@ class SimpleKeysDialog(QDialog):
                 else:
                     fail_msg = f"Update failed:\n\n{error_msg}"
 
-                QMessageBox.warning(self, title, fail_msg)
+                show_message(self, "warning", title, fail_msg)
 
         except Exception as e:
             # Re-enable button
@@ -852,7 +924,7 @@ class SimpleKeysDialog(QDialog):
             self.db_update_btn.setText(db_update_text)
 
             error_msg = f"업데이트 실패: {e}" if tr.current_language == "ko" else f"Update failed: {e}"
-            QMessageBox.warning(self, title, error_msg)
+            show_message(self, "warning", title, error_msg)
 
     def save(self):
         """Save keys and close."""
@@ -876,13 +948,11 @@ class SimpleKeysDialog(QDialog):
 
         # Save to settings file
         output_dir = self.output_dir_input.text().strip()
-        ancast_key = self.ancast_key_input.text().strip()
         settings = {
             'wii_u_common_key': common_key,
             'title_key_rhythm_heaven': rhythm_key,
             'title_key_xenoblade': xenoblade_key,
             'title_key_galaxy2': galaxy_key,
-            'ancast_key': ancast_key,
             'output_directory': output_dir
         }
 
@@ -935,11 +1005,6 @@ class SimpleKeysDialog(QDialog):
                 if galaxy_key:
                     self.galaxy_key_input.setText(galaxy_key)
 
-                ancast_key = settings.get('ancast_key', '')
-                if ancast_key:
-                    self.ancast_key_input.setText(ancast_key)
-                self.update_ancast_key_style()
-
                 output_dir = settings.get('output_directory', '')
                 if output_dir:
                     self.output_dir_input.setText(output_dir)
@@ -979,19 +1044,7 @@ class EditGameDialog(QDialog):
         self.icon_preview.setFixedSize(192, 192)
         self.icon_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.icon_preview.setAlignment(Qt.AlignCenter)
-        if self.job.icon_path and self.job.icon_path.exists():
-            print(f"[DEBUG] Loading icon from: {self.job.icon_path}")
-            pixmap = QPixmap(str(self.job.icon_path))
-            if not pixmap.isNull():
-                self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            else:
-                print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
-                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
-                self.icon_preview.setText(no_image_text)
-        else:
-            print(f"[DEBUG] Icon path not found or doesn't exist: {self.job.icon_path}")
-            no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
-            self.icon_preview.setText(no_image_text)
+        # Icon will be loaded after UI setup
         self.icon_preview.mousePressEvent = lambda e: self.change_icon()
         self.icon_preview.setCursor(Qt.PointingHandCursor)
         icon_layout.addWidget(self.icon_preview)
@@ -1064,52 +1117,6 @@ class EditGameDialog(QDialog):
         else:
             self.base_combo = None
 
-        # Patch options section
-        patch_layout = QVBoxLayout()
-
-        # Trucha patch checkbox
-        self.trucha_patch_checkbox = QCheckBox(tr.get("trucha_patch_option"))
-        self.trucha_patch_checkbox.setChecked(self.job.trucha_patch)
-        trucha_desc = QLabel(tr.get("trucha_patch_desc"))
-        trucha_desc.setWordWrap(True)
-        trucha_desc.setStyleSheet("color: #666; font-size: 11px; margin-left: 20px;")
-        patch_layout.addWidget(self.trucha_patch_checkbox)
-        patch_layout.addWidget(trucha_desc)
-
-        # C2W patch checkbox (only enabled if Ancast key exists)
-        self.c2w_patch_checkbox = QCheckBox(tr.get("c2w_patch_option"))
-        self.c2w_patch_checkbox.setChecked(self.job.c2w_patch)
-
-        # Check if Ancast key exists in settings
-        import json
-        settings_file = Path.home() / ".meta_injector_settings.json"
-        has_ancast_key = False
-        if settings_file.exists():
-            try:
-                with open(settings_file, 'r', encoding='utf-8') as f:
-                    settings = json.load(f)
-                    ancast_key = settings.get('ancast_key', '').strip()
-                    has_ancast_key = len(ancast_key) == 32
-            except:
-                pass
-
-        # Disable C2W if no Ancast key
-        if not has_ancast_key:
-            self.c2w_patch_checkbox.setEnabled(False)
-            self.c2w_patch_checkbox.setChecked(False)
-            self.job.c2w_patch = False  # Ensure it's disabled
-
-        c2w_desc = QLabel(tr.get("c2w_patch_desc"))
-        c2w_desc.setWordWrap(True)
-        if has_ancast_key:
-            c2w_desc.setStyleSheet("color: #666; font-size: 11px; margin-left: 20px;")
-        else:
-            c2w_desc.setStyleSheet("color: #999; font-size: 11px; margin-left: 20px;")
-        patch_layout.addWidget(self.c2w_patch_checkbox)
-        patch_layout.addWidget(c2w_desc)
-
-        layout.addLayout(patch_layout)
-
         # Buttons
         btn_layout = QHBoxLayout()
         btn_layout.addStretch() # Align buttons to the right
@@ -1158,6 +1165,30 @@ class EditGameDialog(QDialog):
         btn_layout.addWidget(cancel_btn)
         layout.addLayout(btn_layout)
 
+        # Load icon with badge overlays (after all widgets are set up)
+        self.load_initial_icon()
+
+    def load_initial_icon(self):
+        """Load initial icon with badge overlays if needed."""
+        if self.job.icon_path and self.job.icon_path.exists():
+            print(f"[DEBUG] Loading icon from: {self.job.icon_path}")
+            pixmap = QPixmap(str(self.job.icon_path))
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+                # Add badge overlays (Galaxy, Gamepad)
+                scaled_pixmap = self.add_badges_overlay_large(scaled_pixmap, self.job)
+
+                self.icon_preview.setPixmap(scaled_pixmap)
+            else:
+                print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
+                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
+                self.icon_preview.setText(no_image_text)
+        else:
+            print(f"[DEBUG] Icon path not found or doesn't exist: {self.job.icon_path}")
+            no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
+            self.icon_preview.setText(no_image_text)
+
     def change_icon(self):
         """Change icon image."""
         file_path, _ = QFileDialog.getOpenFileName(
@@ -1168,8 +1199,8 @@ class EditGameDialog(QDialog):
         )
         if file_path:
             self.job.icon_path = Path(file_path)
-            pixmap = QPixmap(file_path)
-            self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            # Update icon preview
+            self.load_initial_icon()
 
     def change_banner(self):
         """Change banner image."""
@@ -1184,6 +1215,63 @@ class EditGameDialog(QDialog):
             pixmap = QPixmap(file_path)
             self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
+    def add_badges_overlay_large(self, pixmap: QPixmap, job: BatchBuildJob) -> QPixmap:
+        """Add badge overlays to larger pixmap (for edit dialog - 192x192)."""
+        from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont
+        from PyQt5.QtCore import Qt, QRectF
+
+        # Create a copy to draw on
+        result = QPixmap(pixmap)
+        painter = QPainter(result)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        font = QFont()
+        font.setPixelSize(10)
+        font.setBold(True)
+
+        # Galaxy patch badge (bottom-right)
+        if job.pad_option in ["galaxy_allstars", "galaxy_nvidia"]:
+            badge_width = 50
+            badge_height = 16
+            badge_x = result.width() - badge_width - 6
+            badge_y = result.height() - badge_height - 6
+
+            if job.pad_option == "galaxy_allstars":
+                color = QColor(255, 152, 0, 220)  # Orange
+                text = "GALA"
+            else:  # galaxy_nvidia
+                color = QColor(118, 185, 0, 220)  # Green
+                text = "GALN"
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(color))
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 3, 3)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        # Gamepad support badge (top-left)
+        if job.pad_option in ["none", "gamepad_lr"]:
+            badge_width = 40
+            badge_height = 16
+            badge_x = 6
+            badge_y = 6
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(QColor(76, 175, 80, 220)))  # Green
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 3, 3)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            text = "GP" if job.pad_option == "none" else "GP+"
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        painter.end()
+        return result
+
     def save(self):
         """Save changes."""
         self.job.title_name = self.title_input.text()
@@ -1193,10 +1281,6 @@ class EditGameDialog(QDialog):
         # Save selected base ROM if combo box exists
         if self.base_combo:
             self.job.host_game = self.base_combo.currentText()
-
-        # Save patch options
-        self.job.trucha_patch = self.trucha_patch_checkbox.isChecked()
-        self.job.c2w_patch = self.c2w_patch_checkbox.isChecked()
 
         self.accept()
 
@@ -1783,6 +1867,18 @@ class BatchWindow(QMainWindow):
                 border-right: none;
             }
         """)
+        # Table body styling - lighter gridlines with rounded corners
+        self.table.setStyleSheet("""
+            QTableWidget {
+                gridline-color: #e8e8e8;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                background-color: white;
+            }
+            QTableWidget::item {
+                padding: 4px;
+            }
+        """)
         # Set column widths (파일명/게임제목 통합, 게임 ID 별도, 호환성/패드옵션 통합)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # File Name / Game Title
         # 첫 번째 헤더만 좌측 정렬
@@ -1803,18 +1899,84 @@ class BatchWindow(QMainWindow):
         self.update_main_buttons_state() # Set initial state of buttons
         layout.addWidget(self.table)
 
-        # Progress
-        progress_layout = QVBoxLayout()
+        # Progress section with message and percentage labels
         ready_text = "준비 완료 - 게임을 추가하세요" if tr.current_language == "ko" else "Ready - Add games to start"
-        self.status_label = QLabel(ready_text)
-        progress_layout.addWidget(self.status_label)
 
+        # Container for progress bar and labels
+        progress_container = QWidget()
+        progress_layout = QVBoxLayout(progress_container)
+        progress_layout.setContentsMargins(12, 8, 12, 10)
+        progress_layout.setSpacing(4)
+
+        # Top row: message (left) and percentage (right)
+        top_row = QWidget()
+        top_row_layout = QHBoxLayout(top_row)
+        top_row_layout.setContentsMargins(4, 0, 4, 0)
+        top_row_layout.setSpacing(8)
+
+        # Message label (left-aligned, expandable)
+        self.progress_message = QLabel(ready_text)
+        self.progress_message.setStyleSheet("""
+            QLabel {
+                color: #333;
+                font-size: 12px;
+                background: transparent;
+            }
+        """)
+        top_row_layout.addWidget(self.progress_message, 1)  # stretch factor 1
+
+        # Percentage label (right-aligned, fixed width, hidden by default)
+        self.progress_percentage = QLabel("")
+        self.progress_percentage.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.progress_percentage.setStyleSheet("""
+            QLabel {
+                color: #555;
+                font-size: 12px;
+                font-weight: 600;
+                background: transparent;
+                min-width: 40px;
+            }
+        """)
+        self.progress_percentage.setVisible(False)  # Hidden when idle
+        top_row_layout.addWidget(self.progress_percentage, 0)  # no stretch
+
+        # Progress bar (no text, just visual indicator)
         self.progress_bar = QProgressBar()
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setMaximum(100)
         self.progress_bar.setValue(0)
-        self.progress_bar.hide() # Initially hide the progress bar
+        self.progress_bar.setTextVisible(False)  # Hide built-in text
+        self.progress_bar.setFixedHeight(8)  # Thin progress bar
+
+        # Modern styling - subtle when idle, vibrant when active
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: none;
+                border-radius: 4px;
+                background-color: #e8e8e8;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4CAF50, stop:1 #66BB6A);
+                border-radius: 4px;
+            }
+        """)
+
+        # Add to layout
+        progress_layout.addWidget(top_row)
         progress_layout.addWidget(self.progress_bar)
 
-        layout.addLayout(progress_layout)
+        # Container styling - use objectName to target only the container
+        progress_container.setObjectName("progressContainer")
+        progress_container.setStyleSheet("""
+            #progressContainer {
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                background-color: #f8f8f8;
+            }
+        """)
+
+        layout.addWidget(progress_container)
 
         # Bottom controls
         bottom_layout = QHBoxLayout()
@@ -1906,37 +2068,15 @@ class BatchWindow(QMainWindow):
         if not file_paths:
             return
 
-        # Filter out duplicates
-        existing_paths = {str(job.game_path.resolve()) for job in self.jobs}
-        new_file_paths = []
-        duplicate_count = 0
-
-        for file_path in file_paths:
-            resolved_path = str(Path(file_path).resolve())
-            if resolved_path in existing_paths:
-                duplicate_count += 1
-                print(f"[SKIP] Duplicate file: {Path(file_path).name}")
-            else:
-                new_file_paths.append(file_path)
-                existing_paths.add(resolved_path)
-
-        if duplicate_count > 0:
-            if tr.current_language == "ko":
-                msg = f"{duplicate_count}개 중복 파일을 건너뛰었습니다."
-                title = "중복 파일"
-            else:
-                msg = f"{duplicate_count} duplicate files were skipped."
-                title = "Duplicates"
-            show_message(self, "info", title, msg)
-
-        if not new_file_paths:
-            return
+        # Allow duplicate files for multiple builds with different options
+        new_file_paths = file_paths
 
         # Show loading status
         if tr.current_language == "ko":
-            self.status_label.setText(f"{len(new_file_paths)}개 게임 로딩 중...")
+            self.progress_message.setText(f"{len(new_file_paths)}개 게임 로딩 중...")
         else:
-            self.status_label.setText(f"Loading {len(new_file_paths)} games...")
+            self.progress_message.setText(f"Loading {len(new_file_paths)} games...")
+        self.progress_percentage.setVisible(False)
 
         # Create progress dialog
         progress_label = tr.get("loading_games_message")
@@ -1973,9 +2113,10 @@ class BatchWindow(QMainWindow):
         if self.loader_thread:
             self.loader_thread.stop()
             if tr.current_language == "ko":
-                self.status_label.setText("로딩 취소됨")
+                self.progress_message.setText("로딩 취소됨")
             else:
-                self.status_label.setText("Loading canceled")
+                self.progress_message.setText("Loading canceled")
+            self.progress_percentage.setVisible(False)
 
     def on_loading_progress(self, current, total):
         """Update loading progress."""
@@ -2000,9 +2141,10 @@ class BatchWindow(QMainWindow):
 
         # Update status
         if tr.current_language == "ko":
-            self.status_label.setText(f"{len(self.jobs)}개 게임 로드됨... (계속 로딩 중...)")
+            self.progress_message.setText(f"{len(self.jobs)}개 게임 로드됨... (계속 로딩 중...)")
         else:
-            self.status_label.setText(f"Loaded {len(self.jobs)} games...")
+            self.progress_message.setText(f"Loaded {len(self.jobs)} games...")
+        self.progress_percentage.setVisible(False)
         self.update_ui_state()
 
     def on_loading_finished(self, total_loaded):
@@ -2013,18 +2155,82 @@ class BatchWindow(QMainWindow):
             delattr(self, 'loading_progress')
 
         if tr.current_language == "ko":
-            self.status_label.setText(f"준비 완료 - {total_loaded}개 게임 로드됨")
+            self.progress_message.setText(f"준비 완료 - {total_loaded}개 게임 로드됨")
         else:
-            self.status_label.setText(f"Ready - {total_loaded} games loaded")
+            self.progress_message.setText(f"Ready - {total_loaded} games loaded")
+        self.progress_percentage.setVisible(False)
         self.loader_thread = None
         self.update_ui_state()
+
+    def add_badges_overlay(self, pixmap: QPixmap, job: BatchBuildJob) -> QPixmap:
+        """Add badge overlays to pixmap (Galaxy patch, Gamepad) - for 50x50 table icons."""
+        from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont
+        from PyQt5.QtCore import Qt, QRectF
+
+        # Create a copy to draw on
+        result = QPixmap(pixmap)
+        painter = QPainter(result)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        font = QFont()
+        font.setPixelSize(5)
+        font.setBold(True)
+
+        # Galaxy patch badge (bottom-right)
+        if job.pad_option in ["galaxy_allstars", "galaxy_nvidia"]:
+            badge_width = 22
+            badge_height = 8
+            badge_x = result.width() - badge_width - 1
+            badge_y = result.height() - badge_height - 1
+
+            # Different colors for different patches
+            if job.pad_option == "galaxy_allstars":
+                color = QColor(255, 152, 0, 200)  # Orange
+                text = "GALA"
+            else:  # galaxy_nvidia
+                color = QColor(118, 185, 0, 200)  # Green
+                text = "GALN"
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(color))
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 1.5, 1.5)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        # Gamepad support badge (top-left)
+        if job.pad_option in ["none", "gamepad_lr"]:
+            badge_width = 18
+            badge_height = 8
+            badge_x = 1
+            badge_y = 1
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(QColor(76, 175, 80, 200)))  # Green
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 1.5, 1.5)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            text = "GP" if job.pad_option == "none" else "GP+"
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        painter.end()
+        return result
 
     def update_icon_preview(self, row: int, job: BatchBuildJob):
         """Update icon and banner preview in table."""
         # Update icon (Column 2) - Use QLabel for center alignment
         if job.icon_path and job.icon_path.exists():
             pixmap = QPixmap(str(job.icon_path))
-            scaled_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # Scale to 50x50 to fit better in 55px row height
+            scaled_pixmap = pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+            # Add badge overlays (Galaxy, Gamepad) - visual only, doesn't modify original
+            scaled_pixmap = self.add_badges_overlay(scaled_pixmap, job)
+
             icon_label = QLabel()
             icon_label.setPixmap(scaled_pixmap)
             icon_label.setAlignment(Qt.AlignCenter)
@@ -2044,7 +2250,8 @@ class BatchWindow(QMainWindow):
         # Update banner (Column 3) - Use QLabel for center alignment
         if job.banner_path and job.banner_path.exists():
             pixmap = QPixmap(str(job.banner_path))
-            scaled_pixmap = pixmap.scaled(113, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # Scale to 89x50 to fit better in 55px row height (16:9 ratio)
+            scaled_pixmap = pixmap.scaled(89, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             banner_label = QLabel()
             banner_label.setPixmap(scaled_pixmap)
             banner_label.setAlignment(Qt.AlignCenter)
@@ -2186,7 +2393,7 @@ class BatchWindow(QMainWindow):
 
     def remove_selected(self):
         """Remove selected rows."""
-        if not self.remove_btn.property("interactive"):
+        if self.remove_btn.property("interactive") != "true":
             return
 
         selected_indexes = self.table.selectionModel().selectedRows()
@@ -2205,7 +2412,7 @@ class BatchWindow(QMainWindow):
 
     def clear_all(self):
         """Clear all jobs."""
-        if not self.clear_btn.property("interactive"):
+        if self.clear_btn.property("interactive") != "true":
             return
 
         if tr.current_language == "ko":
@@ -2232,53 +2439,189 @@ class BatchWindow(QMainWindow):
         has_selection = self.table.selectionModel().hasSelection()
         has_rows = self.table.rowCount() > 0
 
-        # Use a custom property 'interactive' to fake the disabled state,
-        # which allows the widget to still receive mouse events for cursor changes.
-        self.remove_btn.setProperty("interactive", has_selection)
-        self.clear_btn.setProperty("interactive", has_rows)
+        # Store property for click handler checks
+        self.remove_btn.setProperty("interactive", "true" if has_selection else "false")
+        self.clear_btn.setProperty("interactive", "true" if has_rows else "false")
 
         # Get normal icons once
         normal_remove_icon = self.style().standardIcon(QStyle.SP_BrowserStop)
         normal_clear_icon = self.style().standardIcon(QStyle.SP_TrashIcon)
-        
-        # Update cursor and icon to give a clear visual cue for disabled buttons
+
+        # Base button style
+        active_style = """
+            QPushButton {
+                background-color: #f5f5f5;
+                color: #333;
+                border: 1px solid #ddd;
+                padding: 8px 16px 8px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                text-align: left;
+            }
+            QPushButton:hover {
+                background-color: #e8e8e8;
+                border-color: #bbb;
+            }
+            QPushButton:pressed {
+                background-color: #ddd;
+            }
+        """
+
+        inactive_style = """
+            QPushButton {
+                background-color: #f0f0f0;
+                color: #aaa;
+                border: 1px solid #e0e0e0;
+                padding: 8px 16px 8px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                text-align: left;
+            }
+        """
+
+        # Update remove button
         if has_selection:
             self.remove_btn.setCursor(Qt.ArrowCursor)
             self.remove_btn.setIcon(normal_remove_icon)
+            self.remove_btn.setStyleSheet(active_style)
         else:
-            # Create a disabled icon: get pixmap from normal icon and apply disabled mode
             pixmap = normal_remove_icon.pixmap(self.remove_btn.iconSize(), QIcon.Disabled)
             self.remove_btn.setIcon(QIcon(pixmap))
             self.remove_btn.setCursor(Qt.ForbiddenCursor)
+            self.remove_btn.setStyleSheet(inactive_style)
 
+        # Update clear button
         if has_rows:
             self.clear_btn.setCursor(Qt.ArrowCursor)
             self.clear_btn.setIcon(normal_clear_icon)
+            self.clear_btn.setStyleSheet(active_style)
         else:
-            # Create a disabled icon: get pixmap from normal icon and apply disabled mode
             pixmap = normal_clear_icon.pixmap(self.clear_btn.iconSize(), QIcon.Disabled)
             self.clear_btn.setIcon(QIcon(pixmap))
             self.clear_btn.setCursor(Qt.ForbiddenCursor)
-        
-        # Re-polish the widgets to apply the new style based on the property
-        self.style().unpolish(self.remove_btn)
-        self.style().polish(self.remove_btn)
-        self.style().unpolish(self.clear_btn)
-        self.style().polish(self.clear_btn)
+            self.clear_btn.setStyleSheet(inactive_style)
 
     def update_ui_state(self):
         """Update UI state based on jobs."""
         has_jobs = len(self.jobs) > 0
         self.build_btn.setEnabled(has_jobs)
         if tr.current_language == "ko":
-            self.status_label.setText(f"준비 완료 - {len(self.jobs)}개 게임 대기 중")
+            self.progress_message.setText(f"준비 완료 - {len(self.jobs)}개 게임 대기 중")
         else:
-            self.status_label.setText(f"Ready - {len(self.jobs)} game(s) in queue")
+            self.progress_message.setText(f"Ready - {len(self.jobs)} game(s) in queue")
+        self.progress_percentage.setVisible(False)
         self.update_main_buttons_state() # Update main buttons state consistently
+
+    def update_conflict_styling(self):
+        """Update table styling to show conflicting items in red."""
+        for idx, job in enumerate(self.jobs):
+            if idx >= self.table.rowCount():
+                continue
+
+            action_widget = self.table.cellWidget(idx, 5)
+            if not action_widget:
+                continue
+
+            status_label = action_widget.findChild(QLabel)
+            if not status_label:
+                continue
+
+            if job.has_output_conflict:
+                # Mark as conflict
+                conflict_text = "충돌 (스킵)" if tr.current_language == "ko" else "Conflict (Skip)"
+                status_label.setText(conflict_text)
+                status_label.setStyleSheet(
+                    "background-color: #ffcdd2; border: 1px solid #ef5350; "
+                    "color: #c62828; font-size: 11px; padding: 2px 5px; "
+                    "border-radius: 3px; font-weight: bold;"
+                )
+
+                # Make entire row slightly red
+                for col in range(self.table.columnCount()):
+                    item = self.table.item(idx, col)
+                    if item:
+                        item.setBackground(QColor(255, 235, 235))  # Light red background
+            else:
+                # Reset to pending status if no conflict
+                if job.status == "pending" or job.status == "skipped":
+                    status_text = "대기 중" if tr.current_language == "ko" else "Pending"
+                    status_label.setText(status_text)
+                    status_label.setStyleSheet(
+                        "background-color: #fff9c4; border: 1px solid #fbc02d; "
+                        "color: #8c6b00; font-size: 11px; padding: 2px 5px; "
+                        "border-radius: 3px;"
+                    )
+
+                # Clear row background
+                for col in range(self.table.columnCount()):
+                    item = self.table.item(idx, col)
+                    if item:
+                        item.setBackground(QColor(255, 255, 255))  # White background
+
+    def detect_output_conflicts(self):
+        """
+        Detect and mark jobs with conflicting output paths.
+        Returns number of conflicts found.
+        """
+        # Prefix map from build_engine.py
+        prefix_map = {
+            "no_gamepad": "NOGP_",
+            "none": "GP_",
+            "gamepad_lr": "GPLR_",
+            "wiimote": "WM_",
+            "horizontal_wiimote": "HWM_",
+            "passthrough": "PT_",
+            "galaxy_allstars": "GALA_",
+            "galaxy_nvidia": "GALN_"
+        }
+
+        # Track output paths: {output_key: [job_indices]}
+        output_paths = {}
+
+        for idx, job in enumerate(self.jobs):
+            # Get game ID
+            game_id = job.game_info.get('game_id', '') if job.game_info else ''
+            if not game_id:
+                continue
+
+            # Calculate output path key (prefix + game_id)
+            prefix = prefix_map.get(job.pad_option, "")
+            output_key = f"{prefix}{game_id}"
+
+            if output_key not in output_paths:
+                output_paths[output_key] = []
+            output_paths[output_key].append(idx)
+
+        # Mark conflicts (keep first, mark rest as conflicts)
+        conflict_count = 0
+        for output_key, indices in output_paths.items():
+            if len(indices) > 1:
+                # First job is OK, rest are conflicts
+                for idx in indices[1:]:
+                    self.jobs[idx].has_output_conflict = True
+                    conflict_count += 1
+                    print(f"[CONFLICT] Job {idx} ({self.jobs[idx].title_name}) conflicts with output path: {output_key}")
+
+        return conflict_count
 
     def start_batch_build(self):
         """Start batch building."""
-        self.progress_bar.show() # Show progress bar when build starts
+        # Detect and mark output path conflicts
+        conflict_count = self.detect_output_conflicts()
+        if conflict_count > 0:
+            # Update table to show conflicts
+            self.update_conflict_styling()
+
+            # Show warning to user
+            if tr.current_language == "ko":
+                msg = f"{conflict_count}개 항목이 출력 경로 충돌로 인해 건너뛰어집니다.\n\n중복된 게임+옵션 조합이 감지되었습니다.\n충돌 항목은 빨간색으로 표시되며 빌드에서 제외됩니다."
+                title = "출력 경로 충돌"
+            else:
+                msg = f"{conflict_count} item(s) will be skipped due to output path conflicts.\n\nDuplicate game+option combinations detected.\nConflicting items are marked in red and will be excluded from build."
+                title = "Output Path Conflicts"
+
+            reply = show_message(self, "warning", title, msg)
+
         # Get keys from settings
         import json
         settings_file = Path.home() / ".meta_injector_settings.json"
@@ -2302,7 +2645,6 @@ class BatchWindow(QMainWindow):
                 title_key_rhythm = settings.get('title_key_rhythm_heaven', '')
                 title_key_xenoblade = settings.get('title_key_xenoblade', '')
                 title_key_galaxy = settings.get('title_key_galaxy2', '')
-                ancast_key = settings.get('ancast_key', '')
 
                 print(f"[DEBUG] Common key: {'SET' if common_key else 'NOT SET'}")
                 print(f"[DEBUG] Rhythm key: {'SET' if title_key_rhythm else 'NOT SET'}")
@@ -2328,26 +2670,50 @@ class BatchWindow(QMainWindow):
         settings_file = Path.home() / ".meta_injector_settings.json"
         output_dir = None
 
+        print(f"[DEBUG] Loading settings from: {settings_file}")
+
         if settings_file.exists():
             try:
                 with open(settings_file, 'r', encoding='utf-8') as f:
                     settings = json.load(f)
                     output_dir = settings.get('output_directory', '').strip()
-            except:
-                pass
+                    print(f"[DEBUG] Loaded output_directory from settings: '{output_dir}'")
 
-        # If no output directory in settings, use first game's directory
+                    # Validate the path if it exists
+                    if output_dir:
+                        try:
+                            # Check if it's a valid path format
+                            test_path = Path(output_dir)
+                            print(f"[DEBUG] Validated as path: {test_path}")
+                        except Exception as path_err:
+                            print(f"[WARN] Invalid path format in settings: {path_err}")
+                            output_dir = None  # Force use of default
+            except Exception as e:
+                print(f"[DEBUG] Failed to load settings: {e}")
+
+        # If no output directory in settings, use default Documents folder
         if not output_dir:
-            if self.jobs:
-                first_game_path = self.jobs[0].game_path
-                output_dir = str(first_game_path.parent)
-                print(f"No output directory in settings, using game directory: {output_dir}")
-            else:
-                # Should not happen, but fallback to dialog
-                dialog_title = "출력 디렉토리 선택" if tr.current_language == "ko" else "Select Output Directory"
-                output_dir = QFileDialog.getExistingDirectory(self, dialog_title)
-                if not output_dir:
-                    return
+            # Try Documents folder first
+            default_output = Path.home() / "Documents" / "WiiVC Builds"
+
+            # If Documents doesn't exist, fall back to Desktop or home directory
+            if not (Path.home() / "Documents").exists():
+                print(f"[WARN] Documents folder not found, trying Desktop")
+                if (Path.home() / "Desktop").exists():
+                    default_output = Path.home() / "Desktop" / "WiiVC Builds"
+                else:
+                    print(f"[WARN] Desktop folder not found, using home directory")
+                    default_output = Path.home() / "WiiVC Builds"
+
+            default_output.mkdir(parents=True, exist_ok=True)
+            output_dir = str(default_output)
+            print(f"[DEBUG] No output directory in settings, using default: {output_dir}")
+
+        # Normalize and resolve the path to absolute form
+        output_dir_path = Path(output_dir).resolve()
+        output_dir = str(output_dir_path)
+        print(f"[DEBUG] Final output_dir for build: {output_dir}")
+        print(f"[DEBUG] Output dir exists: {output_dir_path.exists()}")
 
         # Prepare all metadata in main thread (to avoid SQLite threading issues)
         for job in self.jobs:
@@ -2357,6 +2723,10 @@ class BatchWindow(QMainWindow):
         # Disable controls
         self.build_btn.setEnabled(False)
         self.stop_btn.setEnabled(True)
+
+        # Store output directory for later use (e.g., open folder button)
+        self.current_output_dir = output_dir
+        print(f"[DEBUG] Stored current_output_dir: {self.current_output_dir}")
 
         # Start batch builder
         title_keys = {
@@ -2376,8 +2746,7 @@ class BatchWindow(QMainWindow):
             title_keys,
             Path(output_dir),
             self.auto_icons_check.isChecked(),
-            keep_temp_for_debug=self.keep_temp_check.isChecked(),
-            ancast_key=ancast_key
+            keep_temp_for_debug=self.keep_temp_check.isChecked()
         )
 
         self.batch_builder.progress_updated.connect(self.on_progress)
@@ -2394,13 +2763,23 @@ class BatchWindow(QMainWindow):
         """Stop batch build."""
         if self.batch_builder:
             self.batch_builder.stop()
+            # Reset progress indicators immediately when user stops
+            self.progress_bar.setValue(0)
+            self.progress_percentage.setVisible(False)
+            if tr.current_language == "ko":
+                self.progress_message.setText("중단됨")
+            else:
+                self.progress_message.setText("Stopped")
 
     def on_progress(self, current, total, message):
         """Handle progress update."""
         # current is already a percentage (0-100) from batch_builder
         # total is always 100
         self.progress_bar.setValue(current)
-        self.status_label.setText(message)
+        # Update message and percentage labels separately
+        self.progress_message.setText(message)
+        self.progress_percentage.setText(f"{current}%")
+        self.progress_percentage.setVisible(True)  # Show percentage during build
 
     def on_job_started(self, idx, game_name):
         """Handle job started."""
@@ -2440,16 +2819,80 @@ class BatchWindow(QMainWindow):
         self.progress_bar.setValue(100)
 
         if tr.current_language == "ko":
-            self.status_label.setText(f"완료: {success_count}/{total_count} 성공")
+            self.progress_message.setText(f"완료: {success_count}/{total_count} 성공")
             title = "일괄 빌드 결과 안내"
             msg = f"일괄 빌드가 완료되었습니다!\n\n성공: {success_count}개\n실패: {total_count - success_count}개\n전체: {total_count}개"
+            open_folder_text = "폴더 열기"
+            close_text = "닫기"
         else:
-            self.status_label.setText(f"Completed: {success_count}/{total_count} succeeded")
+            self.progress_message.setText(f"Completed: {success_count}/{total_count} succeeded")
             title = "Batch Build Results"
             msg = f"Batch build completed!\n\nSuccess: {success_count}\nFailed: {total_count - success_count}\nTotal: {total_count}"
+            open_folder_text = "Open Folder"
+            close_text = "Close"
 
-        show_message(self, "info", title, msg, min_width=500)
-        self.progress_bar.hide() # Hide progress bar after build finishes
+        # Show 100% completion
+        self.progress_percentage.setText("100%")
+        self.progress_percentage.setVisible(True)
+
+        # Create custom message box with "Open Folder" button
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(msg)
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setMinimumWidth(500)
+        msg_box.setWindowFlags(msg_box.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+
+        # Add custom buttons
+        open_folder_btn = msg_box.addButton(open_folder_text, QMessageBox.ActionRole)
+        close_btn = msg_box.addButton(close_text, QMessageBox.RejectRole)
+
+        msg_box.exec_()
+
+        # Check which button was clicked
+        if msg_box.clickedButton() == open_folder_btn:
+            # Open output folder
+            import subprocess
+            import platform
+            output_path = getattr(self, 'current_output_dir', None)
+
+            print(f"[DEBUG] ========== Open Folder Clicked ==========")
+            print(f"[DEBUG] current_output_dir value: {output_path}")
+            print(f"[DEBUG] current_output_dir type: {type(output_path)}")
+
+            if output_path:
+                # Convert to Path object and resolve to absolute path
+                output_path_obj = Path(output_path).resolve()
+                print(f"[DEBUG] Resolved path: {output_path_obj}")
+                print(f"[DEBUG] Path exists: {output_path_obj.exists()}")
+                print(f"[DEBUG] Path is dir: {output_path_obj.is_dir() if output_path_obj.exists() else 'N/A'}")
+
+                if not output_path_obj.exists():
+                    print(f"[ERROR] Output path does not exist: {output_path_obj}")
+                    error_msg = "출력 폴더를 찾을 수 없습니다" if tr.current_language == "ko" else "Output folder not found"
+                    show_message(self, "warning", tr.get("error"), error_msg)
+                else:
+                    # Use absolute string path for explorer
+                    abs_path_str = str(output_path_obj.absolute())
+                    print(f"[DEBUG] Opening with explorer: {abs_path_str}")
+
+                    if platform.system() == 'Windows':
+                        # Use /select to open and highlight the folder
+                        subprocess.run(['explorer', abs_path_str])
+                    elif platform.system() == 'Darwin':  # macOS
+                        subprocess.run(['open', abs_path_str])
+                    else:  # Linux
+                        subprocess.run(['xdg-open', abs_path_str])
+
+                    print(f"[DEBUG] Explorer command executed")
+            else:
+                print("[ERROR] No output_path set in self.current_output_dir!")
+                error_msg = "출력 경로가 설정되지 않았습니다" if tr.current_language == "ko" else "Output path not set"
+                show_message(self, "warning", tr.get("error"), error_msg)
+
+        # Reset progress bar and percentage after dialog closes
+        self.progress_bar.setValue(0)
+        self.progress_percentage.setVisible(False)
 
     def set_ui_enabled(self, enabled: bool):
         """Enable or disable UI elements during build."""
@@ -2528,6 +2971,20 @@ class BatchWindow(QMainWindow):
 
             # Update compatibility label/button for Galaxy patches
             self.update_compat_widget_for_galaxy(row, index)
+
+            # Re-check for output path conflicts whenever pad option changes
+            # Clear all existing conflict flags first
+            for j in self.jobs:
+                j.has_output_conflict = False
+
+            # Detect conflicts again
+            self.detect_output_conflicts()
+
+            # Update table styling
+            self.update_conflict_styling()
+
+            # Update icon preview to reflect new badge (Galaxy/Gamepad)
+            self.update_icon_preview(row, job)
 
     def update_compat_widget_for_galaxy(self, row, pad_index):
         """Update compatibility widget to show mapping button for Galaxy patches."""

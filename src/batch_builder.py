@@ -25,8 +25,7 @@ class BatchBuildJob:
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
-        self.trucha_patch = True  # Enable Trucha bug patch by default
-        self.c2w_patch = True  # Enable C2W CPU unlock patch by default (if Ancast key available)
+        self.has_output_conflict = False  # Mark if output path conflicts with another job
 
 
 class BatchBuilder(QThread):
@@ -39,13 +38,11 @@ class BatchBuilder(QThread):
     all_finished = pyqtSignal(int, int)  # success_count, total_count
 
     def __init__(self, jobs: List[BatchBuildJob], common_key: str, title_keys: Dict[str, str],
-                 output_dir: Path, auto_icons: bool = True, keep_temp_for_debug: bool = False,
-                 ancast_key: str = ''):
+                 output_dir: Path, auto_icons: bool = True, keep_temp_for_debug: bool = False):
         super().__init__()
         self.jobs = jobs
         self.common_key = common_key
         self.title_keys = title_keys  # Dict mapping host game name to title key
-        self.ancast_key = ancast_key  # Ancast key for C2W CPU unlock patch
         self.output_dir = output_dir
         self.auto_icons = auto_icons
         self.keep_temp_for_debug = keep_temp_for_debug
@@ -67,6 +64,13 @@ class BatchBuilder(QThread):
         for idx, job in enumerate(self.jobs):
             if self.should_stop:
                 break
+
+            # Skip jobs with output path conflicts
+            if job.has_output_conflict:
+                print(f"[SKIP] Skipping {job.title_name} due to output path conflict")
+                job.status = "skipped"
+                self.job_finished.emit(idx, False, "Skipped (output path conflict)")
+                continue
 
             # Emit job started
             self.job_started.emit(idx, job.title_name)
@@ -137,7 +141,7 @@ class BatchBuilder(QThread):
             # Get game ID for cache folder
             game_id = job.game_info.get('game_id', 'unknown')
 
-            # Determine badge type for galaxy patches
+            # Determine badge type (Galaxy only)
             badge_type = None
             if job.pad_option == "galaxy_allstars":
                 badge_type = "galaxy_allstars"
@@ -151,16 +155,18 @@ class BatchBuilder(QThread):
 
             if job.icon_path and job.icon_path.exists():
                 # Different cache filenames based on badge type
+                cache_suffix = ""
                 if badge_type == "galaxy_allstars":
-                    cache_icon = paths.images_cache / game_id / "icon_allstars.png"
+                    cache_suffix = "_allstars"
                 elif badge_type == "galaxy_nvidia":
-                    cache_icon = paths.images_cache / game_id / "icon_nvidia.png"
-                else:
-                    cache_icon = paths.images_cache / game_id / "icon.png"
+                    cache_suffix = "_nvidia"
+
+                cache_filename = f"icon{cache_suffix}.png" if cache_suffix else "icon.png"
+                cache_icon = paths.images_cache / game_id / cache_filename
 
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
-                # Always process if badge_type is set, or if not already in cache
+                # Always process if badge is set, or if not already in cache
                 should_process = (badge_type is not None) or (job.icon_path.resolve() != cache_icon.resolve())
 
                 if should_process:
@@ -252,14 +258,11 @@ class BatchBuilder(QThread):
                 "drc_path": paths.temp_drc,
                 # Controller option for folder naming
                 "pad_option": job.pad_option,
-                # Patch options
-                "trucha_patch": job.trucha_patch,
-                "c2w_patch": job.c2w_patch,
-                # Ancast key for C2W CPU unlock patch
-                "ancast_key": self.ancast_key,
             }
 
             # Apply selected profile
+            print(f"\n[DEBUG] job.pad_option = '{job.pad_option}'")
+
             if job.pad_option == "no_gamepad":
                 # Profile 1: 미적용 (No GamePad)
                 options["no_gamepad_emu"] = True
@@ -301,6 +304,11 @@ class BatchBuilder(QThread):
             if not title_key:
                 # Fallback: use any available key
                 title_key = next((key for key in self.title_keys.values() if key), '')
+
+            # DEBUG: Check options being passed to build
+            print(f"\n[DEBUG] Options dict being passed to build(): {options}")
+            print(f"[DEBUG] galaxy_patch value: {options.get('galaxy_patch')}")
+            print(f"[DEBUG] pad_option value: {options.get('pad_option')}\n")
 
             success = engine.build(
                 game_path=job.game_path,

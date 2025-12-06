@@ -227,14 +227,6 @@ class Translations:
         },
 
         # Advanced Tab
-        "ancast_key": {
-            "en": "Ancast Key (Wii U Starbuck Key)",
-            "ko": "Ancast 키 (Wii U Starbuck 키)"
-        },
-        "enter_ancast_key": {
-            "en": "Enter Ancast key...",
-            "ko": "Ancast 키 입력..."
-        },
         "save": {
             "en": "Save",
             "ko": "저장"
@@ -242,10 +234,6 @@ class Translations:
         "advanced_options": {
             "en": "Advanced Options",
             "ko": "고급 옵션"
-        },
-        "enable_c2w_patcher": {
-            "en": "Enable C2W Patcher",
-            "ko": "C2W 패처 활성화"
         },
         "use_custom_main_dol": {
             "en": "Use Custom Main DOL",
@@ -282,34 +270,6 @@ class Translations:
         "wii_video_mode_changer": {
             "en": "Wii Video Mode Changer",
             "ko": "Wii 비디오 모드 체인저"
-        },
-        "online_patch": {
-            "en": "Apply WiiLink WFC / Trucha Patches",
-            "ko": "WiiLink WFC / Trucha 패치 적용"
-        },
-        "online_patch_description": {
-            "en": "• Trucha bug patch: Always applied\n• Bypasses signature verification (fixes error 22000)\n• Required for C2W and modified games",
-            "ko": "• Trucha 버그 패치: 항상 적용\n• 서명 검증 우회 (오류 22000 해결)\n• C2W 및 수정된 게임에 필요"
-        },
-        "trucha_patch_option": {
-            "en": "Apply Trucha Bug Patch",
-            "ko": "Trucha 버그 패치 적용"
-        },
-        "trucha_patch_desc": {
-            "en": "Bypasses signature verification (fixes error 22000, required for modified games)",
-            "ko": "서명 검증 우회 (오류 22000 해결, 수정된 게임에 필요)"
-        },
-        "c2w_patch_option": {
-            "en": "Apply C2W CPU Unlock Patch",
-            "ko": "C2W CPU 클럭 해제 패치 적용"
-        },
-        "c2w_patch_desc": {
-            "en": "Unlock CPU from 729MHz to 1.215GHz (requires Ancast key in settings)",
-            "ko": "CPU를 729MHz에서 1.215GHz로 상향 (설정에서 Ancast 키 필요)"
-        },
-        "c2w_description": {
-            "en": "• C2W (Cafe2Wii) CPU clock unlock patch\n• Unlocks CPU from 729MHz to 1.215GHz\n• Improves performance for demanding games\n• Requires Ancast (Starbuck) key",
-            "ko": "• C2W (Cafe2Wii) CPU 클럭 제한 해제 패치\n• CPU를 729MHz에서 1.215GHz로 상향\n• 고사양 게임의 성능 향상\n• Ancast (Starbuck) 키 필요"
         },
         "trimming_description": {
             "en": "Keep full ISO without trimming unused space (may improve compatibility)",

@@ -11,7 +11,6 @@ import time
 from pathlib import Path
 from typing import Callable, Optional
 from .translations import tr
-from .wiivc_patcher import auto_patch_wiilink_wfc
 
 
 class BuildEngine:
@@ -29,6 +28,10 @@ class BuildEngine:
         self.generated_product_code = None
         self.should_stop = False
         self.message_rotator_stop = False
+        self.last_tool_error = ""  # Store last tool error for better error messages
+        self.trucha_patch_applied = False  # Track Trucha patch status
+        self.galaxy_patch_applied = False  # Track Galaxy patch status
+        self.galaxy_variant = None  # Track Galaxy variant (allstars/nvidia)
 
     def stop(self):
         """Request build to stop."""
@@ -165,6 +168,11 @@ class BuildEngine:
                     print(line.rstrip())  # Still print for console
 
                 process.wait(timeout=timeout)
+
+                # Store error if failed
+                if process.returncode != 0:
+                    self.last_tool_error = f"Tool exited with code {process.returncode}"
+
                 return process.returncode == 0
 
             # For long operations, show real-time output
@@ -192,9 +200,16 @@ class BuildEngine:
                 print(f"Tool failed with code: {result.returncode}")
                 if not show_output:
                     if result.stderr:
-                        print(f"Error: {result.stderr}")
+                        print(f"[STDERR] {result.stderr}")
                     if result.stdout:
-                        print(f"Output: {result.stdout}")
+                        print(f"[STDOUT] {result.stdout}")
+                # Store last error for better error messages
+                if result.stderr:
+                    self.last_tool_error = result.stderr
+                elif result.stdout:
+                    self.last_tool_error = result.stdout
+                else:
+                    self.last_tool_error = f"Tool exited with code {result.returncode}"
                 return False
 
             if not show_output and result.stdout:
@@ -590,83 +605,61 @@ class BuildEngine:
         Returns:
             True if successful
         """
-        print(f"\n[GALAXY] ========================================")
         print(f"[GALAXY] Applying {galaxy_variant} patch to {game_id}...")
 
         # Find GCT file
         variant_name = "AllStars" if galaxy_variant == "allstars" else "Nvidia"
-
-        # Try exact game ID first
         gct_filename = f"{game_id}-{variant_name}.gct"
-        gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
-        print(f"[GALAXY] Looking for exact match: {gct_path}")
 
+        # Try bundle_root first (for EXE), fallback to project_root
+        gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
         if not gct_path.exists():
             gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
-            print(f"[GALAXY] Not found, trying: {gct_path}")
 
-        # If not found, try region-based fallback (use Super Mario Galaxy patch for same region)
+        # If not found, try region-based fallback
         if not gct_path.exists() and len(game_id) >= 4:
-            region_code = game_id[3]  # 4th character is region (E=USA, J=JPN, K=KOR, P=EUR)
+            region_code = game_id[3]
             region_map = {
-                'E': 'RMGE01',  # USA
-                'J': 'RMGJ01',  # Japan
-                'K': 'RMGK01',  # Korea
-                'P': 'RMGP01'   # Europe
+                'E': 'RMGE01',
+                'J': 'RMGJ01',
+                'K': 'RMGK01',
+                'P': 'RMGP01'
             }
-
             if region_code in region_map:
                 fallback_id = region_map[region_code]
                 gct_filename = f"{fallback_id}-{variant_name}.gct"
-                print(f"[GALAXY] Exact patch not found, trying region fallback for '{region_code}' region: {gct_filename}")
-
                 gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
                 if not gct_path.exists():
                     gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
 
         if not gct_path.exists():
-            print(f"[GALAXY] ✗ GCT file not found!")
-            print(f"[GALAXY] No patch available for game ID: {game_id}")
-            print(f"[GALAXY] Tried: {game_id}-{variant_name}.gct")
-            if len(game_id) >= 4 and game_id[3] in ['E', 'J', 'K', 'P']:
-                print(f"[GALAXY] Also tried region fallback: {gct_filename}")
+            print(f"[GALAXY] GCT not found: {gct_path}")
             return False
-
-        print(f"[GALAXY] ✓ Found GCT: {gct_path} ({gct_path.stat().st_size} bytes)")
 
         # Path to main.dol
         main_dol = extract_dir / "sys" / "main.dol"
         if not main_dol.exists():
-            print(f"[GALAXY] ✗ main.dol not found: {main_dol}")
+            print(f"[GALAXY] main.dol not found: {main_dol}")
             return False
-
-        original_size = main_dol.stat().st_size
-        print(f"[GALAXY] Original main.dol size: {original_size} bytes")
 
         # Apply patch using wstrt
         wstrt_exe = self.paths.temp_tools / "WIT" / "wstrt.exe"
-        if not wstrt_exe.exists():
-            print(f"[GALAXY] ✗ wstrt.exe not found: {wstrt_exe}")
-            return False
-
-        print(f"[GALAXY] Using wstrt: {wstrt_exe}")
         args = f'patch "{main_dol}" --add-section "{gct_path}"'
 
-        print(f"[GALAXY] Executing: wstrt.exe {args}")
         if not self.run_tool(wstrt_exe, args):
-            print("[GALAXY] ✗ Failed to apply GCT patch (wstrt error)")
+            print("[GALAXY] Failed to apply GCT patch")
             return False
 
-        patched_size = main_dol.stat().st_size
-        print(f"[GALAXY] Patched main.dol size: {patched_size} bytes (delta: +{patched_size - original_size})")
-        print(f"[GALAXY] ✓ Galaxy {variant_name} patch applied successfully!")
-        print(f"[GALAXY] ========================================\n")
+        print(f"✓ Galaxy {variant_name} patch applied successfully")
+        self.galaxy_patch_applied = True
+        self.galaxy_variant = galaxy_variant  # Track variant for final report
         return True
 
     def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None) -> Path:
         """
         Process game file (WBFS conversion, trimming) - UWUVCI style with proper WIT options.
         """
+        print(f"\n[DEBUG] process_game_file called with galaxy_patch: {galaxy_patch}\n")
         self.update_progress(60, tr.get("progress_processing_game"))
 
         # Always copy/convert to pre.iso first (UWUVCI style)
@@ -680,7 +673,13 @@ class BuildEngine:
             # Large files (Smash Bros: 7-8GB) need longer timeout
             args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                raise RuntimeError("WBFS conversion failed")
+                error_msg = f"WBFS conversion failed\n"
+                error_msg += f"WIT error: {self.last_tool_error}\n"
+                error_msg += f"\nPossible causes:\n"
+                error_msg += f"- Corrupted WBFS file\n"
+                error_msg += f"- Invalid WBFS format\n"
+                error_msg += f"- Insufficient disk space"
+                raise RuntimeError(error_msg)
         else:
             # Copy ISO to pre.iso
             self.update_progress(62, tr.get("progress_copying_iso"))
@@ -700,7 +699,13 @@ class BuildEngine:
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel WHOLE -vv1'
             if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
                                 base_progress=60, progress_range=5, fun_messages_key="fun_trimming_messages"):
-                raise RuntimeError("WIT extract failed")
+                error_msg = f"WIT extract failed\n"
+                error_msg += f"WIT error: {self.last_tool_error}\n"
+                error_msg += f"\nPossible causes:\n"
+                error_msg += f"- Corrupted ISO file\n"
+                error_msg += f"- Unsupported disc format\n"
+                error_msg += f"- Insufficient disk space"
+                raise RuntimeError(error_msg)
 
             # Apply Galaxy patch if specified
             if galaxy_patch:
@@ -709,17 +714,22 @@ class BuildEngine:
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    if not self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch):
-                        raise RuntimeError(f"Galaxy patch failed! GCT file not found for game ID: {game_id}. Check if patch file exists in core/Galaxy1GamePad_v1.2/")
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
+                    # Note: If patch fails, just continue without it (standard gamepad will be used)
                 else:
-                    raise RuntimeError("Galaxy patch failed! Could not read game ID from disc.")
+                    print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
 
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --links --iso'
             if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
                                 base_progress=65, progress_range=3, fun_messages_key="fun_trimming_messages"):
-                raise RuntimeError("WIT copy failed")
+                error_msg = f"WIT copy failed while repacking ISO\n"
+                error_msg += f"WIT error: {self.last_tool_error}\n"
+                if galaxy_patch:
+                    error_msg += f"\nThis may be due to Galaxy patch compatibility issues."
+                    error_msg += f"\nTry building without Galaxy patch first to verify the game works."
+                raise RuntimeError(error_msg)
 
             processed_path = game_iso
         else:
@@ -729,7 +739,13 @@ class BuildEngine:
             # Extract
             args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel data -vv1'
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                raise RuntimeError("WIT extract failed")
+                error_msg = f"WIT extract failed (no-trim mode)\n"
+                error_msg += f"WIT error: {self.last_tool_error}\n"
+                error_msg += f"\nPossible causes:\n"
+                error_msg += f"- Corrupted ISO file\n"
+                error_msg += f"- Unsupported disc format\n"
+                error_msg += f"- Insufficient disk space"
+                raise RuntimeError(error_msg)
 
             # Apply Galaxy patch if specified
             if galaxy_patch:
@@ -738,16 +754,21 @@ class BuildEngine:
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    if not self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch):
-                        raise RuntimeError(f"Galaxy patch failed! GCT file not found for game ID: {game_id}. Check if patch file exists in core/Galaxy1GamePad_v1.2/")
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
+                    # Note: If patch fails, just continue without it (standard gamepad will be used)
                 else:
-                    raise RuntimeError("Galaxy patch failed! Could not read game ID from disc.")
+                    print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
 
             # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                raise RuntimeError("WIT copy failed")
+                error_msg = f"WIT copy failed while repacking ISO (no-trim mode)\n"
+                error_msg += f"WIT error: {self.last_tool_error}\n"
+                if galaxy_patch:
+                    error_msg += f"\nThis may be due to Galaxy patch compatibility issues."
+                    error_msg += f"\nTry building without Galaxy patch first to verify the game works."
+                raise RuntimeError(error_msg)
 
             processed_path = game_iso
 
@@ -777,7 +798,14 @@ class BuildEngine:
         # Extract tmd.bin and ticket.bin from ISO
         args = f'extract "{iso_path}" --psel data --files +tmd.bin --files +ticket.bin --DEST "{tiktmd_dir}" -vv1'
         if not self.run_tool(wit_exe, args, timeout=1800):
-            raise RuntimeError("Failed to extract TIK/TMD from ISO")
+            error_msg = f"Failed to extract TIK/TMD from ISO\n"
+            error_msg += f"WIT error: {self.last_tool_error}\n"
+            error_msg += f"\nThis is critical - without TIK/TMD, WiiU will show 'Corrupted Software' error!\n"
+            error_msg += f"\nPossible causes:\n"
+            error_msg += f"- ISO is missing ticket/TMD files\n"
+            error_msg += f"- ISO may be a scrubbed/trimmed version without update partition\n"
+            error_msg += f"- Try using an untrimmed ISO"
+            raise RuntimeError(error_msg)
 
         code_dir = self.paths.temp_build / "code"
 
@@ -902,18 +930,52 @@ class BuildEngine:
         # Use game ID as folder name (short and simple)
         final_output = output_dir / game_id
 
-        args = f'-in "{build_dir}" -out "{final_output}" -encryptKeyWith {common_key}'
-
         # Start fun message rotation for WUP packing (takes a while!)
         self.start_message_rotation("fun_packing_messages", base_progress=85, interval=4)
 
         try:
-            result = self.run_tool(nuspacker_exe, args, cwd=self.paths.temp_root)
+            # Use subprocess directly for nuspacker to avoid shell parsing issues
+            # IMPORTANT: Argument order matters! -in and -out must come before -encryptKeyWith
+            import subprocess
+
+            print(f"\nRunning: {nuspacker_exe.name}")
+            cmd_list = [
+                str(nuspacker_exe),
+                "-in", str(build_dir),
+                "-out", str(final_output),
+                "-encryptKeyWith", common_key
+            ]
+            print(f"Command: {' '.join(cmd_list)}")
+
+            result = subprocess.run(
+                cmd_list,
+                cwd=str(self.paths.temp_root),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=600
+            )
+
+            if result.stdout:
+                print(f"Output: {result.stdout}")
+            if result.stderr:
+                print(f"Error: {result.stderr}")
+
+            if result.returncode != 0:
+                print(f"Tool failed with code: {result.returncode}")
+                success = False
+            else:
+                print("Tool completed successfully\n")
+                success = True
+
+        except Exception as e:
+            print(f"Exception running nuspacker: {e}")
+            success = False
         finally:
             # Stop message rotation
             self.stop_message_rotation()
 
-        if not result:
+        if not success:
             return False
 
         # Verify output
@@ -993,6 +1055,14 @@ class BuildEngine:
             if not self.copy_base_files():
                 raise RuntimeError("Failed to copy base files")
 
+            # DEBUG: Check options received
+            galaxy_patch_value = options.get("galaxy_patch")
+            print(f"\n[DEBUG] build_engine received options: {options}")
+            print(f"[DEBUG] build_engine galaxy_patch value: {galaxy_patch_value}\n")
+
+            # NOTE: Trucha patch is NOT needed for Galaxy patches
+            # v1.0.0-beta worked without Trucha, so we don't apply it
+
             # Process game FIRST (need ISO to read game code for meta.xml)
             processed_iso = self.process_game_file(
                 game_path,
@@ -1003,86 +1073,6 @@ class BuildEngine:
             # Extract game ID from ISO for output folder name
             with open(processed_iso, 'rb') as f:
                 game_id = f.read(6).decode('ascii', errors='ignore')  # e.g., RUUK01
-
-            # Apply WiiLink WFC patches (fw.img + ISO)
-            # This enables online play via WiiLink WFC servers (HTTP-based, WiiVC compatible!)
-            # and doesn't harm games without network features
-            self.update_progress(68, "Applying WiiLink WFC patches...")
-            print("\n" + "="*70)
-            print("[WiiLink WFC] Applying patches for online play...")
-            print("="*70)
-
-            fw_img_path = self.paths.temp_build / "code" / "fw.img"
-            wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
-            base_game = options.get("base_game", "Rhythm Heaven Fever (USA)")
-
-            # Apply Trucha bug patch if enabled (default: True)
-            # Trucha patch: Bypasses signature verification, required for modified games
-            if options.get("trucha_patch", True):
-                self.update_progress(68, "Applying Trucha bug patch...")
-                print("\n" + "="*70)
-                print("[Trucha] Applying signature bypass patch...")
-                print("="*70)
-
-                try:
-                    fw_patched, iso_patched = auto_patch_wiilink_wfc(
-                        iso_path=processed_iso,
-                        fw_img_path=fw_img_path,
-                        game_id=game_id,
-                        game_title=title_name,
-                        wit_path=wit_exe,
-                        base_game=base_game,
-                        progress_callback=self.update_progress
-                    )
-
-                    if fw_patched:
-                        print("[Trucha] fw.img patched - signature checks bypassed")
-                    if iso_patched:
-                        print("[WiiLink WFC] ISO patched - WiiLink WFC server support enabled")
-                        print("[WiiLink WFC] Compatible with WiiVC! (HTTP-based)")
-
-                except Exception as e:
-                    print(f"[Trucha] Warning: Patch failed - {e}")
-                    print("[Trucha] Game may not work if modified")
-            else:
-                print("[Trucha] Trucha patch disabled by user - skipping")
-
-            # Apply C2W (Cafe2Wii) CPU clock unlock patch if enabled and Ancast key is provided
-            # C2W patch: Unlocks CPU from 729MHz to 1.215GHz for better performance
-            ancast_key = options.get("ancast_key", "").strip()
-            c2w_enabled = options.get("c2w_patch", True)
-
-            if c2w_enabled and ancast_key and len(ancast_key) == 32:
-                self.update_progress(70, "Applying C2W CPU clock unlock...")
-                print("\n" + "="*70)
-                print("[C2W] Applying CPU clock unlock patch...")
-                print("="*70)
-
-                try:
-                    from wiivc_patcher import WiiVCPatcher
-                    build_code_dir = self.paths.temp_build / "code"
-                    c2w_patched = WiiVCPatcher.apply_c2w_patch(
-                        ancast_key=ancast_key,
-                        build_code_dir=build_code_dir,
-                        core_dir=self.paths.core
-                    )
-
-                    if c2w_patched:
-                        print("[C2W] CPU clock unlock applied successfully!")
-                        print("[C2W] Game will run at 1.215GHz (up from 729MHz)")
-                    else:
-                        print("[C2W] Warning: C2W patch failed - game will run at normal clock speed")
-
-                except Exception as e:
-                    print(f"[C2W] Warning: C2W patch failed - {e}")
-                    print("[C2W] Game will still work at normal clock speed (729MHz)")
-            else:
-                if not c2w_enabled:
-                    print("[C2W] C2W patch disabled by user - skipping")
-                elif not ancast_key:
-                    print("[C2W] No Ancast key provided - skipping C2W CPU unlock")
-                elif len(ancast_key) != 32:
-                    print("[C2W] Invalid Ancast key (must be 32 hex characters) - skipping C2W patch")
 
             # Add prefix based on controller option
             pad_option = options.get("pad_option", "none")
@@ -1132,6 +1122,29 @@ class BuildEngine:
             print(f"Title: {title_name}")
             print(f"Title ID: {self.generated_title_id}")
             print(f"Product Code: WUP-N-{self.generated_product_code}")
+            print(f"Game ID: {game_id}")
+
+            # Show controller option
+            pad_option = options.get("pad_option", "none")
+            pad_names = {
+                "no_gamepad": "No GamePad (Wiimote Only)",
+                "none": "GamePad (CC Emulation)",
+                "gamepad_lr": "GamePad + LR Patch",
+                "wiimote": "Wiimote (Vertical)",
+                "horizontal_wiimote": "Wiimote (Horizontal)",
+                "passthrough": "Passthrough",
+                "galaxy_allstars": "Galaxy AllStars",
+                "galaxy_nvidia": "Galaxy Nvidia"
+            }
+            print(f"Controller: {pad_names.get(pad_option, pad_option)}")
+
+            # Show patch status
+            if self.galaxy_patch_applied:
+                variant_text = "AllStars" if self.galaxy_variant == "allstars" else "Nvidia"
+                print(f"Galaxy Patch: ✓ Applied ({variant_text})")
+            else:
+                print(f"Galaxy Patch: - Not Applied")
+
             print("="*80 + "\n")
             return True
 

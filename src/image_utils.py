@@ -195,7 +195,7 @@ class ImageProcessor:
                 paste_y = (ImageProcessor.ICON_SIZE[1] - img.height) // 2
                 new_img.paste(img, (paste_x, paste_y))
 
-                # Add badge if specified
+                # Add gamepad badge if specified (bottom-right)
                 if badge_type:
                     new_img = ImageProcessor.add_gamepad_badge(new_img, badge_type)
 
