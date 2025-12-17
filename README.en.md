@@ -12,6 +12,7 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 - ✅ **Accurate Metadata**: Reads game code directly from ISO/WBFS files
 - ✅ **Safe Processing**: Uses temporary folders to protect source files
 - ✅ **Multiple Format Support**: WBFS, ISO, NKIT, decrypted ISO (.iso.dec), GameCube (.gcm)
+- ✅ **Auto Game-Specific GCT Patches**: Automatically applies Classic Controller patches when available
 
 ### Batch Processing
 - 🚀 **Mass Injection**: Process multiple games simultaneously
