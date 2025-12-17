@@ -219,6 +219,31 @@ class GameInfoExtractor:
             'file_size': file_path.stat().st_size
         })
 
+        # Fetch localized names and update compatibility DB
+        game_id = info.get('game_id', '')
+        if game_id and len(game_id) >= 4:
+            try:
+                from .game_tdb import GameTdb
+                from .compatibility_db import compatibility_db
+
+                # Get localized names from GameTDB
+                names = GameTdb.get_localized_names(game_id)
+                korean_title = names.get('local_name')
+                english_title = names.get('english_name')
+
+                # Store in info for display
+                if korean_title:
+                    info['korean_title'] = korean_title
+                if english_title:
+                    info['english_title'] = english_title
+
+                # Update compatibility DB if we have any title info
+                if korean_title or english_title:
+                    compatibility_db.update_titles(game_id, korean_title, english_title)
+
+            except Exception as e:
+                print(f"[GameInfo] Error fetching localized names: {e}")
+
         return info
 
 

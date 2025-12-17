@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QFormLayout, QStyle, QProgressDialog, QComboBox, QSizePolicy
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
-from PyQt5.QtGui import QColor, QPixmap, QIcon, QFont
+from PyQt5.QtGui import QColor, QPixmap, QIcon, QFont, QBrush, QPalette
 from .batch_builder import BatchBuilder, BatchBuildJob
 from .game_info import game_info_extractor
 from .compatibility_db import compatibility_db
@@ -255,62 +255,72 @@ class GameLoaderThread(QThread):
             else:
                 job.drc_path = cached_banner  # Use banner as DRC
 
-            # Check if we already have Korean title from DB
-            if hasattr(job, 'has_korean_title') and job.has_korean_title:
-                print(f"  [DB] Using Korean title from DB: {job.title_name}")
-                return True
-
             # Check if we have cached titles
             cached_ko_file = cache_dir / "title_ko.txt"
             cached_en_file = cache_dir / "title_en.txt"
 
-            has_cached = False
-            if cached_ko_file.exists():
+            ko_title = None
+            en_title = None
+
+            # Try to get Korean title from DB first
+            if hasattr(job, 'has_korean_title') and job.has_korean_title:
+                ko_title = job.title_name
+                job.korean_title = ko_title
+                print(f"  [DB] Using Korean title from DB: {ko_title}")
+
+            # Try cached titles
+            if not ko_title and cached_ko_file.exists():
                 try:
                     ko_title = cached_ko_file.read_text(encoding='utf-8').strip()
                     if ko_title:
                         job.korean_title = ko_title
-                        has_cached = True
                         print(f"  [CACHE] Using cached Korean title: {ko_title}")
                 except:
-                    pass
+                    ko_title = None
 
             if cached_en_file.exists():
                 try:
                     en_title = cached_en_file.read_text(encoding='utf-8').strip()
                     if en_title:
                         job.english_title = en_title
-                        has_cached = True
                         print(f"  [CACHE] Using cached English title: {en_title}")
                 except:
-                    pass
+                    en_title = None
 
-            if has_cached:
-                # Set display title based on language
-                if tr.current_language == "ko" and hasattr(job, 'korean_title'):
-                    job.title_name = job.korean_title
-                elif hasattr(job, 'english_title'):
-                    job.title_name = job.english_title
-                elif hasattr(job, 'korean_title'):
-                    job.title_name = job.korean_title
-                return True
+            # If either title is missing, fetch from GameTDB
+            if not ko_title or not en_title:
+                print(f"  [FETCH] Missing titles (KO={bool(ko_title)}, EN={bool(en_title)}), fetching from GameTDB...")
+                self.fetch_gametdb_title(job, game_id, ssl_context)
+                # Update from fetched data
+                if not ko_title:
+                    ko_title = getattr(job, 'korean_title', None)
+                if not en_title:
+                    en_title = getattr(job, 'english_title', None)
 
-            # No Korean title from DB or cache, fetch from GameTDB
-            self.fetch_gametdb_title(job, game_id, ssl_context)
-            # Save titles to cache and DB
+            # Set display title based on language
+            if ko_title:
+                job.korean_title = ko_title
+            if en_title:
+                job.english_title = en_title
+
+            if tr.current_language == "ko" and ko_title:
+                job.title_name = ko_title
+            elif en_title:
+                job.title_name = en_title
+            elif ko_title:
+                job.title_name = ko_title
+
+            # Save to cache and DB
             try:
-                ko_title = getattr(job, 'korean_title', None)
-                en_title = getattr(job, 'english_title', None)
-
                 if ko_title:
                     (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
                 if en_title:
                     (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
-
-                # Update DB with both titles
-                compatibility_db.update_titles(game_id, korean_title=ko_title, english_title=en_title)
+                if ko_title or en_title:
+                    compatibility_db.update_titles(game_id, korean_title=ko_title, english_title=en_title)
             except:
                 pass
+
             return True
 
         # First check local resources/wii/ directory
@@ -1230,16 +1240,17 @@ class EditGameDialog(QDialog):
         font.setBold(True)
 
         # Galaxy patch badge (bottom-right)
-        if job.pad_option in ["galaxy_allstars", "galaxy_nvidia"]:
+        pad_option = job.pad_option or ""
+        if "allstars" in pad_option or "nvidia" in pad_option:
             badge_width = 50
             badge_height = 16
             badge_x = result.width() - badge_width - 6
             badge_y = result.height() - badge_height - 6
 
-            if job.pad_option == "galaxy_allstars":
+            if "allstars" in pad_option:
                 color = QColor(255, 152, 0, 220)  # Orange
                 text = "GALA"
-            else:  # galaxy_nvidia
+            else:  # nvidia
                 color = QColor(118, 185, 0, 220)  # Green
                 text = "GALN"
 
@@ -1252,8 +1263,27 @@ class EditGameDialog(QDialog):
             painter.setFont(font)
             painter.drawText(badge_rect, Qt.AlignCenter, text)
 
+        # CC patch badge (bottom-right) - gray for GCT patches
+        elif job.pad_option == "cc_patch" or (job.pad_option and job.pad_option.startswith("gct_")):
+            badge_width = 40
+            badge_height = 16
+            badge_x = result.width() - badge_width - 6
+            badge_y = result.height() - badge_height - 6
+
+            color = QColor(100, 100, 100, 220)  # Dark Gray
+            text = "GCT"
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(color))
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 3, 3)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
         # Gamepad support badge (top-left)
-        if job.pad_option in ["none", "gamepad_lr"]:
+        if job.pad_option in ["none", "force_cc", "gamepad_lr"]:
             badge_width = 40
             badge_height = 16
             badge_x = 6
@@ -1266,7 +1296,13 @@ class EditGameDialog(QDialog):
 
             painter.setPen(QPen(QColor(255, 255, 255)))
             painter.setFont(font)
-            text = "GP" if job.pad_option == "none" else "GP+"
+            # GP=자연, GP!=강제, GP+=강제+LR
+            if job.pad_option == "none":
+                text = "GP"
+            elif job.pad_option == "force_cc":
+                text = "GP!"
+            else:
+                text = "GP+"
             painter.drawText(badge_rect, Qt.AlignCenter, text)
 
         painter.end()
@@ -1501,53 +1537,103 @@ class CompatibilityListDialog(QDialog):
         # Search and filter bar
         search_layout = QHBoxLayout()
 
-        # Category filter
+        # Category filter (GameCube, NDS hidden - not supported yet)
         category_label = QLabel("카테고리:" if tr.current_language == "ko" else "Category:")
         self.category_combo = QComboBox()
         self.category_combo.addItems([
             "전체" if tr.current_language == "ko" else "All",
-            "Wii",
-            "GameCube",
-            "NDS"
+            "Wii"
         ])
         self.category_combo.currentTextChanged.connect(self.filter_table)
         search_layout.addWidget(category_label)
         search_layout.addWidget(self.category_combo)
 
-        search_layout.addSpacing(20)
+        search_layout.addSpacing(15)
+
+        # Region filter
+        region_label = QLabel("지역:" if tr.current_language == "ko" else "Region:")
+        self.region_combo = QComboBox()
+        self.region_combo.addItems([
+            "전체" if tr.current_language == "ko" else "All",
+            "USA", "EUR", "JPN", "KOR"
+        ])
+        self.region_combo.currentTextChanged.connect(self.filter_table)
+        search_layout.addWidget(region_label)
+        search_layout.addWidget(self.region_combo)
+
+        search_layout.addSpacing(15)
+
+        # Gamepad compatibility filter
+        gamepad_label = QLabel("게임패드:" if tr.current_language == "ko" else "Gamepad:")
+        self.gamepad_combo = QComboBox()
+        if tr.current_language == "ko":
+            self.gamepad_combo.addItems(["전체", "지원", "일부지원", "강제가능", "미지원", "알수없음"])
+        else:
+            self.gamepad_combo.addItems(["All", "Works", "Partial", "Force OK", "Doesn't Work", "Unknown"])
+        self.gamepad_combo.currentTextChanged.connect(self.filter_table)
+        search_layout.addWidget(gamepad_label)
+        search_layout.addWidget(self.gamepad_combo)
+
+        search_layout.addSpacing(15)
+
+        # GCT patch filter
+        self.gct_filter_checkbox = QCheckBox("GCT 패치" if tr.current_language == "ko" else "GCT Patch")
+        self.gct_filter_checkbox.stateChanged.connect(self.filter_table)
+        search_layout.addWidget(self.gct_filter_checkbox)
+
+        search_layout.addSpacing(15)
 
         # Search box
         search_label = QLabel("검색:" if tr.current_language == "ko" else "Search:")
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("게임 이름 또는 ID 입력..." if tr.current_language == "ko" else "Enter game name or ID...")
+        self.search_input.setPlaceholderText("게임 이름 또는 ID..." if tr.current_language == "ko" else "Game name or ID...")
         self.search_input.textChanged.connect(self.filter_table)
         search_layout.addWidget(search_label)
         search_layout.addWidget(self.search_input, 1)
+
         layout.addLayout(search_layout)
+
+        # Simple styling - keep native combobox arrow
+        self.category_combo.setMinimumWidth(80)
+        self.region_combo.setMinimumWidth(70)
+        self.gamepad_combo.setMinimumWidth(90)
 
         # Table
         self.table = QTableWidget()
-        self.table.setColumnCount(6)  # Added category column
+        self.table.setColumnCount(8)  # Added No. column
         if tr.current_language == "ko":
-            headers = ["카테고리", "게임 ID", "게임 제목", "지역", "게임패드 호환", "호스트 게임"]
+            headers = ["No.", "카테고리", "게임 ID", "게임 제목", "지역", "게임패드 호환", "GCT 패치", "호스트 게임"]
         else:
-            headers = ["Category", "Game ID", "Game Title", "Region", "Gamepad Compat", "Host Game"]
+            headers = ["No.", "Category", "Game ID", "Game Title", "Region", "Gamepad Compat", "GCT Patch", "Host Game"]
         self.table.setHorizontalHeaderLabels(headers)
-        self.table.setColumnWidth(0, 80)   # Category
-        self.table.setColumnWidth(1, 80)   # Game ID
-        self.table.setColumnWidth(3, 60)   # Region
-        self.table.setColumnWidth(4, 150)  # Gamepad Compat
-        self.table.setColumnWidth(5, 150)  # Host Game
+        self.table.verticalHeader().setVisible(False)  # Hide default row numbers
+        self.table.setColumnWidth(0, 45)   # No.
+        self.table.setColumnWidth(1, 80)   # Category
+        self.table.setColumnWidth(2, 80)   # Game ID
+        self.table.setColumnWidth(4, 60)   # Region
+        self.table.setColumnWidth(5, 150)  # Gamepad Compat
+        self.table.setColumnWidth(6, 90)   # GCT Patch
+        self.table.setColumnWidth(7, 150)  # Host Game
         # Use stretch for title column only
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)  # Game Title
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)  # Game Title
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         # Allow editing only game_id column (column 0)
         self.table.setEditTriggers(QTableWidget.DoubleClicked)
         self.table.itemChanged.connect(self.on_item_changed)
+
+        # Table styling - minimal to preserve cell background colors
+        self.table.setShowGrid(True)
+        self.table.setAlternatingRowColors(False)
         layout.addWidget(self.table)
 
         # Buttons
         btn_layout = QHBoxLayout()
+
+        # Result count label (left side)
+        self.result_count_label = QLabel("")
+        self.result_count_label.setStyleSheet("color: #333; font-size: 12px;")
+        btn_layout.addWidget(self.result_count_label)
+
         btn_layout.addStretch() # Push buttons to the right
 
         save_btn = QPushButton("저장" if tr.current_language == "ko" else "Save")
@@ -1599,57 +1685,106 @@ class CompatibilityListDialog(QDialog):
 
     def load_data(self):
         """Load data from compatibility database."""
-        # Fill missing game IDs from GameTDB first
-        updated = compatibility_db.fill_missing_game_ids()
-        if updated > 0:
-            print(f"[DB] Updated {updated} missing game IDs from GameTDB")
+        from .cc_patch_manager import get_cc_patch_manager
+        patch_manager = get_cc_patch_manager()
 
         games = compatibility_db.get_all_games()
         self.all_games = games
 
         self.table.setRowCount(len(games))
         for row, game in enumerate(games):
-            # Category (column 0)
+            # No. (column 0) - will be updated by filter_table
+            no_item = QTableWidgetItem(str(row + 1))
+            no_item.setTextAlignment(Qt.AlignCenter)
+            no_item.setFlags(no_item.flags() & ~Qt.ItemIsEditable)
+            self.table.setItem(row, 0, no_item)
+
+            # Category (column 1)
             category = game.get('category', 'Wii')
-            self.table.setItem(row, 0, QTableWidgetItem(category))
+            self.table.setItem(row, 1, QTableWidgetItem(category))
 
-            # Game ID (column 1)
-            self.table.setItem(row, 1, QTableWidgetItem(game.get('game_id', '')))
+            # Game ID (column 2)
+            game_id = game.get('game_id', '')
+            self.table.setItem(row, 2, QTableWidgetItem(game_id))
 
-            # Title (column 2)
-            self.table.setItem(row, 2, QTableWidgetItem(game.get('title', '')))
+            # Title (column 3)
+            self.table.setItem(row, 3, QTableWidgetItem(game.get('title', '')))
 
-            # Region (column 3)
-            self.table.setItem(row, 3, QTableWidgetItem(game.get('region', '')))
+            # Region (column 4)
+            self.table.setItem(row, 4, QTableWidgetItem(game.get('region', '')))
 
-            # Gamepad compatibility with color (column 4)
-            gamepad = game.get('gamepad_compatibility', 'Unknown')
-            gamepad_item = QTableWidgetItem(gamepad)
-            if 'works' in gamepad.lower() and 'doesn\'t' not in gamepad.lower():
-                gamepad_item.setBackground(QColor(200, 255, 200))
-            elif 'unknown' in gamepad.lower():
-                gamepad_item.setBackground(QColor(220, 220, 220))
+            # GCT Patch availability (column 6) - check first for gamepad color
+            patches = patch_manager.get_available_patches(game_id) if game_id else []
+            has_patch = len(patches) > 0
+            if patches:
+                patch_types = [p['patch_type'] for p in patches]
+                has_galaxy = 'allstars' in patch_types or 'nvidia' in patch_types
+                has_cc = 'cc' in patch_types
+
+                if has_galaxy and has_cc:
+                    patch_text = "Galaxy+CC"
+                    patch_item = QTableWidgetItem(patch_text)
+                    patch_item.setBackground(QBrush(QColor(180, 255, 180)))  # Green
+                elif has_galaxy:
+                    patch_text = "Galaxy"
+                    patch_item = QTableWidgetItem(patch_text)
+                    patch_item.setBackground(QBrush(QColor(180, 220, 255)))  # Blue
+                else:
+                    patch_text = "CC"
+                    patch_item = QTableWidgetItem(patch_text)
+                    patch_item.setBackground(QBrush(QColor(255, 255, 180)))  # Yellow
             else:
-                gamepad_item.setBackground(QColor(255, 200, 200))
-            self.table.setItem(row, 4, gamepad_item)
+                patch_item = QTableWidgetItem("-")
+                patch_item.setForeground(QColor(180, 180, 180))
+            patch_item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 6, patch_item)
 
-            # Host game (column 5)
-            self.table.setItem(row, 5, QTableWidgetItem(game.get('host_game', '')))
+            # Gamepad compatibility with color (column 5) - considers patch availability
+            gamepad = game.get('gamepad_compatibility') or 'Unknown'
+            gamepad_lower = gamepad.lower()
+            gamepad_item = QTableWidgetItem(gamepad)
+
+            if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower and 'partial' not in gamepad_lower:
+                # Works - Green
+                gamepad_item.setBackground(QBrush(QColor(180, 255, 180)))
+            elif 'partial' in gamepad_lower:
+                # Partially works - Yellow
+                gamepad_item.setBackground(QBrush(QColor(255, 255, 180)))
+            elif 'doesn\'t' in gamepad_lower:
+                if has_patch:
+                    # Doesn't work but has patch - Light blue (can force)
+                    gamepad_item.setBackground(QBrush(QColor(180, 220, 255)))
+                else:
+                    # Doesn't work and no patch - Light red
+                    gamepad_item.setBackground(QBrush(QColor(255, 180, 180)))
+            elif 'unknown' in gamepad_lower:
+                # Unknown - Gray
+                gamepad_item.setBackground(QBrush(QColor(210, 210, 210)))
+            else:
+                # Other/Issues - Light orange
+                gamepad_item.setBackground(QBrush(QColor(255, 210, 170)))
+            self.table.setItem(row, 5, gamepad_item)
+
+            # Host game (column 7)
+            self.table.setItem(row, 7, QTableWidgetItem(game.get('host_game', '')))
+
+        # Update initial count
+        self.filter_table()
 
     def on_item_changed(self, item):
         """Track changes to game_id or title column."""
         row = item.row()
-        if item.column() == 1:  # game_id column
-            title_item = self.table.item(row, 2)
-            region_item = self.table.item(row, 3)
+        if item.column() == 2:  # game_id column
+            title_item = self.table.item(row, 3)
+            region_item = self.table.item(row, 4)
             if title_item and region_item:
                 # Use original title from all_games
                 orig_title = self.all_games[row]['title']
                 region = region_item.text()
                 key = ('game_id', orig_title, region)
                 self.changes[key] = item.text()
-        elif item.column() == 2:  # title column
-            region_item = self.table.item(row, 3)
+        elif item.column() == 3:  # title column
+            region_item = self.table.item(row, 4)
             if region_item:
                 orig_title = self.all_games[row]['title']
                 region = region_item.text()
@@ -1680,23 +1815,75 @@ class CompatibilityListDialog(QDialog):
         show_message(self, "info", "Info", msg)
 
     def filter_table(self, text=None):
-        """Filter table by category and search text."""
+        """Filter table by category, region, gamepad, GCT patch, and search text."""
         search_text = self.search_input.text().lower()
         selected_category = self.category_combo.currentText()
+        selected_region = self.region_combo.currentText()
+        selected_gamepad = self.gamepad_combo.currentText()
+        gct_filter_enabled = self.gct_filter_checkbox.isChecked()
 
         for row in range(self.table.rowCount()):
-            # Get category from first column
-            category = self.table.item(row, 0).text() if self.table.item(row, 0) else "Wii"
+            # Get values from columns (shifted by 1 due to No. column)
+            category = self.table.item(row, 1).text() if self.table.item(row, 1) else "Wii"
+            region = self.table.item(row, 4).text() if self.table.item(row, 4) else ""
+            gamepad = self.table.item(row, 5).text().lower() if self.table.item(row, 5) else ""
+            patch_item = self.table.item(row, 6)
 
-            # Filter by category first
+            # Filter by category
             if selected_category not in ["전체", "All"] and category != selected_category:
                 self.table.setRowHidden(row, True)
                 continue
 
-            # Then filter by search text
+            # Filter by region (JAP and JPN are treated the same)
+            if selected_region not in ["전체", "All"]:
+                if selected_region == "JPN":
+                    if region not in ["JPN", "JAP"]:
+                        self.table.setRowHidden(row, True)
+                        continue
+                elif region != selected_region:
+                    self.table.setRowHidden(row, True)
+                    continue
+
+            # Filter by gamepad compatibility
+            if selected_gamepad not in ["전체", "All"]:
+                patch_text = patch_item.text() if patch_item else "-"
+                has_patch = patch_text != "-"
+
+                if selected_gamepad in ["지원", "Works"]:
+                    # Works (not partially, not doesn't)
+                    if "works" not in gamepad or "doesn't" in gamepad or "partial" in gamepad:
+                        self.table.setRowHidden(row, True)
+                        continue
+                elif selected_gamepad in ["일부지원", "Partial"]:
+                    # Partially works
+                    if "partial" not in gamepad:
+                        self.table.setRowHidden(row, True)
+                        continue
+                elif selected_gamepad in ["강제가능", "Force OK"]:
+                    # Has GCT patch (can force gamepad support)
+                    if not has_patch:
+                        self.table.setRowHidden(row, True)
+                        continue
+                elif selected_gamepad in ["미지원", "Doesn't Work"]:
+                    # Doesn't work and no patch
+                    if not ("doesn't" in gamepad and not has_patch):
+                        self.table.setRowHidden(row, True)
+                        continue
+                elif selected_gamepad in ["알수없음", "Unknown"]:
+                    if "unknown" not in gamepad:
+                        self.table.setRowHidden(row, True)
+                        continue
+
+            # Filter by GCT patch availability (column 6)
+            if gct_filter_enabled:
+                if not patch_item or patch_item.text() == "-":
+                    self.table.setRowHidden(row, True)
+                    continue
+
+            # Filter by search text
             if search_text:
                 match = False
-                for col in range(self.table.columnCount()):
+                for col in range(1, self.table.columnCount()):  # Skip No. column
                     item = self.table.item(row, col)
                     if item and search_text in item.text().lower():
                         match = True
@@ -1704,6 +1891,23 @@ class CompatibilityListDialog(QDialog):
                 self.table.setRowHidden(row, not match)
             else:
                 self.table.setRowHidden(row, False)
+
+        # Update No. column with sequential numbers for visible rows
+        visible_num = 0
+        for row in range(self.table.rowCount()):
+            if not self.table.isRowHidden(row):
+                visible_num += 1
+                no_item = self.table.item(row, 0)
+                if no_item:
+                    no_item.setText(str(visible_num))
+
+        # Update result count
+        visible_count = visible_num
+        total_count = self.table.rowCount()
+        if tr.current_language == "ko":
+            self.result_count_label.setText(f"결과: {visible_count}/{total_count}")
+        else:
+            self.result_count_label.setText(f"Results: {visible_count}/{total_count}")
 
 
 class BatchWindow(QMainWindow):
@@ -1837,6 +2041,18 @@ class BatchWindow(QMainWindow):
 
         layout.addLayout(top_layout)
 
+        # Search filter
+        search_layout = QHBoxLayout()
+        search_label = QLabel("🔍")
+        search_label.setStyleSheet("font-size: 14px;")
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("검색 (게임명, ID)..." if tr.current_language == "ko" else "Search (title, ID)...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self.filter_game_list)
+        search_layout.addWidget(search_label)
+        search_layout.addWidget(self.search_input)
+        layout.addLayout(search_layout)
+
         # Table header with help button
         # Game list table (파일명/게임제목 통합, 게임 ID 별도 표시, 호환성/패드옵션 통합)
         self.table = QTableWidget()
@@ -1878,6 +2094,9 @@ class BatchWindow(QMainWindow):
             QTableWidget::item {
                 padding: 4px;
             }
+            QTableWidget::item:selected {
+                background-color: #e8f4ff;
+            }
         """)
         # Set column widths (파일명/게임제목 통합, 게임 ID 별도, 호환성/패드옵션 통합)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)  # File Name / Game Title
@@ -1886,9 +2105,9 @@ class BatchWindow(QMainWindow):
         if header_item:
             header_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.table.setColumnWidth(1, 80)   # Game ID
-        self.table.setColumnWidth(2, 75)   # Icon preview
-        self.table.setColumnWidth(3, 125)  # Banner preview
-        self.table.setColumnWidth(4, 150)  # Compatibility / Pad Option (통합 컬럼, 180→150)
+        self.table.setColumnWidth(2, 58)   # Icon preview (52x52)
+        self.table.setColumnWidth(3, 100)  # Banner preview (92x52, 16:9)
+        self.table.setColumnWidth(4, 150)  # Compatibility / Pad Option
         self.table.setColumnWidth(5, 90)   # Actions
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.DoubleClicked)
@@ -1896,8 +2115,14 @@ class BatchWindow(QMainWindow):
         # Connect signals for button state updates
         self.table.selectionModel().selectionChanged.connect(self.update_main_buttons_state)
         self.table.itemChanged.connect(self.update_main_buttons_state) # Update if item data changes (e.g., editing)
+        
+        # Context menu for CC Patch selection
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
+        
         self.update_main_buttons_state() # Set initial state of buttons
         layout.addWidget(self.table)
+    
 
         # Progress section with message and percentage labels
         ready_text = "준비 완료 - 게임을 추가하세요" if tr.current_language == "ko" else "Ready - Add games to start"
@@ -2108,6 +2333,131 @@ class BatchWindow(QMainWindow):
         self.loader_thread.progress_updated.connect(self.on_loading_progress)
         self.loader_thread.start()
 
+    def show_context_menu(self, position):
+        """Show context menu for game list options."""
+        from PyQt5.QtWidgets import QMenu, QAction, QApplication
+
+        # Get selected rows
+        selected_rows = self.table.selectionModel().selectedRows()
+        if not selected_rows:
+            return
+
+        menu = QMenu()
+
+        # Style the menu - remove icon padding for cleaner look
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #ffffff;
+                border: 1px solid #c0c0c0;
+                border-radius: 4px;
+                padding: 4px 0px;
+            }
+            QMenu::item {
+                padding: 6px 20px 6px 12px;
+                background-color: transparent;
+            }
+            QMenu::item:selected {
+                background-color: #e8f4ff;
+                color: #333;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #d0d0d0;
+                margin: 4px 8px;
+            }
+        """)
+
+        # Single selection actions
+        if len(selected_rows) == 1:
+            row = selected_rows[0].row()
+            if row < len(self.jobs):
+                job = self.jobs[row]
+
+                # Build full title (Korean + English)
+                ko_title = getattr(job, 'korean_title', '')
+                en_title = getattr(job, 'english_title', '')
+                if ko_title and en_title and ko_title != en_title:
+                    full_title = f"{ko_title} ({en_title})"
+                else:
+                    full_title = ko_title or en_title or job.title_name
+
+                # Copy Game ID
+                copy_id_text = "게임 ID 복사" if tr.current_language == "ko" else "Copy Game ID"
+                action_copy_id = QAction(copy_id_text, self)
+                game_id = job.game_info.get('game_id', '')  # Capture value
+                action_copy_id.triggered.connect(lambda checked, gid=game_id: QApplication.clipboard().setText(gid))
+                menu.addAction(action_copy_id)
+
+                # Copy Game Title
+                copy_title_text = "게임 제목 복사" if tr.current_language == "ko" else "Copy Game Title"
+                action_copy_title = QAction(copy_title_text, self)
+                action_copy_title.triggered.connect(lambda checked, t=full_title: QApplication.clipboard().setText(t))
+                menu.addAction(action_copy_title)
+
+                # Open GameTDB
+                if game_id:
+                    gametdb_text = "GameTDB에서 보기" if tr.current_language == "ko" else "View on GameTDB"
+                    action_gametdb = QAction(gametdb_text, self)
+                    gametdb_url = f"https://www.gametdb.com/Wii/{game_id}"
+                    action_gametdb.triggered.connect(lambda checked, url=gametdb_url: __import__('webbrowser').open(url))
+                    menu.addAction(action_gametdb)
+
+                menu.addSeparator()
+
+                # Edit action
+                edit_text = "편집" if tr.current_language == "ko" else "Edit"
+                action_edit = QAction(edit_text, self)
+                r = row  # Capture value
+                action_edit.triggered.connect(lambda checked, r=r: self.edit_game_directly(r))
+                menu.addAction(action_edit)
+
+                menu.addSeparator()
+
+        # Remove action
+        remove_text = "제거" if tr.current_language == "ko" else "Remove"
+        action_remove = QAction(remove_text, self)
+        action_remove.triggered.connect(self.remove_selected)
+        menu.addAction(action_remove)
+
+        menu.exec_(self.table.viewport().mapToGlobal(position))
+
+    def edit_game_directly(self, row):
+        """Open edit dialog for a specific row."""
+        if row < len(self.jobs):
+            dialog = EditGameDialog(self.jobs[row], self.available_bases, self)
+            if dialog.exec_():
+                # Update table after edit
+                title_widget = self.table.cellWidget(row, 0)
+                if title_widget:
+                    title_label = title_widget.layout().itemAt(0).widget()
+                    title_label.setText(self.jobs[row].title_name)
+                self.update_icon_preview(row, self.jobs[row])
+        
+    def set_cc_patch(self, rows, patch_info):
+        """Set CC patch for selected jobs."""
+        for index in rows:
+            row = index.row()
+            if row < len(self.jobs):
+                job = self.jobs[row]
+                
+                if patch_info is None:
+                    # Auto
+                    if hasattr(job, 'selected_cc_patch'):
+                        delattr(job, 'selected_cc_patch')
+                    print(f"[Patch] Reset to Auto for {job.title_name}")
+                elif patch_info == "none":
+                    # Disable
+                    job.selected_cc_patch = None
+                    print(f"[Patch] Disabled for {job.title_name}")
+                else:
+                    # Specific Patch
+                    job.selected_cc_patch = patch_info
+                    print(f"[Patch] Set {patch_info['display_name']} for {job.title_name}")
+                
+                # Update UI to reflect change (Badge update needed? Maybe later)
+                # For now just refresh the icon/badge
+                self.update_icon_preview(row, job)
+
     def cancel_loading(self):
         """Cancel game loading."""
         if self.loader_thread:
@@ -2177,17 +2527,18 @@ class BatchWindow(QMainWindow):
         font.setBold(True)
 
         # Galaxy patch badge (bottom-right)
-        if job.pad_option in ["galaxy_allstars", "galaxy_nvidia"]:
+        pad_option = job.pad_option or ""
+        if "allstars" in pad_option or "nvidia" in pad_option:
             badge_width = 22
             badge_height = 8
             badge_x = result.width() - badge_width - 1
             badge_y = result.height() - badge_height - 1
 
             # Different colors for different patches
-            if job.pad_option == "galaxy_allstars":
+            if "allstars" in pad_option:
                 color = QColor(255, 152, 0, 200)  # Orange
                 text = "GALA"
-            else:  # galaxy_nvidia
+            else:  # nvidia
                 color = QColor(118, 185, 0, 200)  # Green
                 text = "GALN"
 
@@ -2200,8 +2551,55 @@ class BatchWindow(QMainWindow):
             painter.setFont(font)
             painter.drawText(badge_rect, Qt.AlignCenter, text)
 
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        # Forced Custom Patch Badge (Cyan) - overrides others
+        elif hasattr(job, 'selected_cc_patch') and job.selected_cc_patch:
+            badge_width = 22
+            badge_height = 8
+            badge_x = result.width() - badge_width - 1
+            badge_y = result.height() - badge_height - 1 - 9 # Stack above if needed, or just replace
+            # Actually easier to just replace the bottom right slot or stack it
+            # Let's put it top-right for visibility? Or replace CC badge.
+            # User likely won't mix Galaxy patch + Cursor patch, but just in case let's use bottom-right (priority)
+            
+            # Cyan color
+            color = QColor(0, 188, 212, 220) 
+            text = "PATCH"
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(color))
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 1.5, 1.5)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
+        # CC patch badge (bottom-right) - gray for custom GCT patches
+        elif job.pad_option == "cc_patch" or (job.pad_option and job.pad_option.startswith("gct_")):
+            badge_width = 18
+            badge_height = 8
+            badge_x = result.width() - badge_width - 1
+            badge_y = result.height() - badge_height - 1
+
+            # Gray color for CC patches
+            color = QColor(100, 100, 100, 220)  # Dark Gray
+            text = "GCT"
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(color))
+            badge_rect = QRectF(badge_x, badge_y, badge_width, badge_height)
+            painter.drawRoundedRect(badge_rect, 1.5, 1.5)
+
+            painter.setPen(QPen(QColor(255, 255, 255)))
+            painter.setFont(font)
+            painter.drawText(badge_rect, Qt.AlignCenter, text)
+
         # Gamepad support badge (top-left)
-        if job.pad_option in ["none", "gamepad_lr"]:
+        if job.pad_option in ["none", "force_cc", "gamepad_lr"]:
             badge_width = 18
             badge_height = 8
             badge_x = 1
@@ -2214,7 +2612,13 @@ class BatchWindow(QMainWindow):
 
             painter.setPen(QPen(QColor(255, 255, 255)))
             painter.setFont(font)
-            text = "GP" if job.pad_option == "none" else "GP+"
+            # GP=자연, GP!=강제, GP+=강제+LR
+            if job.pad_option == "none":
+                text = "GP"
+            elif job.pad_option == "force_cc":
+                text = "GP!"
+            else:
+                text = "GP+"
             painter.drawText(badge_rect, Qt.AlignCenter, text)
 
         painter.end()
@@ -2226,7 +2630,7 @@ class BatchWindow(QMainWindow):
         if job.icon_path and job.icon_path.exists():
             pixmap = QPixmap(str(job.icon_path))
             # Scale to 50x50 to fit better in 55px row height
-            scaled_pixmap = pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(52, 52, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
             # Add badge overlays (Galaxy, Gamepad) - visual only, doesn't modify original
             scaled_pixmap = self.add_badges_overlay(scaled_pixmap, job)
@@ -2234,6 +2638,7 @@ class BatchWindow(QMainWindow):
             icon_label = QLabel()
             icon_label.setPixmap(scaled_pixmap)
             icon_label.setAlignment(Qt.AlignCenter)
+            icon_label.setStyleSheet("background: transparent;")
             self.table.setCellWidget(row, 2, icon_label)
         else:
             # Create a red X icon for failed download
@@ -2251,10 +2656,11 @@ class BatchWindow(QMainWindow):
         if job.banner_path and job.banner_path.exists():
             pixmap = QPixmap(str(job.banner_path))
             # Scale to 89x50 to fit better in 55px row height (16:9 ratio)
-            scaled_pixmap = pixmap.scaled(89, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(92, 52, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             banner_label = QLabel()
             banner_label.setPixmap(scaled_pixmap)
             banner_label.setAlignment(Qt.AlignCenter)
+            banner_label.setStyleSheet("background: transparent;")
             self.table.setCellWidget(row, 3, banner_label)
         else:
             # Create a red X for failed banner
@@ -2272,23 +2678,25 @@ class BatchWindow(QMainWindow):
         """Add job to table and return row index."""
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setRowHeight(row, 55)
+        self.table.setRowHeight(row, 56)
 
         # Column 0: Game title / File name (Combined)
         title_widget = QWidget()
+        title_widget.setAttribute(Qt.WA_TranslucentBackground)
         title_layout = QVBoxLayout(title_widget)
         title_layout.setContentsMargins(4, 0, 4, 0)
         title_layout.setSpacing(0)
         title_label = QLabel(job.title_name)
-        title_label.setStyleSheet("font-size: 12px; font-weight: 500; color: #000;")
+        title_label.setStyleSheet("font-size: 12px; font-weight: 500; color: #000; background: transparent;")
         title_layout.addWidget(title_label)
         filename_label = QLabel(job.game_path.name)
-        filename_label.setStyleSheet("font-size: 11px; color: #666;")
+        filename_label.setStyleSheet("font-size: 11px; color: #666; background: transparent;")
         title_layout.addWidget(filename_label)
         self.table.setCellWidget(row, 0, title_widget)
 
         # Column 1: Game ID and Wiilink Status
         id_widget = QWidget()
+        id_widget.setAttribute(Qt.WA_TranslucentBackground)
         id_layout = QVBoxLayout(id_widget)
         id_layout.setContentsMargins(2, 1, 2, 1)
         id_layout.setSpacing(1)
@@ -2296,40 +2704,115 @@ class BatchWindow(QMainWindow):
         game_id = job.game_info.get('game_id', '') if job.game_info else ''
         game_id_label = QLabel(game_id)
         game_id_label.setAlignment(Qt.AlignCenter)
+        game_id_label.setStyleSheet("background: transparent;")
         id_layout.addWidget(game_id_label)
         self.table.setCellWidget(row, 1, id_widget)
 
         # Columns 2 & 3: Icon/Banner (placeholders, actual images set in update_icon_preview)
         for i in range(2, 4):
             item = QTableWidgetItem("")
-            item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
             self.table.setItem(row, i, item)
 
         # Column 4: Compatibility / Pad Option
         compat_widget = QWidget()
+        compat_widget.setAttribute(Qt.WA_TranslucentBackground)
         compat_layout = QVBoxLayout(compat_widget)
-        compat_layout.setContentsMargins(4, 1, 4, 1)
-        compat_layout.setSpacing(1)
-        compat_label = QLabel(job.gamepad_compatibility)
+        compat_layout.setContentsMargins(4, 0, 4, 4)
+        compat_layout.setSpacing(3)
+        gamepad_compat = job.gamepad_compatibility or "Unknown"
+        compat_label = QLabel(gamepad_compat)
         compat_label.setAlignment(Qt.AlignCenter)
-        compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
+        compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        compat_label.setFixedHeight(22)
+        gamepad_lower = gamepad_compat.lower()
+        if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower:
             compat_label.setStyleSheet("background-color: #c8ffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #80c080;")
-        elif 'classic' in job.gamepad_compatibility.lower() or 'lr' in job.gamepad_compatibility.lower():
+        elif 'classic' in gamepad_lower or 'lr' in gamepad_lower:
             compat_label.setStyleSheet("background-color: #ffffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c0c080;")
-        elif 'unknown' in job.gamepad_compatibility.lower():
+        elif 'unknown' in gamepad_lower:
             compat_label.setStyleSheet("background-color: #dcdcdc; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #a0a0a0;")
         else:
             compat_label.setStyleSheet("background-color: #ffc8c8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c08080;")
         compat_layout.addWidget(compat_label)
         pad_combo = QComboBox()
         pad_combo.setStyleSheet("font-size: 11px;")
-        pad_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        pad_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        pad_combo.setFixedHeight(22)
+        
+        # Base pad options (always available)
         if tr.current_language == "ko":
-            pad_combo.addItems(["미적용 (위모트)", "게임패드 CC", "게임패드 CC+LR", "게임패드 위모트(↕)", "게임패드 위모트(↔)", "갤럭시 패치(올스타)", "갤럭시 패치(엔비디아)"])
+            base_options = ["미적용 (위모트)", "게임패드", "게임패드 (강제)", "게임패드 + LR (강제)", "게임패드 위모트(↕)", "게임패드 위모트(↔)"]
         else:
-            pad_combo.addItems(["No Pad (Wiimote)", "Pad CC", "Pad CC+LR", "Pad Wiimote(↕)", "Pad Wiimote(↔)", "Galaxy Patch(AllStars)", "Galaxy Patch(Nvidia)"])
-        if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():
+            base_options = ["No Pad (Wiimote)", "Gamepad", "Gamepad (Force)", "Gamepad + LR (Force)", "Pad Wiimote(↕)", "Pad Wiimote(↔)"]
+        
+        # Check for available GCT patches for this game
+        game_id = job.game_info.get('game_id', '') if job.game_info else ''
+        gct_options = []  # Will store (display_name, patch_type) tuples
+        
+        if game_id:
+            from .cc_patch_manager import get_cc_patch_manager
+            patch_manager = get_cc_patch_manager()
+            available_patches = patch_manager.get_available_patches(game_id)
+            
+            for patch in available_patches:
+                patch_type = patch['patch_type']
+                display_name = patch['display_name']
+                
+                # Map patch types to UI display names
+                if tr.current_language == "ko":
+                    if patch_type == 'allstars':
+                        gct_options.append(("갤럭시 패치(올스타)", "galaxy_allstars"))
+                    elif patch_type == 'allstars_nodeflicker':
+                        gct_options.append(("갤럭시 패치(올스타/디플리커X)", "galaxy_allstars_nodeflicker"))
+                    elif patch_type == 'nvidia':
+                        gct_options.append(("갤럭시 패치(엔비디아)", "galaxy_nvidia"))
+                    elif patch_type == 'nvidia_nodeflicker':
+                        gct_options.append(("갤럭시 패치(엔비디아/디플리커X)", "galaxy_nvidia_nodeflicker"))
+                    elif patch_type == 'cc':
+                        gct_options.append(("게임패드 패치", "cc_patch"))
+                    else:
+                        gct_options.append((f"GCT: {display_name}", f"gct_{patch_type}"))
+                else:
+                    if patch_type == 'allstars':
+                        gct_options.append(("Galaxy Patch(AllStars)", "galaxy_allstars"))
+                    elif patch_type == 'allstars_nodeflicker':
+                        gct_options.append(("Galaxy Patch(AllStars/NoDeflicker)", "galaxy_allstars_nodeflicker"))
+                    elif patch_type == 'nvidia':
+                        gct_options.append(("Galaxy Patch(Nvidia)", "galaxy_nvidia"))
+                    elif patch_type == 'nvidia_nodeflicker':
+                        gct_options.append(("Galaxy Patch(Nvidia/NoDeflicker)", "galaxy_nvidia_nodeflicker"))
+                    elif patch_type == 'cc':
+                        gct_options.append(("Gamepad Patch", "cc_patch"))
+                    else:
+                        gct_options.append((f"GCT: {display_name}", f"gct_{patch_type}"))
+        
+        # Add base options to combobox
+        pad_combo.addItems(base_options)
+
+        # Color code the base options
+        # Index 0: 미적용 (Gray)
+        pad_combo.setItemData(0, QBrush(QColor(220, 220, 220)), Qt.BackgroundRole)
+        # Index 1-5: General options (White/Default - no color change)
+
+        # Add GCT patch options (if any) with separator
+        if gct_options:
+            pad_combo.insertSeparator(pad_combo.count())
+
+        for display_name, patch_type in gct_options:
+            pad_combo.addItem(display_name)
+            # GCT patch options (Yellow)
+            idx = pad_combo.count() - 1
+            pad_combo.setItemData(idx, QBrush(QColor(255, 255, 180)), Qt.BackgroundRole)
+
+        # Store GCT option count for style update
+        gct_start_index = 7 if gct_options else -1
+
+        # No custom styling - use native combobox appearance
+        
+        # Store available GCT options in job for later reference
+        job.available_gct_patches = gct_options
+
+        if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower:
             pad_combo.setCurrentIndex(1)
             job.pad_option = "none"
         else:
@@ -2341,18 +2824,21 @@ class BatchWindow(QMainWindow):
 
         # Column 5: Actions (Status + Edit button)
         action_widget = QWidget()
+        action_widget.setAttribute(Qt.WA_TranslucentBackground)
         action_layout = QVBoxLayout(action_widget)
-        action_layout.setContentsMargins(4, 2, 4, 2)
-        action_layout.setSpacing(2)
+        action_layout.setContentsMargins(4, 0, 4, 4)
+        action_layout.setSpacing(3)
         status_text = "대기 중" if tr.current_language == "ko" else "Pending"
         status_label = QLabel(status_text)
         status_label.setAlignment(Qt.AlignCenter)
-        status_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        status_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        status_label.setFixedHeight(22)
         status_label.setStyleSheet("background-color: #fff9c4; border: 1px solid #fbc02d; color: #8c6b00; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
         action_layout.addWidget(status_label)
         edit_text = "편집" if tr.current_language == "ko" else "Edit"
         edit_btn = QPushButton(edit_text)
-        edit_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        edit_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        edit_btn.setFixedHeight(22)
         edit_btn.setStyleSheet("QPushButton { background-color: #fafafa; color: #555; border: 1px solid #ddd; padding: 4px 12px; border-radius: 4px; font-size: 11px; } QPushButton:hover { background-color: #f0f0f0; color: #333; border-color: #bbb; } QPushButton:disabled { background-color: #f0f0f0; color: #aaa; border-color: #e0e0e0; }")
         edit_btn.clicked.connect(lambda checked, btn=edit_btn: self.edit_game_by_button(btn))
         action_layout.addWidget(edit_btn)
@@ -2390,6 +2876,34 @@ class BatchWindow(QMainWindow):
     def edit_game_by_row(self, row):
         """Edit game by row index."""
         self.edit_game(row, 0)
+
+    def filter_game_list(self, text):
+        """Filter game list by search text."""
+        search_text = text.lower().strip()
+        for row in range(self.table.rowCount()):
+            if not search_text:
+                self.table.setRowHidden(row, False)
+                continue
+
+            # Get title from column 0 (title widget)
+            title_widget = self.table.cellWidget(row, 0)
+            title_text = ""
+            if title_widget:
+                title_label = title_widget.layout().itemAt(0).widget()
+                if title_label:
+                    title_text = title_label.text().lower()
+
+            # Get game ID from column 1
+            game_id_widget = self.table.cellWidget(row, 1)
+            game_id_text = ""
+            if game_id_widget:
+                id_label = game_id_widget.layout().itemAt(0).widget()
+                if id_label:
+                    game_id_text = id_label.text().lower()
+
+            # Show row if search text matches title or game ID
+            match = search_text in title_text or search_text in game_id_text
+            self.table.setRowHidden(row, not match)
 
     def remove_selected(self):
         """Remove selected rows."""
@@ -2528,7 +3042,7 @@ class BatchWindow(QMainWindow):
 
             if job.has_output_conflict:
                 # Mark as conflict
-                conflict_text = "충돌 (스킵)" if tr.current_language == "ko" else "Conflict (Skip)"
+                conflict_text = "중복 (스킵)" if tr.current_language == "ko" else "Duplicate (Skip)"
                 status_label.setText(conflict_text)
                 status_label.setStyleSheet(
                     "background-color: #ffcdd2; border: 1px solid #ef5350; "
@@ -2567,12 +3081,16 @@ class BatchWindow(QMainWindow):
         prefix_map = {
             "no_gamepad": "NOGP_",
             "none": "GP_",
+            "force_cc": "GPFC_",
             "gamepad_lr": "GPLR_",
             "wiimote": "WM_",
             "horizontal_wiimote": "HWM_",
             "passthrough": "PT_",
             "galaxy_allstars": "GALA_",
-            "galaxy_nvidia": "GALN_"
+            "galaxy_allstars_nodeflicker": "GALANF_",
+            "galaxy_nvidia": "GALN_",
+            "galaxy_nvidia_nodeflicker": "GALNNF_",
+            "cc_patch": "GCTCC_"
         }
 
         # Track output paths: {output_key: [job_indices]}
@@ -2585,7 +3103,11 @@ class BatchWindow(QMainWindow):
                 continue
 
             # Calculate output path key (prefix + game_id)
-            prefix = prefix_map.get(job.pad_option, "")
+            # gct_ prefixed patches use GCTCC_ prefix
+            if job.pad_option and job.pad_option.startswith("gct_"):
+                prefix = "GCTCC_"
+            else:
+                prefix = prefix_map.get(job.pad_option, "")
             output_key = f"{prefix}{game_id}"
 
             if output_key not in output_paths:
@@ -2614,11 +3136,11 @@ class BatchWindow(QMainWindow):
 
             # Show warning to user
             if tr.current_language == "ko":
-                msg = f"{conflict_count}개 항목이 출력 경로 충돌로 인해 건너뛰어집니다.\n\n중복된 게임+옵션 조합이 감지되었습니다.\n충돌 항목은 빨간색으로 표시되며 빌드에서 제외됩니다."
-                title = "출력 경로 충돌"
+                msg = f"{conflict_count}개 항목이 중복으로 인해 건너뛰어집니다.\n\n중복된 게임+옵션 조합이 감지되었습니다.\n중복 항목은 빨간색으로 표시되며 빌드에서 제외됩니다."
+                title = "중복 항목 감지"
             else:
-                msg = f"{conflict_count} item(s) will be skipped due to output path conflicts.\n\nDuplicate game+option combinations detected.\nConflicting items are marked in red and will be excluded from build."
-                title = "Output Path Conflicts"
+                msg = f"{conflict_count} item(s) will be skipped due to duplicates.\n\nDuplicate game+option combinations detected.\nDuplicate items are marked in red and will be excluded from build."
+                title = "Duplicates Detected"
 
             reply = show_message(self, "warning", title, msg)
 
@@ -2951,22 +3473,32 @@ class BatchWindow(QMainWindow):
         """Handle pad option combobox change."""
         if row < len(self.jobs):
             job = self.jobs[row]
-            # 7 Controller Profiles mapping
-            # Index: 0=no_gamepad, 1=none(CC), 2=gamepad_lr, 3=wiimote, 4=horizontal_wiimote, 5=galaxy_allstars, 6=galaxy_nvidia
-            if index == 0:
-                job.pad_option = "no_gamepad"  # Profile 1: 미적용 (Wii 리모컨만)
-            elif index == 1:
-                job.pad_option = "none"  # Profile 2: 게임패드 CC
-            elif index == 2:
-                job.pad_option = "gamepad_lr"  # Profile 3: 게임패드 CC+LR
-            elif index == 3:
-                job.pad_option = "wiimote"  # Profile 4: 게임패드 위모트(세로)
-            elif index == 4:
-                job.pad_option = "horizontal_wiimote"  # Profile 5: 게임패드 위모트(가로)
-            elif index == 5:
-                job.pad_option = "galaxy_allstars"  # Profile 6: 갤럭시 올스타
+            # Base controller options (index 0-5)
+            base_options = {
+                0: "no_gamepad",     # 미적용 (Wiimote만)
+                1: "none",           # 게임패드 (자연 CC 지원)
+                2: "force_cc",       # 게임패드 (강제)
+                3: "gamepad_lr",     # 게임패드 + LR (강제)
+                4: "wiimote",        # 게임패드 Wiimote (세로)
+                5: "horizontal_wiimote"  # 게임패드 Wiimote (가로)
+            }
+            
+            if index in base_options:
+                job.pad_option = base_options[index]
+            elif index == 6:
+                # Separator selected (shouldn't happen, but ignore)
+                return
             else:
-                job.pad_option = "galaxy_nvidia"  # Profile 7: 갤럭시 엔비디아
+                # Dynamic GCT patch options (index 7+ after separator)
+                gct_index = index - 7  # Account for separator at index 6
+                if hasattr(job, 'available_gct_patches') and 0 <= gct_index < len(job.available_gct_patches):
+                    _, patch_type = job.available_gct_patches[gct_index]
+                    job.pad_option = patch_type
+                else:
+                    # No valid GCT patch found, keep current option
+                    print(f"[WARN] Invalid GCT patch index {gct_index} for {job.title_name}")
+                    return
+            
             print(f"[INFO] Pad option for {job.title_name}: {job.pad_option}")
 
             # Update compatibility label/button for Galaxy patches
@@ -2987,7 +3519,7 @@ class BatchWindow(QMainWindow):
             self.update_icon_preview(row, job)
 
     def update_compat_widget_for_galaxy(self, row, pad_index):
-        """Update compatibility widget to show mapping button for Galaxy patches."""
+        """Update compatibility widget to show mapping button for Galaxy patches or label for CC patches."""
         if row >= len(self.jobs):
             return
 
@@ -3005,8 +3537,12 @@ class BatchWindow(QMainWindow):
         if not old_widget:
             return
 
-        # Check if Galaxy patch is selected (index 5 or 6)
-        is_galaxy_patch = pad_index in [5, 6]
+        # Check patch type based on job.pad_option (more reliable than pad_index)
+        pad_option = job.pad_option or ""
+        is_galaxy_allstars = "allstars" in pad_option
+        is_galaxy_nvidia = "nvidia" in pad_option
+        is_galaxy_patch = is_galaxy_allstars or is_galaxy_nvidia
+        is_cc_patch = job.pad_option == "cc_patch" or (job.pad_option and job.pad_option.startswith("gct_"))
 
         if is_galaxy_patch:
             # Replace label/button with updated mapping button for Galaxy patches
@@ -3017,13 +3553,14 @@ class BatchWindow(QMainWindow):
 
             # Create mapping button
             mapping_btn = QPushButton()
+            mapping_btn.setFixedHeight(22)
             if tr.current_language == "ko":
                 mapping_btn.setText("🎮 매핑 확인")
             else:
                 mapping_btn.setText("🎮 View Mapping")
 
             # Different colors for AllStars (blue) and Nvidia (green)
-            if pad_index == 5:  # AllStars - Blue
+            if is_galaxy_allstars:  # AllStars - Blue
                 button_style = """
                     QPushButton {
                         background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5b9bd5, stop:1 #4a8bc2);
@@ -3064,21 +3601,42 @@ class BatchWindow(QMainWindow):
             mapping_btn.setCursor(Qt.PointingHandCursor)
 
             # Determine which image to show (0=AllStars, 1=Nvidia)
-            image_index = 0 if pad_index == 5 else 1
+            image_index = 0 if is_galaxy_allstars else 1
             mapping_btn.clicked.connect(lambda checked, idx=image_index: self.show_galaxy_mapping(idx))
 
             layout.insertWidget(0, mapping_btn)
+        elif is_cc_patch:
+            # Show "GCT Patch Exists" label for CC patches (no mapping needed)
+            layout.removeWidget(old_widget)
+            old_widget.deleteLater()
+
+            # Create CC patch label - no mapping button, just indicate patch exists
+            if tr.current_language == "ko":
+                cc_label_text = "🎮 GCT 패치 사용"
+            else:
+                cc_label_text = "🎮 GCT Patch Active"
+
+            cc_label = QLabel(cc_label_text)
+            cc_label.setAlignment(Qt.AlignCenter)
+            cc_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            cc_label.setFixedHeight(22)
+            # Orange style for CC patches - stands out
+            cc_label.setStyleSheet("background-color: #fff0c8; font-size: 11px; font-weight: 600; padding: 1px 4px; border-radius: 3px; border: 1px solid #e0a020;")
+
+            layout.insertWidget(0, cc_label)
         else:
-            # Restore compatibility label for non-Galaxy patches
-            if isinstance(old_widget, QPushButton):
-                # Remove button
+            # Restore compatibility label for non-patch options
+            if isinstance(old_widget, QPushButton) or (isinstance(old_widget, QLabel) and
+                ("GCT" in old_widget.text() or "매핑" in old_widget.text() or "Mapping" in old_widget.text())):
+                # Remove button or CC label
                 layout.removeWidget(old_widget)
                 old_widget.deleteLater()
 
                 # Restore compatibility label
                 compat_label = QLabel(job.gamepad_compatibility)
                 compat_label.setAlignment(Qt.AlignCenter)
-                compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+                compat_label.setFixedHeight(22)
 
                 # Apply styling based on compatibility
                 if 'works' in job.gamepad_compatibility.lower() and 'doesn\'t' not in job.gamepad_compatibility.lower():

@@ -25,6 +25,7 @@ class BatchBuildJob:
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
+        self.selected_cc_patch: Optional[dict] = None  # User selected CC patch override
         self.has_output_conflict = False  # Mark if output path conflicts with another job
 
 
@@ -141,12 +142,14 @@ class BatchBuilder(QThread):
             # Get game ID for cache folder
             game_id = job.game_info.get('game_id', 'unknown')
 
-            # Determine badge type (Galaxy only)
+            # Determine badge type (Galaxy, GCT patches)
             badge_type = None
-            if job.pad_option == "galaxy_allstars":
+            if job.pad_option == "galaxy_allstars" or "allstars" in (job.pad_option or ""):
                 badge_type = "galaxy_allstars"
-            elif job.pad_option == "galaxy_nvidia":
+            elif job.pad_option == "galaxy_nvidia" or "nvidia" in (job.pad_option or ""):
                 badge_type = "galaxy_nvidia"
+            elif job.pad_option == "cc_patch" or (job.pad_option and job.pad_option.startswith("gct_")):
+                badge_type = "gct"
 
             # Cache paths for this game
             cache_icon = None
@@ -160,6 +163,8 @@ class BatchBuilder(QThread):
                     cache_suffix = "_allstars"
                 elif badge_type == "galaxy_nvidia":
                     cache_suffix = "_nvidia"
+                elif badge_type == "gct":
+                    cache_suffix = "_gct"
 
                 cache_filename = f"icon{cache_suffix}.png" if cache_suffix else "icon.png"
                 cache_icon = paths.images_cache / game_id / cache_filename
@@ -262,8 +267,18 @@ class BatchBuilder(QThread):
 
             # Apply selected profile
             print(f"\n[DEBUG] job.pad_option = '{job.pad_option}'")
-
-            if job.pad_option == "no_gamepad":
+            
+            # Check for generic/user-selected patch override
+            if job.selected_cc_patch:
+                patch_info = job.selected_cc_patch
+                print(f"  [CONTROLLER] {job.title_name}: Forced Patch -> {patch_info['display_name']}")
+                options["force_cc_patch"] = patch_info['path']
+                # If it's a generic patch (custom GCT), we usually still want the base InstantCC + the patch
+                # So we don't set 'no_gamepad_emu' unless the patch specifically says so (rare)
+                # But we might need 'options["galaxy_patch"] = "cc_patch"?
+                # Actually BuildEngine should handle 'force_cc_patch' by just using that GCT file.
+                
+            elif job.pad_option == "no_gamepad":
                 # Profile 1: 미적용 (No GamePad)
                 options["no_gamepad_emu"] = True
                 print(f"  [CONTROLLER] {job.title_name}: 미적용 (Wii 리모컨만)")
@@ -296,6 +311,14 @@ class BatchBuilder(QThread):
                 # Profile 7: Galaxy Nvidia 패치 (Complex Instruction Set Injection)
                 options["galaxy_patch"] = "nvidia"
                 print(f"  [CONTROLLER] {job.title_name}: Galaxy Nvidia 패치")
+            elif job.pad_option == "cc_patch":
+                # CC Patch: Classic Controller 패치 (GCT Injection)
+                options["galaxy_patch"] = "cc_patch"
+                print(f"  [CONTROLLER] {job.title_name}: Classic Controller 패치")
+            elif job.pad_option.startswith("gct_"):
+                # Generic GCT patch type (dynamic patches)
+                options["galaxy_patch"] = job.pad_option[4:]  # Remove 'gct_' prefix
+                print(f"  [CONTROLLER] {job.title_name}: GCT 패치 ({job.pad_option})")
             else:
                 print(f"  [CONTROLLER] {job.title_name}: 알 수 없는 옵션 '{job.pad_option}', 기본값 사용")
 

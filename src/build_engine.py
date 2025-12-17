@@ -32,6 +32,15 @@ class BuildEngine:
         self.trucha_patch_applied = False  # Track Trucha patch status
         self.galaxy_patch_applied = False  # Track Galaxy patch status
         self.galaxy_variant = None  # Track Galaxy variant (allstars/nvidia)
+        self.getexttype_patch_applied = False  # Track GetExtType patch status
+        # Diagnostic info for final summary
+        self.diag_gct_file = None
+        self.diag_gct_size = 0
+        self.diag_gct_header = None
+        self.diag_dol_before = 0
+        self.diag_dol_after = 0
+        self.diag_nfs_args = None
+        self.diag_pad_option = None
 
     def stop(self):
         """Request build to stop."""
@@ -593,73 +602,206 @@ class BuildEngine:
         print("✓ Images converted to TGA successfully")
         return True
 
-    def apply_galaxy_patch(self, extract_dir: Path, game_id: str, galaxy_variant: str) -> bool:
+    def apply_getexttype_patch(self, extract_dir: Path) -> bool:
+        """
+        Apply GetExtTypePatcher to main.dol to force Classic Controller detection.
+
+        This patches the game's GetExtType() function to always report that
+        a Classic Controller is connected, fixing "unsupported controller" errors.
+
+        Args:
+            extract_dir: Extracted game directory containing sys/main.dol
+
+        Returns:
+            True if successful (or if pattern not found - non-fatal)
+        """
+        main_dol = extract_dir / "sys" / "main.dol"
+        if not main_dol.exists():
+            print(f"[GetExtType] main.dol not found: {main_dol}")
+            return False
+
+        # Find GetExtTypePatcher.exe
+        patcher_exe = self.paths.temp_tools / "EXE" / "GetExtTypePatcher.exe"
+        if not patcher_exe.exists():
+            patcher_exe = self.paths.bundle_root / "core" / "EXE" / "GetExtTypePatcher.exe"
+        if not patcher_exe.exists():
+            patcher_exe = self.paths.project_root / "core" / "EXE" / "GetExtTypePatcher.exe"
+
+        if not patcher_exe.exists():
+            print(f"[GetExtType] GetExtTypePatcher.exe not found")
+            return False
+
+        print(f"[GetExtType] Patching main.dol for forced CC detection...")
+
+        # Run GetExtTypePatcher with -nc flag (no wait for keypress)
+        args = f'"{main_dol}" -nc'
+
+        if not self.run_tool(patcher_exe, args):
+            # GetExtTypePatcher returns non-zero if pattern not found
+            # This is not fatal - some games don't need this patch
+            print("[GetExtType] Pattern not found or patch failed (non-fatal)")
+            return True  # Continue anyway
+
+        print("✓ GetExtType patch applied successfully")
+        self.getexttype_patch_applied = True
+        return True
+
+    def apply_galaxy_patch(self, extract_dir: Path, game_id: str, galaxy_variant: str, custom_gct_path: Path = None) -> bool:
         """
         Apply Galaxy GCT patch to main.dol using wstrt.
 
         Args:
             extract_dir: Extracted game directory
             game_id: Game ID (e.g., RMGE01)
-            galaxy_variant: 'allstars' or 'nvidia'
+            galaxy_variant: 'allstars' or 'nvidia' or custom GCT type
+            custom_gct_path: Absolute path to specific GCT file (overrides lookup)
 
         Returns:
             True if successful
         """
-        print(f"[GALAXY] Applying {galaxy_variant} patch to {game_id}...")
+        print(f"[GCT] Applying patch to {game_id} (Variant: {galaxy_variant})...")
 
-        # Find GCT file
-        variant_name = "AllStars" if galaxy_variant == "allstars" else "Nvidia"
-        gct_filename = f"{game_id}-{variant_name}.gct"
+        gct_path = None
 
-        # Try bundle_root first (for EXE), fallback to project_root
-        gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
-        if not gct_path.exists():
-            gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
-
-        # If not found, try region-based fallback
-        if not gct_path.exists() and len(game_id) >= 4:
-            region_code = game_id[3]
-            region_map = {
-                'E': 'RMGE01',
-                'J': 'RMGJ01',
-                'K': 'RMGK01',
-                'P': 'RMGP01'
-            }
-            if region_code in region_map:
-                fallback_id = region_map[region_code]
-                gct_filename = f"{fallback_id}-{variant_name}.gct"
-                gct_path = self.paths.bundle_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+        # 1. Direct path override (Generic/Custom Patch)
+        if custom_gct_path:
+            gct_path = Path(custom_gct_path)
+            if not gct_path.exists():
+                print(f"[GCT] Custom GCT path not found: {gct_path}")
+                return False
+            print(f"[GCT] Using custom GCT file: {gct_path}")
+        
+        # 2. Lookup by Game ID via CCPatchManager
+        else:
+            # Use CCPatchManager for unified patch lookup
+            from .cc_patch_manager import get_cc_patch_manager
+            patch_manager = get_cc_patch_manager(self.paths.project_root, self.paths.bundle_root)
+            
+            # Normalize patch type for lookup
+            patch_type = galaxy_variant
+            if patch_type in ('cc_patch', 'cc'):
+                patch_type = 'cc'
+            
+            # Get patch path from CCPatches folder
+            gct_path = patch_manager.get_patch_path(game_id, patch_type)
+            
+            # Fallback: try direct file lookup in CCPatches
+            if not gct_path or not gct_path.exists():
+                # Determine filename based on patch type
+                if patch_type == 'cc':
+                    gct_filename = f"{game_id}.gct"  # CC patches: GAMEID.gct
+                elif patch_type in ('allstars', 'galaxy_allstars'):
+                    gct_filename = f"{game_id}-AllStars.gct"
+                elif patch_type in ('allstars_nodeflicker', 'galaxy_allstars_nodeflicker'):
+                    gct_filename = f"{game_id}-AllStars-RemoveDeflicker.gct"
+                elif patch_type in ('nvidia', 'galaxy_nvidia'):
+                    gct_filename = f"{game_id}-Nvidia.gct"
+                elif patch_type in ('nvidia_nodeflicker', 'galaxy_nvidia_nodeflicker'):
+                    gct_filename = f"{game_id}-Nvidia-RemoveDeflicker.gct"
+                else:
+                    # Generic GCT patch type
+                    gct_filename = f"{game_id}-{patch_type}.gct"
+                
+                # Try CCPatches folder
+                gct_path = self.paths.bundle_root / "core" / "CCPatches" / gct_filename
                 if not gct_path.exists():
-                    gct_path = self.paths.project_root / "core" / "Galaxy1GamePad_v1.2" / gct_filename
+                    gct_path = self.paths.project_root / "core" / "CCPatches" / gct_filename
 
-        if not gct_path.exists():
-            print(f"[GALAXY] GCT not found: {gct_path}")
+                # Region-based fallback for Galaxy patches
+                if not gct_path.exists() and patch_type in ('allstars', 'nvidia') and len(game_id) >= 4:
+                    region_code = game_id[3]
+                    region_map = {
+                        'E': 'RMGE01',
+                        'J': 'RMGJ01',
+                        'K': 'RMGK01',
+                        'P': 'RMGP01'
+                    }
+                    if region_code in region_map:
+                        fallback_id = region_map[region_code]
+                        variant_name = "AllStars" if patch_type == "allstars" else "Nvidia"
+                        gct_filename = f"{fallback_id}-{variant_name}.gct"
+                        gct_path = self.paths.bundle_root / "core" / "CCPatches" / gct_filename
+                        if not gct_path.exists():
+                            gct_path = self.paths.project_root / "core" / "CCPatches" / gct_filename
+
+        if not gct_path or not gct_path.exists():
+            print(f"[GCT] GCT not found: {gct_path}")
             return False
 
         # Path to main.dol
         main_dol = extract_dir / "sys" / "main.dol"
         if not main_dol.exists():
-            print(f"[GALAXY] main.dol not found: {main_dol}")
+            print(f"[GCT] main.dol not found: {main_dol}")
             return False
+
+        # Verify GCT file
+        gct_size = gct_path.stat().st_size
+        print(f"[GCT] Found GCT file: {gct_path}")
+        print(f"[GCT] GCT file size: {gct_size} bytes")
+        self.diag_gct_file = str(gct_path)
+        self.diag_gct_size = gct_size
+
+        # Check GCT header (should start with 00 D0 C0 DE)
+        with open(gct_path, 'rb') as f:
+            header = f.read(4)
+            self.diag_gct_header = header.hex().upper()
+            print(f"[GCT] GCT header: {self.diag_gct_header}")
+            if header != b'\x00\xd0\xc0\xde':
+                print(f"[GCT] WARNING: Invalid GCT header! Expected: 00D0C0DE")
+
+        # Get main.dol size before patch
+        dol_size_before = main_dol.stat().st_size
+        self.diag_dol_before = dol_size_before
+        print(f"[GCT] main.dol size before patch: {dol_size_before} bytes")
 
         # Apply patch using wstrt
         wstrt_exe = self.paths.temp_tools / "WIT" / "wstrt.exe"
         args = f'patch "{main_dol}" --add-section "{gct_path}"'
 
         if not self.run_tool(wstrt_exe, args):
-            print("[GALAXY] Failed to apply GCT patch")
+            print("[GCT] Failed to apply GCT patch")
             return False
 
-        print(f"✓ Galaxy {variant_name} patch applied successfully")
+        # Verify main.dol was modified
+        dol_size_after = main_dol.stat().st_size
+        self.diag_dol_after = dol_size_after
+        print(f"[GCT] main.dol size after patch: {dol_size_after} bytes")
+        if dol_size_after > dol_size_before:
+            print(f"[GCT] ✓ main.dol increased by {dol_size_after - dol_size_before} bytes (GCT injected)")
+        else:
+            print(f"[GCT] WARNING: main.dol size unchanged! Patch may not have been applied.")
+
+        # Format display name
+        if patch_type == 'cc':
+            display_name = "CC"
+        elif 'allstars' in patch_type and 'nodeflicker' in patch_type:
+            display_name = "AllStars (NoDeflicker)"
+        elif 'allstars' in patch_type:
+            display_name = "AllStars"
+        elif 'nvidia' in patch_type and 'nodeflicker' in patch_type:
+            display_name = "Nvidia (NoDeflicker)"
+        elif 'nvidia' in patch_type:
+            display_name = "Nvidia"
+        else:
+            display_name = patch_type.title()
+        
+        print(f"✓ GCT {display_name} patch applied successfully")
         self.galaxy_patch_applied = True
         self.galaxy_variant = galaxy_variant  # Track variant for final report
         return True
 
-    def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None) -> Path:
+    def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None, force_cc_patch: bool = False, custom_gct_path: Optional[Path] = None) -> Path:
         """
         Process game file (WBFS conversion, trimming) - UWUVCI style with proper WIT options.
+
+        Args:
+            game_path: Path to game file (ISO/WBFS)
+            disable_trimming: Skip trimming step
+            galaxy_patch: Galaxy GCT variant ('allstars' or 'nvidia') or None
+            force_cc_patch: Apply GetExtTypePatcher for forced CC detection
+            custom_gct_path: Path to custom .gct file (Generic Patch)
         """
-        print(f"\n[DEBUG] process_game_file called with galaxy_patch: {galaxy_patch}\n")
+        print(f"\n[DEBUG] process_game_file called with galaxy_patch: {galaxy_patch}, force_cc_patch: {force_cc_patch}, custom_gct: {custom_gct_path}\n")
         self.update_progress(60, tr.get("progress_processing_game"))
 
         # Always copy/convert to pre.iso first (UWUVCI style)
@@ -707,14 +849,22 @@ class BuildEngine:
                 error_msg += f"- Insufficient disk space"
                 raise RuntimeError(error_msg)
 
-            # Apply Galaxy patch if specified
-            if galaxy_patch:
+            # Apply GetExtType patch for forced CC detection (before Galaxy patch)
+            if force_cc_patch:
+                self.apply_getexttype_patch(extract_dir)
+
+            # Apply Galaxy patch or Custom Generic patch
+            if galaxy_patch or custom_gct_path:
                 # Read game ID from extracted disc
                 disc_header = extract_dir / "sys" / "boot.bin"
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
+                    
+                    # Call apply_galaxy_patch with custom path if available
+                    # If custom_gct_path is set, galaxy_patch might be None, which is fine
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
+                    
                     # Note: If patch fails, just continue without it (standard gamepad will be used)
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
@@ -747,15 +897,19 @@ class BuildEngine:
                 error_msg += f"- Insufficient disk space"
                 raise RuntimeError(error_msg)
 
-            # Apply Galaxy patch if specified
-            if galaxy_patch:
+            # Apply GetExtType patch for forced CC detection (before Galaxy patch)
+            if force_cc_patch:
+                self.apply_getexttype_patch(extract_dir)
+
+            # Apply Galaxy patch or Custom Generic patch
+            if galaxy_patch or custom_gct_path:
                 # Read game ID from extracted disc
                 disc_header = extract_dir / "sys" / "boot.bin"
                 if disc_header.exists():
                     with open(disc_header, 'rb') as f:
                         game_id = f.read(6).decode('ascii', errors='ignore')
-                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch)
-                    # Note: If patch fails, just continue without it (standard gamepad will be used)
+                    
+                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
 
@@ -859,23 +1013,49 @@ class BuildEngine:
         content_dir.mkdir(exist_ok=True)
 
         # Build args based on pad option (TeconMoon logic)
+        # Options:
+        #   no_gamepad: Wiimote only (-nocc)
+        #   none: Natural CC support (no flag)
+        #   force_cc: Forced CC detection (-instantcc)
+        #   gamepad_lr: Forced CC with L/R swap (-instantcc -lrpatch)
+        #   wiimote: Gamepad as vertical Wiimote (-wiimote)
+        #   horizontal_wiimote: Gamepad as horizontal Wiimote (-horizontal)
+        #   galaxy_allstars/nvidia: Galaxy patch with CC (-instantcc)
+        print(f"\n[NFS] Converting ISO to NFS...")
+        print(f"[NFS] pad_option received: '{pad_option}'")
+
         args = "-enc"
         if pad_option == "no_gamepad":
             args += " -nocc"
+            print(f"[NFS] Mode: No GamePad (-nocc)")
+        elif pad_option == "none":
+            pass  # No flag - natural CC support for games that already support CC
+            print(f"[NFS] Mode: Default (no CC flag)")
+        elif pad_option in ("force_cc", "gamepad_lr"):
+            args += " -instantcc"
+            if pad_option == "gamepad_lr":
+                args += " -lrpatch"
+            print(f"[NFS] Mode: Force CC (-instantcc)")
         elif pad_option == "wiimote":
             args += " -wiimote"
+            print(f"[NFS] Mode: Wiimote (-wiimote)")
         elif pad_option == "horizontal_wiimote":
             args += " -horizontal"
-        elif pad_option in ("galaxy_allstars", "galaxy_nvidia"):
-            # Galaxy patches use Classic Controller emulation
+            print(f"[NFS] Mode: Horizontal Wiimote (-horizontal)")
+        elif "allstars" in pad_option or "nvidia" in pad_option:
             args += " -instantcc"
+            print(f"[NFS] Mode: Galaxy patch with CC (-instantcc)")
+        elif pad_option == "cc_patch" or (pad_option and pad_option.startswith("gct_")):
+            # GCT patch (Gamepad Patch) also needs instantcc
+            args += " -instantcc"
+            print(f"[NFS] Mode: GCT Gamepad Patch (-instantcc)")
         else:
-            args += " -instantcc"
-
-        if pad_option == "gamepad_lr":
-            args += " -lrpatch"
+            print(f"[NFS] Mode: Unknown pad_option '{pad_option}', using default")
 
         args += f' -iso "{iso_path}"'
+        self.diag_pad_option = pad_option
+        self.diag_nfs_args = args
+        print(f"[NFS] Final nfs2iso2nfs args: {args}\n")
 
         # Temporarily copy required files to content dir (TeconMoon uses JNUSToolDownloads)
         jnus_downloads = self.paths.jnustool_downloads
@@ -1063,30 +1243,54 @@ class BuildEngine:
             # NOTE: Trucha patch is NOT needed for Galaxy patches
             # v1.0.0-beta worked without Trucha, so we don't apply it
 
-            # Process game FIRST (need ISO to read game code for meta.xml)
+            # Determine if forced CC patch is needed
+            pad_option = options.get("pad_option", "none")
+            force_cc_patch = pad_option in ("force_cc", "gamepad_lr")
+
+            # Process game file (conversion/trimming/patching)
+            # Determine if we need to apply Galaxy patch or Custom Generic patch
+            galaxy_patch_type = options.get("galaxy_patch")
+            custom_gct_path = options.get("force_cc_patch") # This comes from batch_builder.py
+            
+            # Legacy force_cc_patch flag for GetExtTypePatcher
+            enable_cc_patcher = options.get("no_gamepad_emu", False) is False and options.get("passthrough_mode", False) is False
+            
+            # If we have a custom GCT, we definitely want to apply it
+            if custom_gct_path:
+                print(f"[BUILD] Using custom GCT patch: {custom_gct_path}")
+            
             processed_iso = self.process_game_file(
-                game_path,
-                options.get("disable_trimming", False),
-                options.get("galaxy_patch")
+                game_path, 
+                disable_trimming=False, 
+                galaxy_patch=galaxy_patch_type,
+                force_cc_patch=enable_cc_patcher, # This enables GetExtTypePatcher
+                custom_gct_path=custom_gct_path
             )
 
             # Extract game ID from ISO for output folder name
             with open(processed_iso, 'rb') as f:
                 game_id = f.read(6).decode('ascii', errors='ignore')  # e.g., RUUK01
 
-            # Add prefix based on controller option
-            pad_option = options.get("pad_option", "none")
+            # Add prefix based on controller option (pad_option already set above)
             prefix_map = {
                 "no_gamepad": "NOGP_",
                 "none": "GP_",
+                "force_cc": "GPFC_",
                 "gamepad_lr": "GPLR_",
                 "wiimote": "WM_",
                 "horizontal_wiimote": "HWM_",
                 "passthrough": "PT_",
                 "galaxy_allstars": "GALA_",
-                "galaxy_nvidia": "GALN_"
+                "galaxy_allstars_nodeflicker": "GALANF_",
+                "galaxy_nvidia": "GALN_",
+                "galaxy_nvidia_nodeflicker": "GALNNF_",
+                "cc_patch": "GCTCC_"
             }
-            prefix = prefix_map.get(pad_option, "")
+            # gct_ prefixed patches use GCTCC_ prefix
+            if pad_option and pad_option.startswith("gct_"):
+                prefix = "GCTCC_"
+            else:
+                prefix = prefix_map.get(pad_option, "")
             game_id_with_prefix = f"{prefix}{game_id}"
 
             # Generate XML (reads game code from processed ISO, generates random IDs)
@@ -1134,17 +1338,48 @@ class BuildEngine:
                 "horizontal_wiimote": "Wiimote (Horizontal)",
                 "passthrough": "Passthrough",
                 "galaxy_allstars": "Galaxy AllStars",
-                "galaxy_nvidia": "Galaxy Nvidia"
+                "galaxy_allstars_nodeflicker": "Galaxy AllStars (NoDeflicker)",
+                "galaxy_nvidia": "Galaxy Nvidia",
+                "galaxy_nvidia_nodeflicker": "Galaxy Nvidia (NoDeflicker)"
             }
             print(f"Controller: {pad_names.get(pad_option, pad_option)}")
 
             # Show patch status
             if self.galaxy_patch_applied:
-                variant_text = "AllStars" if self.galaxy_variant == "allstars" else "Nvidia"
-                print(f"Galaxy Patch: ✓ Applied ({variant_text})")
+                variant_map = {
+                    'allstars': 'AllStars',
+                    'allstars_nodeflicker': 'AllStars (NoDeflicker)',
+                    'nvidia': 'Nvidia',
+                    'nvidia_nodeflicker': 'Nvidia (NoDeflicker)',
+                    'cc': 'CC (Gamepad)',
+                    'cc_patch': 'CC (Gamepad)'
+                }
+                variant_text = variant_map.get(self.galaxy_variant, self.galaxy_variant)
+                print(f"GCT Patch: ✓ Applied ({variant_text})")
             else:
-                print(f"Galaxy Patch: - Not Applied")
+                print(f"GCT Patch: - Not Applied")
 
+            # Diagnostic summary
+            print("-"*80)
+            print("[ DIAGNOSTIC INFO ]")
+            if self.diag_gct_file:
+                print(f"  GCT File: {self.diag_gct_file}")
+                print(f"  GCT Size: {self.diag_gct_size} bytes")
+                print(f"  GCT Header: {self.diag_gct_header} {'(VALID)' if self.diag_gct_header == '00D0C0DE' else '(INVALID!)'}")
+                print(f"  main.dol Before: {self.diag_dol_before} bytes")
+                print(f"  main.dol After: {self.diag_dol_after} bytes")
+                dol_diff = self.diag_dol_after - self.diag_dol_before
+                if dol_diff > 0:
+                    print(f"  DOL Injection: ✓ +{dol_diff} bytes")
+                else:
+                    print(f"  DOL Injection: ✗ FAILED (size unchanged)")
+            else:
+                print(f"  GCT File: Not used")
+            if self.diag_nfs_args:
+                print(f"  NFS pad_option: {self.diag_pad_option}")
+                # Check if -instantcc is in args
+                has_instantcc = "-instantcc" in self.diag_nfs_args
+                print(f"  NFS -instantcc: {'✓ YES' if has_instantcc else '✗ NO'}")
             print("="*80 + "\n")
             return True
 

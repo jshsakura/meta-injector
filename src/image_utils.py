@@ -72,7 +72,7 @@ class ImageProcessor:
         Returns:
             Image with badge overlay
         """
-        if not badge_type or badge_type not in ['galaxy_allstars', 'galaxy_nvidia']:
+        if not badge_type or badge_type not in ['galaxy_allstars', 'galaxy_nvidia', 'gct']:
             return img
 
         # Create badge (36x28 for wider aspect ratio)
@@ -87,11 +87,16 @@ class ImageProcessor:
             bg_color = (200, 40, 40, 240)
             dark_color = (140, 20, 20, 255)
             light_color = (255, 80, 80, 255)
-        else:  # galaxy_nvidia
+        elif badge_type == 'galaxy_nvidia':
             # Green theme
             bg_color = (40, 180, 60, 240)
             dark_color = (20, 120, 40, 255)
             light_color = (80, 220, 100, 255)
+        else:  # gct
+            # Gray theme
+            bg_color = (100, 100, 100, 240)
+            dark_color = (60, 60, 60, 255)
+            light_color = (160, 160, 160, 255)
 
         # Draw Wii U GamePad style controller (no background circle)
         # Main gamepad body (rounded rectangle)

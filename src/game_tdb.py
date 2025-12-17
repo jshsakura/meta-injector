@@ -65,6 +65,70 @@ class GameTdb:
         return db.get(game_id)
 
     @classmethod
+    def get_localized_names(cls, game_id: str) -> dict:
+        """
+        Get both local (Korean/Japanese) and English names for a game.
+
+        Args:
+            game_id: Game ID to lookup
+
+        Returns:
+            Dict with 'local_name', 'english_name', 'region' keys
+        """
+        db = cls._load_database()
+        result = {
+            'local_name': None,
+            'english_name': None,
+            'region': None
+        }
+
+        if len(game_id) < 4:
+            return result
+
+        # Get the region code (4th character)
+        region_code = game_id[3]
+        base_id = game_id[:3]
+
+        # Region mapping
+        region_map = {'E': 'USA', 'P': 'EUR', 'J': 'JPN', 'K': 'KOR'}
+        result['region'] = region_map.get(region_code, 'Unknown')
+
+        # Get the local name (original region)
+        local_name = db.get(game_id)
+        if local_name:
+            result['local_name'] = local_name
+
+        # For non-English regions, try to get English name
+        if region_code in ('K', 'J'):
+            # Try USA (E) version first, then EUR (P)
+            for eng_code in ('E', 'P'):
+                eng_id = base_id + eng_code + game_id[4:] if len(game_id) > 4 else base_id + eng_code
+                # Try different suffixes
+                for suffix in [game_id[4:], '01', '41', '52', '69', '']:
+                    test_id = base_id + eng_code + suffix
+                    eng_name = db.get(test_id)
+                    if eng_name:
+                        result['english_name'] = eng_name
+                        break
+                if result['english_name']:
+                    break
+        elif region_code in ('E', 'P'):
+            # For English regions, English name is the local name
+            result['english_name'] = local_name
+            # Try to get Korean/Japanese name
+            for loc_code in ('K', 'J'):
+                for suffix in [game_id[4:], '01', '41', '52', '69', '']:
+                    test_id = base_id + loc_code + suffix
+                    loc_name = db.get(test_id)
+                    if loc_name:
+                        result['local_name'] = loc_name
+                        break
+                if result['local_name'] and result['local_name'] != result['english_name']:
+                    break
+
+        return result
+
+    @classmethod
     def get_ids(cls, name: str) -> List[str]:
         """
         Get all game IDs matching a specific name.
