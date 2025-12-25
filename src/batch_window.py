@@ -1209,6 +1209,8 @@ class EditGameDialog(QDialog):
         )
         if file_path:
             self.job.icon_path = Path(file_path)
+            self.job.icon_edited = True  # Mark as user-edited to force reprocessing
+            print(f"[USER EDIT] Icon changed to: {file_path}")
             # Update icon preview
             self.load_initial_icon()
 
@@ -1222,6 +1224,8 @@ class EditGameDialog(QDialog):
         )
         if file_path:
             self.job.banner_path = Path(file_path)
+            self.job.banner_edited = True  # Mark as user-edited to force reprocessing
+            print(f"[USER EDIT] Banner changed to: {file_path}")
             pixmap = QPixmap(file_path)
             self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
@@ -2411,7 +2415,23 @@ class BatchWindow(QMainWindow):
                 action_edit.triggered.connect(lambda checked, r=r: self.edit_game_directly(r))
                 menu.addAction(action_edit)
 
+                # Retry action (only for failed jobs)
+                if job.status == "failed":
+                    retry_text = "재시도" if tr.current_language == "ko" else "Retry"
+                    action_retry = QAction(retry_text, self)
+                    action_retry.triggered.connect(lambda checked, r=r: self.retry_failed_job(r))
+                    menu.addAction(action_retry)
+
                 menu.addSeparator()
+
+        # Retry all failed (for multiple selection or any selection with failed items)
+        failed_rows = [idx.row() for idx in selected_rows if idx.row() < len(self.jobs) and self.jobs[idx.row()].status == "failed"]
+        if failed_rows:
+            retry_all_text = f"실패 항목 재시도 ({len(failed_rows)}개)" if tr.current_language == "ko" else f"Retry Failed ({len(failed_rows)})"
+            action_retry_all = QAction(retry_all_text, self)
+            action_retry_all.triggered.connect(lambda checked, rows=failed_rows: self.retry_failed_jobs(rows))
+            menu.addAction(action_retry_all)
+            menu.addSeparator()
 
         # Remove action
         remove_text = "제거" if tr.current_language == "ko" else "Remove"
@@ -2812,12 +2832,9 @@ class BatchWindow(QMainWindow):
         # Store available GCT options in job for later reference
         job.available_gct_patches = gct_options
 
-        if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower:
-            pad_combo.setCurrentIndex(1)
-            job.pad_option = "none"
-        else:
-            pad_combo.setCurrentIndex(0)
-            job.pad_option = "no_gamepad"
+        # Always start with "no_gamepad" - user must explicitly select controller option
+        pad_combo.setCurrentIndex(0)
+        job.pad_option = "no_gamepad"
         pad_combo.currentIndexChanged.connect(lambda idx, r=row: self.on_pad_option_changed(r, idx))
         compat_layout.addWidget(pad_combo)
         self.table.setCellWidget(row, 4, compat_widget)
@@ -3416,6 +3433,126 @@ class BatchWindow(QMainWindow):
         self.progress_bar.setValue(0)
         self.progress_percentage.setVisible(False)
 
+    def retry_failed_job(self, row):
+        """Retry a single failed job."""
+        self.retry_failed_jobs([row])
+
+    def retry_failed_jobs(self, rows):
+        """Retry multiple failed jobs."""
+        if not rows:
+            return
+
+        # Reset status for failed jobs
+        jobs_to_retry = []
+        for row in rows:
+            if row < len(self.jobs):
+                job = self.jobs[row]
+                if job.status == "failed":
+                    job.status = "pending"
+                    job.error_message = ""
+                    jobs_to_retry.append(job)
+
+                    # Update status label in table
+                    action_widget = self.table.cellWidget(row, 5)
+                    if action_widget:
+                        status_label = action_widget.findChild(QLabel)
+                        if status_label:
+                            status_text = "대기 중" if tr.current_language == "ko" else "Pending"
+                            status_label.setText(status_text)
+                            status_label.setToolTip("")
+                            status_label.setStyleSheet("background-color: #fff9c4; border: 1px solid #fbc02d; color: #8c6b00; font-size: 11px; padding: 2px 5px; border-radius: 3px;")
+
+        if not jobs_to_retry:
+            return
+
+        # Start build for retry jobs only
+        self.start_build_for_jobs(jobs_to_retry)
+
+    def start_build_for_jobs(self, jobs_to_build):
+        """Start build process for specific jobs."""
+        # Load settings
+        import json
+        settings_path = Path.home() / ".meta_injector_settings.json"
+        if not settings_path.exists():
+            error_msg = "설정 파일을 찾을 수 없습니다" if tr.current_language == "ko" else "Settings file not found"
+            show_message(self, "warning", tr.get("error"), error_msg)
+            return
+
+        with open(settings_path, 'r') as f:
+            settings = json.load(f)
+
+        common_key = settings.get('common_key', '')
+        if not common_key:
+            error_msg = "Common Key가 설정되지 않았습니다" if tr.current_language == "ko" else "Common Key not set"
+            show_message(self, "warning", tr.get("error"), error_msg)
+            return
+
+        # Get title keys
+        title_keys = {}
+        if settings.get('rhythm_heaven_key'):
+            title_keys['Rhythm Heaven Fever (USA)'] = settings['rhythm_heaven_key']
+        if settings.get('xenoblade_key'):
+            title_keys['Xenoblade Chronicles (USA)'] = settings['xenoblade_key']
+        if settings.get('galaxy2_key'):
+            title_keys['Super Mario Galaxy 2 (EUR)'] = settings['galaxy2_key']
+
+        if not title_keys:
+            error_msg = "Title Key가 설정되지 않았습니다" if tr.current_language == "ko" else "No Title Key set"
+            show_message(self, "warning", tr.get("error"), error_msg)
+            return
+
+        # Get output directory
+        output_dir = settings.get('output_dir', '')
+        if output_dir:
+            output_path = Path(output_dir)
+        else:
+            # Use first game's directory as output
+            output_path = jobs_to_build[0].game_path.parent
+
+        self.current_output_dir = output_path
+
+        # Create batch builder for retry jobs
+        from .batch_builder import BatchBuilder
+        self.batch_builder = BatchBuilder(
+            jobs=jobs_to_build,
+            common_key=common_key,
+            title_keys=title_keys,
+            output_dir=output_path,
+            auto_icons=self.auto_icons_check.isChecked()
+        )
+
+        self.batch_builder.progress_updated.connect(self.on_progress)
+        self.batch_builder.job_started.connect(self.on_job_started_by_job)
+        self.batch_builder.job_finished.connect(self.on_job_finished_by_job)
+        self.batch_builder.all_finished.connect(self.on_all_finished)
+
+        # Disable UI during build
+        self.set_ui_enabled(False)
+        self.build_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+
+        self.batch_builder.start()
+
+    def on_job_started_by_job(self, job_index, game_name):
+        """Handle job started signal for retry (uses job object index)."""
+        # Find the actual row in the table for this job
+        if job_index < len(self.batch_builder.jobs):
+            job = self.batch_builder.jobs[job_index]
+            for row, table_job in enumerate(self.jobs):
+                if table_job is job:
+                    self.on_job_started(row, game_name)
+                    break
+
+    def on_job_finished_by_job(self, job_index, success, message):
+        """Handle job finished signal for retry (uses job object index)."""
+        # Find the actual row in the table for this job
+        if job_index < len(self.batch_builder.jobs):
+            job = self.batch_builder.jobs[job_index]
+            for row, table_job in enumerate(self.jobs):
+                if table_job is job:
+                    self.on_job_finished(row, success, message)
+                    break
+
     def set_ui_enabled(self, enabled: bool):
         """Enable or disable UI elements during build."""
         # Disable/enable top buttons
@@ -3674,8 +3811,9 @@ class BatchWindow(QMainWindow):
                 from pathlib import Path
                 icon_path = Path(file_path)
                 job.icon_path = icon_path
+                job.icon_edited = True  # Force reprocessing - user explicitly changed the image
                 self.update_icon_preview(row, job)
-                print(f"[INFO] Icon updated for {job.game_path.name}: {icon_path}")
+                print(f"[USER EDIT] Icon updated for {job.game_path.name}: {icon_path}")
 
         elif column == 2:  # Banner column
             file_path, _ = QFileDialog.getOpenFileName(
@@ -3688,5 +3826,6 @@ class BatchWindow(QMainWindow):
                 from pathlib import Path
                 banner_path = Path(file_path)
                 job.banner_path = banner_path
+                job.banner_edited = True  # Force reprocessing - user explicitly changed the image
                 self.update_icon_preview(row, job)
-                print(f"[INFO] Banner updated for {job.game_path.name}: {banner_path}")
+                print(f"[USER EDIT] Banner updated for {job.game_path.name}: {banner_path}")

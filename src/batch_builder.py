@@ -171,16 +171,24 @@ class BatchBuilder(QThread):
 
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
-                # Always process if badge is set, or if not already in cache
-                should_process = (badge_type is not None) or (job.icon_path.resolve() != cache_icon.resolve())
+                # Process if: badge set, different path, source is newer, OR user edited the image
+                is_different_path = job.icon_path.resolve() != cache_icon.resolve()
+                is_source_newer = cache_icon.exists() and job.icon_path.stat().st_mtime > cache_icon.stat().st_mtime
+                user_edited = getattr(job, 'icon_edited', False)
+                should_process = (badge_type is not None) or is_different_path or is_source_newer or user_edited
 
                 if should_process:
                     print(f"  Icon: {job.icon_path} -> {cache_icon}")
                     if badge_type:
                         print(f"  Adding {badge_type} badge to icon")
+                    if user_edited:
+                        print(f"  (User edited)")
                     image_processor.process_icon(job.icon_path, cache_icon, badge_type=badge_type)
                     if cache_icon.exists():
                         print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
+                        # Reset edited flag after processing
+                        if hasattr(job, 'icon_edited'):
+                            job.icon_edited = False
                     else:
                         print(f"  ✗ Icon processing failed!")
                         cache_icon = None
@@ -193,12 +201,25 @@ class BatchBuilder(QThread):
                 cache_banner = paths.images_cache / game_id / "banner.png"
                 cache_banner.parent.mkdir(parents=True, exist_ok=True)
 
-                # Only process if not already in cache
-                if job.banner_path.resolve() != cache_banner.resolve():
-                    print(f"  Banner: {job.banner_path} -> {cache_banner}")
+                # Process if: different path, source is newer, OR user edited the image
+                is_different_path = job.banner_path.resolve() != cache_banner.resolve()
+                is_source_newer = cache_banner.exists() and job.banner_path.stat().st_mtime > cache_banner.stat().st_mtime
+                user_edited = getattr(job, 'banner_edited', False)
+                should_process_banner = is_different_path or is_source_newer or user_edited
+
+                if should_process_banner:
+                    if user_edited:
+                        print(f"  Banner: {job.banner_path} (User edited)")
+                    elif is_source_newer and not is_different_path:
+                        print(f"  Banner: {job.banner_path} (source newer than cache)")
+                    else:
+                        print(f"  Banner: {job.banner_path} -> {cache_banner}")
                     image_processor.process_banner(job.banner_path, cache_banner)
                     if cache_banner.exists():
                         print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
+                        # Reset edited flag after processing
+                        if hasattr(job, 'banner_edited'):
+                            job.banner_edited = False
                     else:
                         print(f"  ✗ Banner processing failed!")
                         cache_banner = None
