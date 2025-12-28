@@ -742,6 +742,13 @@ class SimpleKeysDialog(QDialog):
 
         layout.addLayout(form)
 
+        # Auto download images option
+        layout.addSpacing(10)
+        auto_download_text = "게임 아이콘 및 배너(DRC) 이미지, 게임 이름 자동 설정" if tr.current_language == "ko" else "Auto download icon, banner (DRC) images and game title"
+        self.auto_icons_check = QCheckBox(auto_download_text)
+        self.auto_icons_check.setChecked(True)
+        layout.addWidget(self.auto_icons_check)
+
         # Info box with improved design
         layout.addSpacing(15)
         if tr.current_language == "ko":
@@ -967,7 +974,8 @@ class SimpleKeysDialog(QDialog):
             'title_key_rhythm_heaven': rhythm_key,
             'title_key_xenoblade': xenoblade_key,
             'title_key_galaxy2': galaxy_key,
-            'output_directory': output_dir
+            'output_directory': output_dir,
+            'auto_download_images': self.auto_icons_check.isChecked()
         }
 
         settings_file = Path.home() / ".meta_injector_settings.json"
@@ -1022,6 +1030,10 @@ class SimpleKeysDialog(QDialog):
                 output_dir = settings.get('output_directory', '')
                 if output_dir:
                     self.output_dir_input.setText(output_dir)
+
+                # Load auto download setting (default True if not set)
+                auto_download = settings.get('auto_download_images', True)
+                self.auto_icons_check.setChecked(auto_download)
 
                 print("[DEBUG] Loaded existing settings into dialog")
         except Exception as e:
@@ -1190,7 +1202,7 @@ class EditGameDialog(QDialog):
                 info_text = "<b>Note:</b> WBFS is already trimmed and cannot be restored to original size. Use ISO if you need original size."
         else:
             if tr.current_language == "ko":
-                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. 트림 비활성화 시 파일 크기가 증가합니다."
+                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. 트림 비활성화 시 파일 크기가 증가합니다.<br><br><b>주의:</b> Gecko 코드를 바이너리에 패치하는 방식은 일부 게임(예: 슈퍼 페이퍼 마리오)에서 세이브 충돌을 일으킬 수 있습니다. 이 경우 패치된 환경에 맞는 별도의 세이브 파일을 생성하여 사용해야 합니다."
             else:
                 info_text = "<b>Note:</b> Some games require original disc size (about 4~8GB) for save files. Disabling trim will increase file size."
 
@@ -1293,7 +1305,7 @@ class EditGameDialog(QDialog):
             self.load_initial_icon()
 
     def change_banner(self):
-        """Change banner image."""
+        """Change banner image and DRC image."""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "배너 이미지 선택" if tr.current_language == "ko" else "Select Banner Image",
@@ -1304,8 +1316,26 @@ class EditGameDialog(QDialog):
             self.job.banner_path = Path(file_path)
             self.job.banner_edited = True  # Mark as user-edited to force reprocessing
             print(f"[USER EDIT] Banner changed to: {file_path}")
+
+            # Update banner preview
             pixmap = QPixmap(file_path)
             self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            # Also update DRC image (same as banner)
+            try:
+                from PIL import Image
+                cache_dir = paths.images_cache / self.job.game_id
+                cache_dir.mkdir(parents=True, exist_ok=True)
+
+                # Save DRC image (resized banner)
+                banner_img = Image.open(file_path)
+                drc_img = banner_img.resize((854, 480), Image.Resampling.LANCZOS)
+                drc_path = cache_dir / "drc.png"
+                drc_img.save(drc_path)
+                self.job.drc_path = drc_path
+                print(f"[USER EDIT] DRC updated to: {drc_path}")
+            except Exception as e:
+                print(f"[ERROR] Failed to update DRC image: {e}")
 
     def add_badges_overlay_large(self, pixmap: QPixmap, job: BatchBuildJob) -> QPixmap:
         """Add badge overlays to larger pixmap (for edit dialog - 192x192)."""
@@ -1393,7 +1423,7 @@ class EditGameDialog(QDialog):
     def download_images_online(self):
         """Download icon and banner from online sources (GameTDB)."""
         from PyQt5.QtWidgets import QMessageBox, QApplication, QProgressDialog
-        from PyQt5.QtCore import QThread, pyqtSignal, Qt
+        from PyQt5.QtCore import Qt
         import urllib.request
         import urllib.error
         import ssl
@@ -1407,15 +1437,18 @@ class EditGameDialog(QDialog):
             QMessageBox.warning(self, "Error", error_msg)
             return
 
-        # Show progress dialog that can't be closed
-        downloading_msg = "이미지 및 제목을 다운로드하는 중..." if tr.current_language == "ko" else "Downloading images and title..."
-        progress = QProgressDialog(downloading_msg, None, 0, 0, self)
-        progress.setWindowTitle("다운로드" if tr.current_language == "ko" else "Download")
+        # Show progress dialog (same style as game loading)
+        progress_label = f"{game_id} 이미지 다운로드 중..." if tr.current_language == "ko" else f"Downloading {game_id} images..."
+        cancel_label = "취소" if tr.current_language == "ko" else "Cancel"
+
+        progress = QProgressDialog(progress_label, cancel_label, 0, 100, self)
+        progress.setWindowTitle("이미지 다운로드" if tr.current_language == "ko" else "Download Images")
+        progress.setWindowFlags(progress.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         progress.setWindowModality(Qt.WindowModal)
-        progress.setCancelButton(None)  # No cancel button
         progress.setMinimumDuration(0)  # Show immediately
-        progress.show()
-        QApplication.processEvents()  # Force UI update
+        progress.setMinimumWidth(400)
+        progress.setValue(10)  # Start at 10%
+        QApplication.processEvents()
 
         # Create SSL context
         ssl_context = ssl.create_default_context()
@@ -1445,12 +1478,21 @@ class EditGameDialog(QDialog):
         download_success = False
         downloaded_icon = None  # Store downloaded icon temporarily
         for try_id in alternative_ids:
+            if progress.wasCanceled():
+                print("  [CANCELLED] Download cancelled by user")
+                return
+
             for region in region_codes:
+                if progress.wasCanceled():
+                    print("  [CANCELLED] Download cancelled by user")
+                    return
                 fullcover_url = f"https://art.gametdb.com/wii/coverfullHQ/{region}/{try_id}.png"
                 cover_url = f"https://art.gametdb.com/wii/cover/{region}/{try_id}.png"
 
                 try:
                     print(f"  [DOWNLOAD] Trying {region}/{try_id}...")
+                    progress.setValue(20)
+                    QApplication.processEvents()
 
                     # Download full cover for banner/DRC
                     req = urllib.request.Request(fullcover_url, headers={'User-Agent': 'Meta-Injector/1.0'})
@@ -1470,6 +1512,9 @@ class EditGameDialog(QDialog):
                         drc_img.save(drc_path)
                         self.job.drc_path = drc_path
 
+                    progress.setValue(50)
+                    QApplication.processEvents()
+
                     # Download regular cover for icon
                     req = urllib.request.Request(cover_url, headers={'User-Agent': 'Meta-Injector/1.0'})
                     with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
@@ -1488,6 +1533,8 @@ class EditGameDialog(QDialog):
                         downloaded_icon = icon_img
 
                     print(f"  [SUCCESS] Downloaded images from {region}/{try_id}")
+                    progress.setValue(70)
+                    QApplication.processEvents()
                     download_success = True
                     break
 
@@ -1499,6 +1546,9 @@ class EditGameDialog(QDialog):
                 break
 
         if download_success:
+            progress.setValue(80)
+            QApplication.processEvents()
+
             # Delete all cached icon variants to force regeneration
             # This ensures badge overlays are recreated with new icon
             for variant in ['icon.png', 'icon_allstars.png', 'icon_nvidia.png', 'icon_gct.png']:
@@ -1514,6 +1564,9 @@ class EditGameDialog(QDialog):
                 self.job.icon_path = icon_path
                 self.job.icon_edited = True  # Force reprocessing on next build
                 print(f"  [SAVE] Saved new icon to: {icon_path}")
+
+            progress.setValue(90)
+            QApplication.processEvents()
 
             # Fetch updated title from GameTDB and update cache/DB
             print(f"  [FETCH] Updating title from GameTDB...")
@@ -1534,11 +1587,11 @@ class EditGameDialog(QDialog):
                 self.parent().update_icon_preview(self.row, self.job)
                 print(f"  [UI] Updated table row {self.row} with new images")
 
-            # Close progress dialog
-            progress.close()
+            progress.setValue(100)
+            QApplication.processEvents()
 
-            success_msg = "이미지 및 제목 다운로드 완료!" if tr.current_language == "ko" else "Images and title downloaded successfully!"
-            QMessageBox.information(self, "성공" if tr.current_language == "ko" else "Success", success_msg)
+            # Close progress dialog (no success message)
+            progress.close()
         else:
             # Close progress dialog
             progress.close()
@@ -2215,8 +2268,10 @@ class BatchWindow(QMainWindow):
         self.batch_builder = None
         self.loader_thread = None
         self.available_bases = {}  # Will be populated from settings
+        self.auto_download_enabled = True  # Default value
         self.init_ui()
         self.load_available_bases()  # Load on startup
+        self.load_auto_download_setting()  # Load auto download setting
 
     def init_ui(self):
         """Initialize UI."""
@@ -2318,9 +2373,41 @@ class BatchWindow(QMainWindow):
 
         top_layout.addStretch()
 
-        self.auto_icons_check = QCheckBox(tr.get("auto_download"))
-        self.auto_icons_check.setChecked(True)
-        top_layout.addWidget(self.auto_icons_check)
+        # Search filter (compact, next to settings)
+        # Create search container with icon inside
+        search_container = QWidget()
+        search_container_layout = QHBoxLayout(search_container)
+        search_container_layout.setContentsMargins(0, 0, 0, 0)
+        search_container_layout.setSpacing(0)
+
+        self.search_input = QLineEdit()
+        placeholder = "검색 (게임명, ID)..." if tr.current_language == "ko" else "Search (title, ID)..."
+        self.search_input.setPlaceholderText(placeholder)
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self.filter_game_list)
+        self.search_input.setFixedWidth(200)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                padding: 8px 16px 8px 32px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 13px;
+                background: white;
+            }
+            QLineEdit:focus {
+                border-color: #4a90e2;
+            }
+            QLineEdit:hover {
+                border-color: #bbb;
+            }
+        """)
+
+        # Add icon label positioned absolutely inside search box
+        search_icon_label = QLabel("🔍", self.search_input)
+        search_icon_label.setStyleSheet("font-size: 16px; background: transparent; border: none;")
+        search_icon_label.move(8, 6)
+
+        top_layout.addWidget(self.search_input)
 
         keep_temp_text = "임시 파일 유지" if tr.current_language == "ko" else "Keep Temp Files"
         self.keep_temp_check = QCheckBox(keep_temp_text)
@@ -2336,18 +2423,6 @@ class BatchWindow(QMainWindow):
         top_layout.addWidget(self.settings_btn)
 
         layout.addLayout(top_layout)
-
-        # Search filter
-        search_layout = QHBoxLayout()
-        search_label = QLabel("🔍")
-        search_label.setStyleSheet("font-size: 14px;")
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("검색 (게임명, ID)..." if tr.current_language == "ko" else "Search (title, ID)...")
-        self.search_input.setClearButtonEnabled(True)
-        self.search_input.textChanged.connect(self.filter_game_list)
-        search_layout.addWidget(search_label)
-        search_layout.addWidget(self.search_input)
-        layout.addLayout(search_layout)
 
         # Table header with help button
         # Game list table (파일명/게임제목 통합, 게임 ID 별도 표시, 호환성/패드옵션 통합)
@@ -2622,7 +2697,7 @@ class BatchWindow(QMainWindow):
         # Start background loading thread
         self.loader_thread = GameLoaderThread(
             new_file_paths,
-            self.auto_icons_check.isChecked()
+            self.auto_download_enabled
         )
         self.loader_thread.game_loaded.connect(self.on_game_loaded)
         self.loader_thread.loading_finished.connect(self.on_loading_finished)
@@ -3600,7 +3675,7 @@ class BatchWindow(QMainWindow):
             common_key,
             title_keys,
             Path(output_dir),
-            self.auto_icons_check.isChecked(),
+            self.auto_download_enabled,
             keep_temp_for_debug=self.keep_temp_check.isChecked()
         )
 
@@ -3879,7 +3954,7 @@ class BatchWindow(QMainWindow):
             common_key=common_key,
             title_keys=title_keys,
             output_dir=output_path,
-            auto_icons=self.auto_icons_check.isChecked()
+            auto_icons=self.auto_download_enabled
         )
 
         self.batch_builder.progress_updated.connect(self.on_progress)
@@ -3921,7 +3996,6 @@ class BatchWindow(QMainWindow):
         self.remove_btn.setEnabled(enabled)
         self.clear_btn.setEnabled(enabled)
         self.settings_btn.setEnabled(enabled)
-        self.auto_icons_check.setEnabled(enabled)
 
         # Disable/enable table editing (edit buttons and pad option comboboxes)
         self.table.setEnabled(enabled)
@@ -3932,6 +4006,8 @@ class BatchWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             # Reload available bases after settings change
             self.load_available_bases()
+            # Reload auto download setting
+            self.load_auto_download_setting()
 
     def load_available_bases(self):
         """Load available bases from settings file."""
@@ -3961,6 +4037,27 @@ class BatchWindow(QMainWindow):
 
         except Exception as e:
             print(f"[WARN] Failed to load available bases: {e}")
+
+    def load_auto_download_setting(self):
+        """Load auto download setting from settings file."""
+        import json
+        from pathlib import Path
+
+        settings_file = Path.home() / ".meta_injector_settings.json"
+        if not settings_file.exists():
+            self.auto_download_enabled = True  # Default
+            return
+
+        try:
+            with open(settings_file, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+
+            self.auto_download_enabled = settings.get('auto_download_images', True)
+            print(f"[DEBUG] Auto download images: {self.auto_download_enabled}")
+
+        except Exception as e:
+            print(f"[WARN] Failed to load auto download setting: {e}")
+            self.auto_download_enabled = True  # Default on error
 
     def show_compatibility_list(self):
         """Show compatibility list dialog."""

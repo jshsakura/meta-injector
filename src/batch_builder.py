@@ -219,22 +219,34 @@ class BatchBuilder(QThread):
 
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
+                # Determine source icon path
+                # If job.icon_path is already in cache, use base icon.png as source
+                # This prevents re-reading badged variants when changing pad options
+                cache_dir = paths.images_cache / game_id
+                source_icon_path = job.icon_path
+                if job.icon_path.parent == cache_dir:
+                    # Icon is already cached, use base icon.png as source
+                    base_icon = cache_dir / "icon.png"
+                    if base_icon.exists():
+                        source_icon_path = base_icon
+                        print(f"  [CACHE] Using base icon as source: {base_icon}")
+
                 # Process if: different path, source is newer, OR user edited the image
                 # NOTE: Do NOT reprocess just because badge_type is set - that would overwrite user-selected icons!
                 # Only reprocess if the source image changed or user explicitly edited it.
-                is_different_path = job.icon_path.resolve() != cache_icon.resolve()
-                is_source_newer = cache_icon.exists() and job.icon_path.stat().st_mtime > cache_icon.stat().st_mtime
+                is_different_path = source_icon_path.resolve() != cache_icon.resolve()
+                is_source_newer = cache_icon.exists() and source_icon_path.stat().st_mtime > cache_icon.stat().st_mtime
                 user_edited = getattr(job, 'icon_edited', False)
                 cache_not_exists = not cache_icon.exists()
                 should_process = is_different_path or is_source_newer or user_edited or cache_not_exists
 
                 if should_process:
-                    print(f"  Icon: {job.icon_path} -> {cache_icon}")
+                    print(f"  Icon: {source_icon_path} -> {cache_icon}")
                     if badge_type:
                         print(f"  Adding {badge_type} badge to icon")
                     if user_edited:
                         print(f"  (User edited)")
-                    image_processor.process_icon(job.icon_path, cache_icon, badge_type=badge_type)
+                    image_processor.process_icon(source_icon_path, cache_icon, badge_type=badge_type)
                     if cache_icon.exists():
                         print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
                         # Reset edited flag after processing
@@ -252,11 +264,12 @@ class BatchBuilder(QThread):
                 cache_banner = paths.images_cache / game_id / "banner.png"
                 cache_banner.parent.mkdir(parents=True, exist_ok=True)
 
-                # Process if: different path, source is newer, OR user edited the image
+                # Process if: different path, source is newer, user edited, OR cache doesn't exist
                 is_different_path = job.banner_path.resolve() != cache_banner.resolve()
                 is_source_newer = cache_banner.exists() and job.banner_path.stat().st_mtime > cache_banner.stat().st_mtime
                 user_edited = getattr(job, 'banner_edited', False)
-                should_process_banner = is_different_path or is_source_newer or user_edited
+                cache_not_exists = not cache_banner.exists()
+                should_process_banner = is_different_path or is_source_newer or user_edited or cache_not_exists
 
                 if should_process_banner:
                     if user_edited:
