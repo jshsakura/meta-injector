@@ -9,11 +9,11 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 ### Core Functionality
 - ✅ **No Corrupted Software Error**: Proper TIK/TMD handling prevents installation issues
 - ✅ **Multiple Versions**: Random ID generation allows installing multiple versions of the same game
-- ✅ **Accurate Metadata**: Reads game code directly from ISO/WBFS files
+- ✅ **Metadata Extraction**: Reads game code directly from ISO/WBFS files
 - ✅ **Safe Processing**: Uses temporary folders to protect source files
 - ✅ **Multiple Format Support**: WBFS, ISO, NKIT, decrypted ISO (.iso.dec), GameCube (.gcm)
 - ✅ **Unified GCT Patch System**:
-  - 200+ game-specific Classic Controller patches
+  - Classic Controller patches for major Wii titles
   - Auto-detection of force gamepad requirement (database-driven)
   - Galaxy 1/2 gamepad patches (AllStars/Nvidia profiles)
   - User-defined Generic patch support
@@ -26,7 +26,7 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 - 🎮 **Gamepad Profiles**: 7 controller configurations including Galaxy patches
 
 ### Image & Metadata
-- 🖼️ **Smart Image Caching**:
+- 🖼️ **Image Caching**:
   - Auto-caching by badge type (icon.png, icon_gct.png, icon_allstars.png)
   - User-selected images preserved (retained across rebuilds)
   - Persistent cache for faster subsequent builds
@@ -56,13 +56,13 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 
 ### Option 1: Standalone Executable (Recommended)
 
-Download the latest release from the [Releases page](https://github.com/yourusername/Meta-Injector/releases) and run `Meta-Injector.exe`.
+Download the latest release from the [Releases page](https://github.com/jshsakura/meta-injector/releases) and run `Meta-Injector.exe`.
 
 ### Option 2: Run from Source
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/Meta-Injector.git
+git clone https://github.com/jshsakura/meta-injector.git
 cd Meta-Injector
 ```
 
@@ -100,10 +100,6 @@ python run.py
    - **Disable ISO Trim** checkbox (for save file issue resolution)
      - Some games require original disc size (approx. 4~8GB)
      - WBFS files are already trimmed and cannot be restored
-   - **✅ Trucha Bug Patch** (default: enabled)
-     - Bypasses signature verification, required for modified games
-   - **✅ C2W CPU Unlock Patch** (default: enabled, requires Ancast key)
-     - Unlocks CPU from 729MHz to 1.215GHz
 4. Select gamepad profile from the dropdown
    - Games with GCT patches are automatically indicated ("GCT Patch Available" label)
 5. Click **Start Build**
@@ -161,7 +157,7 @@ Meta-Injector/
 ├── run.py                         # Entry point script
 ├── build.py                       # PyInstaller build script
 ├── requirements.txt               # Python dependencies
-└── README.md                      # Korean README
+├── README.md                      # Korean README
 └── README.en.md                   # This file (English)
 ```
 
@@ -187,43 +183,45 @@ The build engine follows this workflow:
    - Extracts and trims using WIT
    - Preserves TIK/TMD files
 
-5. **Apply Firmware Patches**
-   - **Trucha Bug Patch** (default: enabled)
-     - fw.img signature verification bypass
-     - Fixes error 22000
-     - Required for modified games to run
-   - **C2W CPU Unlock** (when Ancast key provided)
-     - c2w.img patch
-     - CPU clock: 729MHz → 1.215GHz
-     - Improves performance for demanding games
-
-6. **Apply Controller Patches** (if selected)
+5. **Apply Controller Patches** (if selected)
    - Injects gamepad profile GCT codes
    - Supports 7 different profiles
    - Special Galaxy 1 patches available
 
-7. **Convert Images**
+6. **Convert Images**
    - Converts PNG to TGA format
    - Resizes: icon (128x128), TV banner (1280x720), DRC (854x480)
 
-8. **Convert to NFS Format**
+7. **Convert to NFS Format**
    - Uses nfs2iso2nfs for Wii U filesystem
 
-9. **Pack WUP Installable**
+8. **Pack WUP Installable**
    - Creates installable package with NUSPacker
    - Outputs to configured directory
 
-## 🎮 Gamepad Profiles
+## 🎮 GCT Patch & Controller System
 
-| Profile | Description | Use Case |
-|---------|-------------|----------|
-| **No Pad (Wiimote)** | Wii Remote only | Motion control games |
-| **Pad CC** | Classic Controller | Most compatible option |
-| **Pad CC+LR** | CC with L2/R2 triggers | Games needing triggers |
-| **Pad Wiimote(↕)** | Vertical Wiimote | Vertical orientation games |
-| **Pad Wiimote(↔)** | Horizontal Wiimote | Horizontal games (e.g., NSMB) |
-| **Galaxy Patch(AllStars)** | SMG optimized | Super Mario Galaxy (AllStars style) |
-| **Galaxy Patch(Nvidia)** | SMG alternative | Super Mario Galaxy (Nvidia Shield) |
+The most powerful feature of this tool is its **Controller Patch (GCT) System**.
+
+### 1. Auto CC (Classic Controller) Patch
+- Provides Classic Controller patches for **supported Wii games** to be played with the **Wii U GamePad**.
+- When you add a game, it automatically detects if a patch is available and suggests the optimal setting.
+
+### 2. Custom GCT
+- You can apply user-defined cheat codes or patches (.gct).
+- If a `.gct` file with the same Game ID exists in the `games` folder, it is automatically recognized.
+
+### 3. Special Game Patches
+- **Super Mario Galaxy 1 & 2**: Fully supports dedicated patches (AllStars / Nvidia style) that map Wiimote pointer functionality to the right analog stick.
+
+### 🛠 Supported Controller Modes
+
+| Mode | Description |
+|------|-------------|
+| **No Pad (Wiimote)** | Native state (Wiimote required) |
+| **Pad CC** | Classic Controller emulation (GamePad supported) |
+| **Pad Wiimote(↕/↔)** | Forces vertical/horizontal Wiimote grip |
+| **Galaxy Patch** | Optimized patch for Galaxy series |
 
 ## 🗂️ Storage Locations
 
