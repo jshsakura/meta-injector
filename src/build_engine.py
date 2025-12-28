@@ -33,6 +33,8 @@ class BuildEngine:
         self.galaxy_patch_applied = False  # Track Galaxy patch status
         self.galaxy_variant = None  # Track Galaxy variant (allstars/nvidia)
         self.getexttype_patch_applied = False  # Track GetExtType patch status
+        # Build log for debugging
+        self.build_log = []
         # Diagnostic info for final summary
         self.diag_gct_file = None
         self.diag_gct_size = 0
@@ -853,18 +855,25 @@ class BuildEngine:
             if force_cc_patch:
                 self.apply_getexttype_patch(extract_dir)
 
+            # Read game ID from extracted disc (needed for patches and Korean key fix)
+            disc_header = extract_dir / "sys" / "boot.bin"
+            game_id = ""
+            is_korean_game = False
+            if disc_header.exists():
+                with open(disc_header, 'rb') as f:
+                    game_id = f.read(6).decode('ascii', errors='ignore')
+                # Check if Korean game (4th character is 'K')
+                if len(game_id) >= 4 and game_id[3] == 'K':
+                    is_korean_game = True
+                    print(f"[KOREAN] Detected Korean game: {game_id}")
+
             # Apply Galaxy patch or Custom Generic patch
             if galaxy_patch or custom_gct_path:
-                # Read game ID from extracted disc
-                disc_header = extract_dir / "sys" / "boot.bin"
-                if disc_header.exists():
-                    with open(disc_header, 'rb') as f:
-                        game_id = f.read(6).decode('ascii', errors='ignore')
-                    
+                if game_id:
                     # Call apply_galaxy_patch with custom path if available
                     # If custom_gct_path is set, galaxy_patch might be None, which is fine
                     self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
-                    
+
                     # Note: If patch fails, just continue without it (standard gamepad will be used)
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
@@ -872,6 +881,10 @@ class BuildEngine:
             # Re-pack with --links --iso (UWUVCI style - preserves structure!)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --links --iso'
+            # Korean games: change encryption key from Korean Key to Standard Common Key
+            if is_korean_game:
+                args += ' --common-key STANDARD'
+                print(f"[KOREAN] Applying Common Key fix for Korean game")
             if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
                                 base_progress=65, progress_range=3, fun_messages_key="fun_trimming_messages"):
                 error_msg = f"WIT copy failed while repacking ISO\n"
@@ -901,14 +914,21 @@ class BuildEngine:
             if force_cc_patch:
                 self.apply_getexttype_patch(extract_dir)
 
+            # Read game ID from extracted disc (needed for patches and Korean key fix)
+            disc_header = extract_dir / "sys" / "boot.bin"
+            game_id = ""
+            is_korean_game = False
+            if disc_header.exists():
+                with open(disc_header, 'rb') as f:
+                    game_id = f.read(6).decode('ascii', errors='ignore')
+                # Check if Korean game (4th character is 'K')
+                if len(game_id) >= 4 and game_id[3] == 'K':
+                    is_korean_game = True
+                    print(f"[KOREAN] Detected Korean game: {game_id}")
+
             # Apply Galaxy patch or Custom Generic patch
             if galaxy_patch or custom_gct_path:
-                # Read game ID from extracted disc
-                disc_header = extract_dir / "sys" / "boot.bin"
-                if disc_header.exists():
-                    with open(disc_header, 'rb') as f:
-                        game_id = f.read(6).decode('ascii', errors='ignore')
-                    
+                if game_id:
                     self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
@@ -916,6 +936,10 @@ class BuildEngine:
             # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
             game_iso = self.paths.temp_source / "game.iso"
             args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
+            # Korean games: change encryption key from Korean Key to Standard Common Key
+            if is_korean_game:
+                args += ' --common-key STANDARD'
+                print(f"[KOREAN] Applying Common Key fix for Korean game")
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 error_msg = f"WIT copy failed while repacking ISO (no-trim mode)\n"
                 error_msg += f"WIT error: {self.last_tool_error}\n"
@@ -1259,9 +1283,14 @@ class BuildEngine:
             if custom_gct_path:
                 print(f"[BUILD] Using custom GCT patch: {custom_gct_path}")
             
+            # Check if no-trim is requested (fixes save issues for some games)
+            no_trim = options.get("disable_trimming", False)
+            if no_trim:
+                print(f"[BUILD] No-trim mode enabled for {title_name}")
+
             processed_iso = self.process_game_file(
-                game_path, 
-                disable_trimming=False, 
+                game_path,
+                disable_trimming=no_trim,
                 galaxy_patch=galaxy_patch_type,
                 force_cc_patch=enable_cc_patcher, # This enables GetExtTypePatcher
                 custom_gct_path=custom_gct_path

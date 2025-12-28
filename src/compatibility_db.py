@@ -101,6 +101,14 @@ class CompatibilityDB:
             cursor.execute("ALTER TABLE games ADD COLUMN english_title TEXT")
             print("Migrated database: added english_title column")
 
+        # Migrate: Add no_trim column if it doesn't exist
+        try:
+            cursor.execute("SELECT no_trim FROM games LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            cursor.execute("ALTER TABLE games ADD COLUMN no_trim INTEGER DEFAULT 0")
+            print("Migrated database: added no_trim column")
+
         # Host games table (for quick reference)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS host_games (

@@ -47,6 +47,9 @@ class PathManager:
         self.temp_logo = self.temp_source / "bootLogoTex.png"
         self.temp_sound = self.temp_source / "bootSound.wav"
 
+        # Build log file (cleared before each build)
+        self.build_log = self.temp_root / "build_log.txt"
+
         # Legacy compatibility (일부 코드에서 사용할 수 있음)
         self.jnustool_downloads = self.base_cache
 
@@ -66,6 +69,24 @@ class PathManager:
                 shutil.rmtree(self.temp_root)
             except Exception as e:
                 print(f"Warning: Could not clean up temp directory: {e}")
+
+    def clear_build_log(self):
+        """Clear build log file (called at start of each build)."""
+        try:
+            self.temp_root.mkdir(parents=True, exist_ok=True)
+            with open(self.build_log, 'w', encoding='utf-8') as f:
+                from datetime import datetime
+                f.write(f"=== Build Log Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n\n")
+        except Exception as e:
+            print(f"Warning: Could not clear build log: {e}")
+
+    def append_build_log(self, message: str):
+        """Append message to build log file."""
+        try:
+            with open(self.build_log, 'a', encoding='utf-8') as f:
+                f.write(message + "\n")
+        except Exception as e:
+            print(f"Warning: Could not write to build log: {e}")
 
     def get_tool_path(self, tool_name: str) -> Path:
         """

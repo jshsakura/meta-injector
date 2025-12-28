@@ -27,6 +27,7 @@ class BatchBuildJob:
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
         self.selected_cc_patch: Optional[dict] = None  # User selected CC patch override
         self.has_output_conflict = False  # Mark if output path conflicts with another job
+        self.no_trim = False  # Don't trim ISO (fixes save issues for some games like Super Paper Mario)
 
 
 class BatchBuilder(QThread):
@@ -62,16 +63,27 @@ class BatchBuilder(QThread):
         success_count = 0
         total = len(self.jobs)
 
+        # Log build start
+        paths.append_build_log(f"=== Batch Build Started: {total} jobs ===\n")
+
         for idx, job in enumerate(self.jobs):
             if self.should_stop:
+                paths.append_build_log("\n[STOPPED] Build stopped by user\n")
                 break
 
             # Skip jobs with output path conflicts
             if job.has_output_conflict:
                 print(f"[SKIP] Skipping {job.title_name} due to output path conflict")
+                paths.append_build_log(f"\n[{idx+1}/{total}] {job.title_name}\n  Status: SKIPPED (output path conflict)\n")
                 job.status = "skipped"
                 self.job_finished.emit(idx, False, "Skipped (output path conflict)")
                 continue
+
+            # Log job start
+            game_id = job.game_info.get('game_id', 'unknown') if job.game_info else 'unknown'
+            paths.append_build_log(f"\n[{idx+1}/{total}] {job.title_name} ({game_id})")
+            paths.append_build_log(f"  File: {job.game_path}")
+            paths.append_build_log(f"  Pad Option: {job.pad_option}")
 
             # Emit job started
             self.job_started.emit(idx, job.title_name)
@@ -87,10 +99,20 @@ class BatchBuilder(QThread):
             if success:
                 success_count += 1
                 job.status = "completed"
+                paths.append_build_log(f"  Status: SUCCESS")
                 self.job_finished.emit(idx, True, "Build completed")
             else:
                 job.status = "failed"
+                paths.append_build_log(f"  Status: FAILED")
+                paths.append_build_log(f"  Error: {job.error_message}")
                 self.job_finished.emit(idx, False, job.error_message)
+
+        # Log build summary
+        failed_count = total - success_count
+        paths.append_build_log(f"\n=== Build Summary ===")
+        paths.append_build_log(f"  Success: {success_count}/{total}")
+        paths.append_build_log(f"  Failed: {failed_count}/{total}")
+        paths.append_build_log(f"=== End of Build Log ===\n")
 
         self.all_finished.emit(success_count, total)
 
@@ -284,6 +306,8 @@ class BatchBuilder(QThread):
                 "drc_path": paths.temp_drc,
                 # Controller option for folder naming
                 "pad_option": job.pad_option,
+                # Don't trim option (fixes save issues for some games)
+                "disable_trimming": job.no_trim,
             }
 
             # Apply selected profile
@@ -367,5 +391,9 @@ class BatchBuilder(QThread):
             return success
 
         except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
             job.error_message = str(e)
+            paths.append_build_log(f"  Exception: {e}")
+            paths.append_build_log(f"  Traceback:\n{error_trace}")
             return False

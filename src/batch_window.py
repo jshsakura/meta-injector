@@ -195,13 +195,17 @@ class GameLoaderThread(QThread):
             job.db_title = game_title
             job.has_korean_title = False
 
-        # Get gamepad compatibility and host game from DB
+        # Get gamepad compatibility, host game and no_trim from DB
         if found_game:
             job.gamepad_compatibility = found_game.get('gamepad_compatibility', 'Unknown')
             job.host_game = found_game.get('host_game', '')
+            job.no_trim = bool(found_game.get('no_trim', 0))
+            if job.no_trim:
+                print(f"  [DB] No-trim enabled for {job.title_name}")
         else:
             job.gamepad_compatibility = 'Unknown'
             job.host_game = ''
+            job.no_trim = False
 
         # Generate title ID
         game_id_4char = game_id[:4] if len(game_id) >= 4 else game_id
@@ -1127,6 +1131,16 @@ class EditGameDialog(QDialog):
         else:
             self.base_combo = None
 
+        # Don't Trim checkbox (fixes save issues for some games like Super Paper Mario)
+        notrim_layout = QHBoxLayout()
+        notrim_label = "트림 비활성화 (일부 게임 세이브 문제 해결)" if tr.current_language == "ko" else "Don't Trim (fixes save issues for some games)"
+        self.notrim_check = QCheckBox(notrim_label)
+        self.notrim_check.setChecked(self.job.no_trim)
+        self.notrim_check.setToolTip("슈퍼 페이퍼마리오 등 일부 게임에서 세이브가 안 되는 문제를 해결합니다." if tr.current_language == "ko" else "Fixes save issues for games like Super Paper Mario")
+        notrim_layout.addWidget(self.notrim_check)
+        notrim_layout.addStretch()
+        layout.addLayout(notrim_layout)
+
         # Buttons
         btn_layout = QHBoxLayout()
         btn_layout.addStretch() # Align buttons to the right
@@ -1321,6 +1335,9 @@ class EditGameDialog(QDialog):
         # Save selected base ROM if combo box exists
         if self.base_combo:
             self.job.host_game = self.base_combo.currentText()
+
+        # Save no_trim setting
+        self.job.no_trim = self.notrim_check.isChecked()
 
         self.accept()
 
@@ -3279,6 +3296,9 @@ class BatchWindow(QMainWindow):
             name: key for name, key in title_keys.items() if key
         }
 
+        # Clear build log before starting new build
+        paths.clear_build_log()
+
         self.batch_builder = BatchBuilder(
             self.jobs,
             common_key,
@@ -3357,17 +3377,26 @@ class BatchWindow(QMainWindow):
         self.stop_btn.setEnabled(False)
         self.progress_bar.setValue(100)
 
+        # Collect failed job error messages
+        failed_count = total_count - success_count
+        failed_jobs_info = []
+        for job in self.jobs:
+            if job.status == "failed" and job.error_message:
+                failed_jobs_info.append(f"[{job.title_name}]\n{job.error_message}")
+
         if tr.current_language == "ko":
             self.progress_message.setText(f"완료: {success_count}/{total_count} 성공")
             title = "일괄 빌드 결과 안내"
-            msg = f"일괄 빌드가 완료되었습니다!\n\n성공: {success_count}개\n실패: {total_count - success_count}개\n전체: {total_count}개"
+            msg = f"일괄 빌드가 완료되었습니다!\n\n성공: {success_count}개\n실패: {failed_count}개\n전체: {total_count}개"
             open_folder_text = "폴더 열기"
+            view_log_text = "오류 로그 보기"
             close_text = "닫기"
         else:
             self.progress_message.setText(f"Completed: {success_count}/{total_count} succeeded")
             title = "Batch Build Results"
-            msg = f"Batch build completed!\n\nSuccess: {success_count}\nFailed: {total_count - success_count}\nTotal: {total_count}"
+            msg = f"Batch build completed!\n\nSuccess: {success_count}\nFailed: {failed_count}\nTotal: {total_count}"
             open_folder_text = "Open Folder"
+            view_log_text = "View Error Log"
             close_text = "Close"
 
         # Show 100% completion
@@ -3384,9 +3413,18 @@ class BatchWindow(QMainWindow):
 
         # Add custom buttons
         open_folder_btn = msg_box.addButton(open_folder_text, QMessageBox.ActionRole)
+        # Add "View Error Log" button only if there are failed jobs
+        view_log_btn = None
+        if failed_jobs_info:
+            view_log_btn = msg_box.addButton(view_log_text, QMessageBox.ActionRole)
         close_btn = msg_box.addButton(close_text, QMessageBox.RejectRole)
 
         msg_box.exec_()
+
+        # Check if "View Error Log" was clicked
+        if view_log_btn and msg_box.clickedButton() == view_log_btn:
+            self.show_error_log_dialog(failed_jobs_info)
+            return  # Don't continue to folder opening
 
         # Check which button was clicked
         if msg_box.clickedButton() == open_folder_btn:
@@ -3432,6 +3470,30 @@ class BatchWindow(QMainWindow):
         # Reset progress bar and percentage after dialog closes
         self.progress_bar.setValue(0)
         self.progress_percentage.setVisible(False)
+
+    def show_error_log_dialog(self, failed_jobs_info=None):
+        """Show error log dialog or open log file."""
+        import subprocess
+        import platform
+
+        log_path = paths.build_log
+
+        if not log_path.exists():
+            msg = "로그 파일을 찾을 수 없습니다." if tr.current_language == "ko" else "Log file not found."
+            show_message(self, "warning", tr.get("error"), msg)
+            return
+
+        # Open log file with default text editor
+        try:
+            if platform.system() == 'Windows':
+                subprocess.run(['notepad', str(log_path)])
+            elif platform.system() == 'Darwin':  # macOS
+                subprocess.run(['open', '-t', str(log_path)])
+            else:  # Linux
+                subprocess.run(['xdg-open', str(log_path)])
+        except Exception as e:
+            msg = f"로그 파일 열기 실패: {e}" if tr.current_language == "ko" else f"Failed to open log file: {e}"
+            show_message(self, "warning", tr.get("error"), msg)
 
     def retry_failed_job(self, row):
         """Retry a single failed job."""
@@ -3510,6 +3572,9 @@ class BatchWindow(QMainWindow):
             output_path = jobs_to_build[0].game_path.parent
 
         self.current_output_dir = output_path
+
+        # Clear build log before starting retry build
+        paths.clear_build_log()
 
         # Create batch builder for retry jobs
         from .batch_builder import BatchBuilder
