@@ -6,6 +6,7 @@ import os
 import random
 import shutil
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -188,12 +189,21 @@ class BuildEngine:
 
             # For long operations, show real-time output
             elif show_output:
+                # Even with show_output, capture stderr/stdout for error reporting
                 result = subprocess.run(
                     cmd,
                     shell=True,
                     cwd=str(cwd) if cwd else None,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
                     timeout=timeout
                 )
+                # Print output immediately for user visibility
+                if result.stdout:
+                    print(result.stdout)
+                if result.stderr:
+                    print(result.stderr, file=sys.stderr)
             else:
                 result = subprocess.run(
                     cmd,
@@ -214,7 +224,7 @@ class BuildEngine:
                         print(f"[STDERR] {result.stderr}")
                     if result.stdout:
                         print(f"[STDOUT] {result.stdout}")
-                # Store last error for better error messages
+                # Store last error for better error messages (works for both show_output modes now)
                 if result.stderr:
                     self.last_tool_error = result.stderr
                 elif result.stdout:
@@ -813,9 +823,19 @@ class BuildEngine:
         if str(game_path).lower().endswith('.wbfs'):
             self.update_progress(62, tr.get("progress_converting_wbfs"))
             wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
-            # UWUVCI uses WIT for WBFS conversion
-            # Large files (Smash Bros: 7-8GB) need longer timeout
+            # IMPORTANT: WBFS is already trimmed format and cannot be restored to full size!
+            # WBFS has already removed all empty space from the original disc.
+            # If no-trim mode is required, you must use an untrimmed ISO file.
+
+            if disable_trimming:
+                print(f"[WBFS] WARNING: No-trim mode requested, but WBFS is already trimmed!")
+                print(f"[WBFS] Cannot restore to original disc size from WBFS.")
+                print(f"[WBFS] For no-trim mode, please use an untrimmed ISO file instead.")
+                print(f"[WBFS] Proceeding with trimmed conversion...")
+
+            # WBFS → ISO conversion (always trimmed)
             args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
+
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 error_msg = f"WBFS conversion failed\n"
                 error_msg += f"WIT error: {self.last_tool_error}\n"
@@ -887,11 +907,22 @@ class BuildEngine:
                 print(f"[KOREAN] Applying Common Key fix for Korean game")
             if not self.run_tool(wit_exe, args, timeout=1800, parse_progress=True,
                                 base_progress=65, progress_range=3, fun_messages_key="fun_trimming_messages"):
-                error_msg = f"WIT copy failed while repacking ISO\n"
-                error_msg += f"WIT error: {self.last_tool_error}\n"
+                error_msg = f"WIT copy failed while repacking ISO (trim mode)\n"
+                error_msg += f"Exit code: {self.last_tool_error}\n\n"
+                error_msg += f"Command that failed:\n"
+                error_msg += f'  "{wit_exe}" {args}\n\n'
+                error_msg += f"Working directory: {self.paths.temp_source}\n"
+                error_msg += f"Extract directory: {extract_dir}\n"
+                error_msg += f"Output ISO: {game_iso}\n\n"
                 if galaxy_patch:
-                    error_msg += f"\nThis may be due to Galaxy patch compatibility issues."
-                    error_msg += f"\nTry building without Galaxy patch first to verify the game works."
+                    error_msg += f"GCT patch applied: {galaxy_patch}\n"
+                    error_msg += f"This may be due to GCT patch compatibility issues.\n"
+                    error_msg += f"Try building without GCT patch first to verify the game works.\n\n"
+                error_msg += f"Possible causes:\n"
+                error_msg += f"- main.dol corrupted by GCT patch\n"
+                error_msg += f"- Insufficient disk space\n"
+                error_msg += f"- Invalid disc structure after patching\n"
+                error_msg += f"- File permission issues\n"
                 raise RuntimeError(error_msg)
 
             processed_path = game_iso
@@ -933,22 +964,34 @@ class BuildEngine:
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
 
-            # Re-pack with --psel WHOLE and original disc size (UWUVCI no-trim mode)
-            # --disc-size ensures padding is added to match original Wii disc size (4.37GB)
+            # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
+            # --psel WHOLE preserves original disc structure and padding
             # This is required for games like Super Paper Mario where save fails with trimmed ISO
             game_iso = self.paths.temp_source / "game.iso"
-            WII_DISC_SIZE = 4699979776  # 4.37GB - standard Wii disc size
-            args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --disc-size {WII_DISC_SIZE} --iso'
+            # NOTE: --disc-size removed because it causes errors with some WIT versions
+            # WIT will automatically use the original disc size when using --psel WHOLE
+            args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
             # Korean games: change encryption key from Korean Key to Standard Common Key
             if is_korean_game:
                 args += ' --common-key STANDARD'
                 print(f"[KOREAN] Applying Common Key fix for Korean game")
             if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
                 error_msg = f"WIT copy failed while repacking ISO (no-trim mode)\n"
-                error_msg += f"WIT error: {self.last_tool_error}\n"
+                error_msg += f"Exit code: {self.last_tool_error}\n\n"
+                error_msg += f"Command that failed:\n"
+                error_msg += f'  "{wit_exe}" {args}\n\n'
+                error_msg += f"Working directory: {self.paths.temp_source}\n"
+                error_msg += f"Extract directory: {extract_dir}\n"
+                error_msg += f"Output ISO: {game_iso}\n\n"
                 if galaxy_patch:
-                    error_msg += f"\nThis may be due to Galaxy patch compatibility issues."
-                    error_msg += f"\nTry building without Galaxy patch first to verify the game works."
+                    error_msg += f"Galaxy patch applied: {galaxy_patch}\n"
+                    error_msg += f"This may be due to GCT patch compatibility issues.\n"
+                    error_msg += f"Try building without GCT patch first to verify the game works.\n\n"
+                error_msg += f"Possible causes:\n"
+                error_msg += f"- main.dol corrupted by GCT patch\n"
+                error_msg += f"- Insufficient disk space\n"
+                error_msg += f"- Invalid disc structure after patching\n"
+                error_msg += f"- File permission issues\n"
                 raise RuntimeError(error_msg)
 
             processed_path = game_iso
@@ -1272,19 +1315,35 @@ class BuildEngine:
 
             # Determine if forced CC patch is needed
             pad_option = options.get("pad_option", "none")
-            force_cc_patch = pad_option in ("force_cc", "gamepad_lr")
 
             # Process game file (conversion/trimming/patching)
             # Determine if we need to apply Galaxy patch or Custom Generic patch
             galaxy_patch_type = options.get("galaxy_patch")
             custom_gct_path = options.get("force_cc_patch") # This comes from batch_builder.py
-            
-            # Legacy force_cc_patch flag for GetExtTypePatcher
-            enable_cc_patcher = options.get("no_gamepad_emu", False) is False and options.get("passthrough_mode", False) is False
-            
+
+            # GetExtTypePatcher is needed for "Force CC" games:
+            # 1. When pad_option is "force_cc" or "gamepad_lr" (user explicitly requested Force CC)
+            # 2. When custom GCT patch requires it (based on requires_getexttype flag from DB)
+            # 3. NOT needed for games that naturally support CC (Mario Galaxy, etc.)
+            # 4. NOT needed for Wiimote-only modes (no_gamepad, wiimote, horizontal_wiimote)
+
+            # Check if GCT patch requires GetExtTypePatcher (from compatibility DB)
+            requires_getexttype_from_patch = options.get("requires_getexttype", False)
+
+            enable_cc_patcher = (
+                pad_option in ("force_cc", "gamepad_lr") or
+                requires_getexttype_from_patch
+            )
+
             # If we have a custom GCT, we definitely want to apply it
             if custom_gct_path:
                 print(f"[BUILD] Using custom GCT patch: {custom_gct_path}")
+                if requires_getexttype_from_patch:
+                    print(f"[BUILD] GetExtTypePatcher will be applied (required by this GCT patch)")
+                else:
+                    print(f"[BUILD] GetExtTypePatcher will NOT be applied (not required by this GCT patch)")
+            elif enable_cc_patcher:
+                print(f"[BUILD] GetExtTypePatcher will be applied (Force CC mode)")
             
             # Check if no-trim is requested (fixes save issues for some games)
             no_trim = options.get("disable_trimming", False)

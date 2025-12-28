@@ -1031,12 +1031,13 @@ class SimpleKeysDialog(QDialog):
 class EditGameDialog(QDialog):
     """Dialog to edit individual game metadata."""
 
-    def __init__(self, job: BatchBuildJob, available_bases: dict = None, parent=None):
+    def __init__(self, job: BatchBuildJob, available_bases: dict = None, parent=None, row: int = -1):
         super().__init__(parent)
         # Remove ? button from title bar
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.job = job
         self.available_bases = available_bases or {}
+        self.row = row  # Store row number for updating parent table
         self.init_ui()
 
     def init_ui(self):
@@ -1062,11 +1063,36 @@ class EditGameDialog(QDialog):
         self.icon_preview.mousePressEvent = lambda e: self.change_icon()
         self.icon_preview.setCursor(Qt.PointingHandCursor)
         icon_layout.addWidget(self.icon_preview)
+
+        # Add button to download images from online (below icon)
+        download_btn_text = "이미지 자동 다운로드" if tr.current_language == "ko" else "Auto Download Images"
+        download_images_btn = QPushButton(download_btn_text)
+        download_images_btn.clicked.connect(self.download_images_online)
+        download_images_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #42a5f5, stop:1 #1e88e5);
+                color: white;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 6px 10px;
+                border: 1px solid #1565c0;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #64b5f6, stop:1 #42a5f5);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1e88e5, stop:1 #1565c0);
+            }
+        """)
+        icon_layout.addWidget(download_images_btn)
+        icon_layout.addStretch()  # Push content to top
+
         images_layout.addLayout(icon_layout)
 
         # Banner preview (1280x720 original, display scaled)
         banner_layout = QVBoxLayout()
-        banner_label_text = "배너 (클릭하여 변경)" if tr.current_language == "ko" else "Banner (Click to change)"
+        banner_label_text = "배너 / DRC (클릭하여 변경)" if tr.current_language == "ko" else "Banner / DRC (Click to change)"
         banner_layout.addWidget(QLabel(banner_label_text))
         self.banner_preview = QLabel()
         self.banner_preview.setFixedSize(384, 216)
@@ -1088,6 +1114,8 @@ class EditGameDialog(QDialog):
         self.banner_preview.mousePressEvent = lambda e: self.change_banner()
         self.banner_preview.setCursor(Qt.PointingHandCursor)
         banner_layout.addWidget(self.banner_preview)
+        banner_layout.addStretch()  # Push content to top
+
         images_layout.addLayout(banner_layout)
 
         layout.addLayout(images_layout)
@@ -1133,13 +1161,52 @@ class EditGameDialog(QDialog):
 
         # Don't Trim checkbox (fixes save issues for some games like Super Paper Mario)
         notrim_layout = QHBoxLayout()
-        notrim_label = "트림 비활성화 (일부 게임 세이브 문제 해결)" if tr.current_language == "ko" else "Don't Trim (fixes save issues for some games)"
-        self.notrim_check = QCheckBox(notrim_label)
-        self.notrim_check.setChecked(self.job.no_trim)
-        self.notrim_check.setToolTip("슈퍼 페이퍼마리오 등 일부 게임에서 세이브가 안 되는 문제를 해결합니다." if tr.current_language == "ko" else "Fixes save issues for games like Super Paper Mario")
+
+        # Check if game file is WBFS (already trimmed, cannot restore to full size)
+        is_wbfs = self.job.game_path.suffix.lower() == '.wbfs'
+
+        if is_wbfs:
+            # WBFS files cannot use no-trim mode
+            notrim_label = "ISO 트림 비활성화 (WBFS는 해당 없음)" if tr.current_language == "ko" else "Don't Trim ISO (N/A for WBFS)"
+            self.notrim_check = QCheckBox(notrim_label)
+            self.notrim_check.setEnabled(False)
+            self.notrim_check.setChecked(False)
+            self.job.no_trim = False  # Force disable for WBFS
+        else:
+            # ISO files can use no-trim mode
+            notrim_label = "ISO 트림 비활성화" if tr.current_language == "ko" else "Don't Trim ISO"
+            self.notrim_check = QCheckBox(notrim_label)
+            self.notrim_check.setChecked(self.job.no_trim)
+
         notrim_layout.addWidget(self.notrim_check)
         notrim_layout.addStretch()
         layout.addLayout(notrim_layout)
+
+        # Add info box below checkbox
+        if is_wbfs:
+            if tr.current_language == "ko":
+                info_text = "<b>참고:</b> WBFS는 이미 트림된 포맷으로 원본 크기 복원이 불가능합니다. 원본 크기가 필요한 경우 ISO 파일을 사용하세요."
+            else:
+                info_text = "<b>Note:</b> WBFS is already trimmed and cannot be restored to original size. Use ISO if you need original size."
+        else:
+            if tr.current_language == "ko":
+                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. 트림 비활성화 시 파일 크기가 증가합니다."
+            else:
+                info_text = "<b>Note:</b> Some games require original disc size (about 4~8GB) for save files. Disabling trim will increase file size."
+
+        info_box = QLabel(info_text)
+        info_box.setWordWrap(True)
+        info_box.setStyleSheet("""
+            QLabel {
+                background-color: #e3f2fd;
+                border: 1px solid #90caf9;
+                border-radius: 4px;
+                padding: 10px;
+                color: #1565c0;
+                font-size: 11px;
+            }
+        """)
+        layout.addWidget(info_box)
 
         # Buttons
         btn_layout = QHBoxLayout()
@@ -1198,12 +1265,9 @@ class EditGameDialog(QDialog):
             print(f"[DEBUG] Loading icon from: {self.job.icon_path}")
             pixmap = QPixmap(str(self.job.icon_path))
             if not pixmap.isNull():
-                scaled_pixmap = pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-                # Add badge overlays (Galaxy, Gamepad)
-                scaled_pixmap = self.add_badges_overlay_large(scaled_pixmap, self.job)
-
-                self.icon_preview.setPixmap(scaled_pixmap)
+                # Scale maintaining aspect ratio, but let QLabel handle the display
+                # Don't create canvas, just scale the image
+                self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
                 print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
                 no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
@@ -1325,6 +1389,217 @@ class EditGameDialog(QDialog):
 
         painter.end()
         return result
+
+    def download_images_online(self):
+        """Download icon and banner from online sources (GameTDB)."""
+        from PyQt5.QtWidgets import QMessageBox, QApplication, QProgressDialog
+        from PyQt5.QtCore import QThread, pyqtSignal, Qt
+        import urllib.request
+        import urllib.error
+        import ssl
+        from .game_tdb import GameTdb
+        from PIL import Image
+        import io
+
+        game_id = self.job.game_info.get('game_id', '')
+        if not game_id or len(game_id) < 4:
+            error_msg = "잘못된 게임 ID입니다." if tr.current_language == "ko" else "Invalid game ID"
+            QMessageBox.warning(self, "Error", error_msg)
+            return
+
+        # Show progress dialog that can't be closed
+        downloading_msg = "이미지 및 제목을 다운로드하는 중..." if tr.current_language == "ko" else "Downloading images and title..."
+        progress = QProgressDialog(downloading_msg, None, 0, 0, self)
+        progress.setWindowTitle("다운로드" if tr.current_language == "ko" else "Download")
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setCancelButton(None)  # No cancel button
+        progress.setMinimumDuration(0)  # Show immediately
+        progress.show()
+        QApplication.processEvents()  # Force UI update
+
+        # Create SSL context
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        # Determine cache directory
+        cache_dir = paths.images_cache / game_id
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Try to download from GameTDB
+        repo_id = game_id[:4]
+        alternative_ids = [game_id]
+        alternative_ids.extend(list(GameTdb.get_alternative_ids(repo_id)))
+
+        # Prioritize by region
+        region_char = game_id[3] if len(game_id) >= 4 else 'E'
+        if region_char == 'K':
+            region_codes = ['KO', 'EN', 'US', 'JA']
+        elif region_char == 'J':
+            region_codes = ['JA', 'EN', 'US', 'KO']
+        elif region_char == 'P':
+            region_codes = ['EN', 'US', 'JA', 'KO']
+        else:
+            region_codes = ['US', 'EN', 'JA', 'KO']
+
+        download_success = False
+        downloaded_icon = None  # Store downloaded icon temporarily
+        for try_id in alternative_ids:
+            for region in region_codes:
+                fullcover_url = f"https://art.gametdb.com/wii/coverfullHQ/{region}/{try_id}.png"
+                cover_url = f"https://art.gametdb.com/wii/cover/{region}/{try_id}.png"
+
+                try:
+                    print(f"  [DOWNLOAD] Trying {region}/{try_id}...")
+
+                    # Download full cover for banner/DRC
+                    req = urllib.request.Request(fullcover_url, headers={'User-Agent': 'Meta-Injector/1.0'})
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+                        banner_data = response.read()
+                        img = Image.open(io.BytesIO(banner_data))
+
+                        # Banner (1280x720)
+                        banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
+                        banner_path = cache_dir / "banner.png"
+                        banner_img.save(banner_path)
+                        self.job.banner_path = banner_path
+
+                        # DRC (854x480)
+                        drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
+                        drc_path = cache_dir / "drc.png"
+                        drc_img.save(drc_path)
+                        self.job.drc_path = drc_path
+
+                    # Download regular cover for icon
+                    req = urllib.request.Request(cover_url, headers={'User-Agent': 'Meta-Injector/1.0'})
+                    with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+                        icon_data = response.read()
+                        img = Image.open(io.BytesIO(icon_data))
+
+                        # Crop top square portion (same as download_icon_for_job)
+                        width, height = img.size
+                        crop_size = min(width, height)
+                        cropped = img.crop((0, 0, width, crop_size))
+
+                        # Resize to 128x128 for icon
+                        icon_img = cropped.resize((128, 128), Image.Resampling.LANCZOS)
+
+                        # Save to temporary variable, will be saved after cache cleanup
+                        downloaded_icon = icon_img
+
+                    print(f"  [SUCCESS] Downloaded images from {region}/{try_id}")
+                    download_success = True
+                    break
+
+                except Exception as e:
+                    print(f"  [FAILED] {region}/{try_id}: {e}")
+                    continue
+
+            if download_success:
+                break
+
+        if download_success:
+            # Delete all cached icon variants to force regeneration
+            # This ensures badge overlays are recreated with new icon
+            for variant in ['icon.png', 'icon_allstars.png', 'icon_nvidia.png', 'icon_gct.png']:
+                variant_path = cache_dir / variant
+                if variant_path.exists():
+                    variant_path.unlink()
+                    print(f"  [CLEAR] Deleted cached variant: {variant}")
+
+            # Save the downloaded icon to cache
+            if downloaded_icon:
+                icon_path = cache_dir / "icon.png"
+                downloaded_icon.save(icon_path)
+                self.job.icon_path = icon_path
+                self.job.icon_edited = True  # Force reprocessing on next build
+                print(f"  [SAVE] Saved new icon to: {icon_path}")
+
+            # Fetch updated title from GameTDB and update cache/DB
+            print(f"  [FETCH] Updating title from GameTDB...")
+            self.fetch_gametdb_title_sync(game_id, ssl_context)
+
+            # Reload images in UI
+            self.load_initial_icon()
+
+            if self.job.banner_path and self.job.banner_path.exists():
+                pixmap = QPixmap(str(self.job.banner_path))
+                self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            # Update title input with new title
+            self.title_input.setText(self.job.title_name)
+
+            # Update parent table if available
+            if self.parent() and hasattr(self.parent(), 'update_icon_preview') and self.row >= 0:
+                self.parent().update_icon_preview(self.row, self.job)
+                print(f"  [UI] Updated table row {self.row} with new images")
+
+            # Close progress dialog
+            progress.close()
+
+            success_msg = "이미지 및 제목 다운로드 완료!" if tr.current_language == "ko" else "Images and title downloaded successfully!"
+            QMessageBox.information(self, "성공" if tr.current_language == "ko" else "Success", success_msg)
+        else:
+            # Close progress dialog
+            progress.close()
+
+            fail_msg = "이미지를 찾을 수 없습니다.\nGameTDB에 해당 게임 이미지가 없을 수 있습니다." if tr.current_language == "ko" else "Images not found.\nThe game may not be available on GameTDB."
+            QMessageBox.warning(self, "실패" if tr.current_language == "ko" else "Failed", fail_msg)
+
+    def fetch_gametdb_title_sync(self, game_id: str, ssl_context):
+        """Fetch title from GameTDB and update job, cache, and DB."""
+        import urllib.request
+        import re
+
+        try:
+            url = f"https://www.gametdb.com/Wii/{game_id}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'WiiVC-Injector/1.0'})
+            with urllib.request.urlopen(req, context=ssl_context, timeout=10) as response:
+                html = response.read().decode('utf-8', errors='ignore')
+
+                # Extract Korean and English titles
+                ko_title = None
+                en_title = None
+
+                ko_match = re.search(r'title\s*\(KO\)</td><td[^>]*>([^<]+)</td>', html)
+                if ko_match:
+                    ko_title = ko_match.group(1).strip()
+
+                en_match = re.search(r'title\s*\(EN\)</td><td[^>]*>([^<]+)</td>', html)
+                if en_match:
+                    en_title = en_match.group(1).strip()
+
+                # Update job
+                if ko_title:
+                    self.job.korean_title = ko_title
+                    print(f"  [TITLE] Updated Korean: {ko_title}")
+                if en_title:
+                    self.job.english_title = en_title
+                    print(f"  [TITLE] Updated English: {en_title}")
+
+                # Set display title based on language
+                if tr.current_language == "ko" and ko_title:
+                    self.job.title_name = ko_title
+                elif en_title:
+                    self.job.title_name = en_title
+                elif ko_title:
+                    self.job.title_name = ko_title
+
+                # Update cache files
+                cache_dir = paths.images_cache / game_id
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                if ko_title:
+                    (cache_dir / "title_ko.txt").write_text(ko_title, encoding='utf-8')
+                if en_title:
+                    (cache_dir / "title_en.txt").write_text(en_title, encoding='utf-8')
+
+                # Update database
+                if ko_title or en_title:
+                    compatibility_db.update_titles(game_id, korean_title=ko_title, english_title=en_title)
+                    print(f"  [DB] Updated titles in database for {game_id}")
+
+        except Exception as e:
+            print(f"  [ERROR] Failed to fetch title from GameTDB: {e}")
 
     def save(self):
         """Save changes."""
@@ -2461,7 +2736,7 @@ class BatchWindow(QMainWindow):
     def edit_game_directly(self, row):
         """Open edit dialog for a specific row."""
         if row < len(self.jobs):
-            dialog = EditGameDialog(self.jobs[row], self.available_bases, self)
+            dialog = EditGameDialog(self.jobs[row], self.available_bases, self, row)
             if dialog.exec_():
                 # Update table after edit
                 title_widget = self.table.cellWidget(row, 0)
@@ -2750,26 +3025,47 @@ class BatchWindow(QMainWindow):
             item = QTableWidgetItem("")
             self.table.setItem(row, i, item)
 
-        # Column 4: Compatibility / Pad Option
+        # Column 4: Compatibility / GCT Patch Availability / Pad Option
         compat_widget = QWidget()
         compat_widget.setAttribute(Qt.WA_TranslucentBackground)
         compat_layout = QVBoxLayout(compat_widget)
         compat_layout.setContentsMargins(4, 0, 4, 4)
         compat_layout.setSpacing(3)
-        gamepad_compat = job.gamepad_compatibility or "Unknown"
-        compat_label = QLabel(gamepad_compat)
+
+        # Check for GCT patches availability
+        from .cc_patch_manager import get_cc_patch_manager
+        patch_manager = get_cc_patch_manager()
+        game_id = job.game_info.get('game_id', '') if job.game_info else ''
+        available_patches = patch_manager.get_available_patches(game_id)
+        game_specific_patches = [p for p in available_patches if p.get('game_id') != 'GENERIC']
+
+        # Show compatibility label
+        compat_label = QLabel()
         compat_label.setAlignment(Qt.AlignCenter)
         compat_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        compat_label.setFixedHeight(22)
-        gamepad_lower = gamepad_compat.lower()
-        if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower:
-            compat_label.setStyleSheet("background-color: #c8ffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #80c080;")
-        elif 'classic' in gamepad_lower or 'lr' in gamepad_lower:
-            compat_label.setStyleSheet("background-color: #ffffc8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c0c080;")
-        elif 'unknown' in gamepad_lower:
-            compat_label.setStyleSheet("background-color: #dcdcdc; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #a0a0a0;")
+        compat_label.setFixedHeight(18)
+
+        if game_specific_patches:
+            # GCT patch available - show yellow badge instead of compatibility
+            if tr.current_language == "ko":
+                compat_label.setText("GCT 패치 가능")
+            else:
+                compat_label.setText("GCT Available")
+            compat_label.setStyleSheet("background-color: #fff3cd; font-size: 11px; font-weight: bold; padding: 2px 4px; border-radius: 3px; border: 1px solid #ffc107; color: #856404;")
         else:
-            compat_label.setStyleSheet("background-color: #ffc8c8; font-size: 11px; padding: 1px 4px; border-radius: 3px; border: 1px solid #c08080;")
+            # No GCT patch - show original compatibility info
+            gamepad_compat = job.gamepad_compatibility or "Unknown"
+            compat_label.setText(gamepad_compat)
+            gamepad_lower = gamepad_compat.lower()
+            if 'works' in gamepad_lower and 'doesn\'t' not in gamepad_lower:
+                compat_label.setStyleSheet("background-color: #c8ffc8; font-size: 11px; padding: 2px 4px; border-radius: 3px; border: 1px solid #80c080;")
+            elif 'classic' in gamepad_lower or 'lr' in gamepad_lower:
+                compat_label.setStyleSheet("background-color: #ffffc8; font-size: 11px; padding: 2px 4px; border-radius: 3px; border: 1px solid #c0c080;")
+            elif 'unknown' in gamepad_lower:
+                compat_label.setStyleSheet("background-color: #dcdcdc; font-size: 11px; padding: 2px 4px; border-radius: 3px; border: 1px solid #a0a0a0;")
+            else:
+                compat_label.setStyleSheet("background-color: #ffc8c8; font-size: 11px; padding: 2px 4px; border-radius: 3px; border: 1px solid #c08080;")
+
         compat_layout.addWidget(compat_label)
         pad_combo = QComboBox()
         pad_combo.setStyleSheet("font-size: 11px;")
@@ -2894,7 +3190,7 @@ class BatchWindow(QMainWindow):
             action_widget = self.table.cellWidget(row, 5)
             if action_widget and button in action_widget.findChildren(QPushButton):
                 if row < len(self.jobs):
-                    dialog = EditGameDialog(self.jobs[row], self.available_bases, self)
+                    dialog = EditGameDialog(self.jobs[row], self.available_bases, self, row)
                     if dialog.exec_():
                         # 편집 다이얼로그에서 저장 후 테이블 업데이트
                         # Column 0: Update game title in the combined widget

@@ -164,6 +164,32 @@ class BatchBuilder(QThread):
             # Get game ID for cache folder
             game_id = job.game_info.get('game_id', 'unknown')
 
+            # ═══════════════════════════════════════════════════════════════════════════
+            # IMAGE CACHING SYSTEM
+            # ═══════════════════════════════════════════════════════════════════════════
+            # Images are processed once and cached to survive BuildEngine cleanup.
+            #
+            # ICON CACHING STRATEGY:
+            # - Icons get gamepad badges (Galaxy/GCT) burned into the image
+            # - Each badge type uses a separate cache file:
+            #   * icon.png          (no badge)
+            #   * icon_allstars.png (Galaxy AllStars badge)
+            #   * icon_nvidia.png   (Galaxy Nvidia badge)
+            #   * icon_gct.png      (GCT patch badge)
+            # - Icons are ONLY reprocessed when:
+            #   1. Cache doesn't exist yet
+            #   2. Source image path changed (user selected different image)
+            #   3. Source image modified (newer timestamp)
+            #   4. User explicitly edited it (icon_edited flag)
+            # - This ensures user-selected icons are PRESERVED across builds
+            #
+            # BANNER/DRC CACHING STRATEGY:
+            # - Banners and DRC images have no badges
+            # - Always use banner.png and drc.png
+            # - Only reprocessed when source changes or user edits
+            # - User-selected banners are PRESERVED across builds
+            # ═══════════════════════════════════════════════════════════════════════════
+
             # Determine badge type (Galaxy, GCT patches)
             badge_type = None
             if job.pad_option == "galaxy_allstars" or "allstars" in (job.pad_option or ""):
@@ -193,11 +219,14 @@ class BatchBuilder(QThread):
 
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
-                # Process if: badge set, different path, source is newer, OR user edited the image
+                # Process if: different path, source is newer, OR user edited the image
+                # NOTE: Do NOT reprocess just because badge_type is set - that would overwrite user-selected icons!
+                # Only reprocess if the source image changed or user explicitly edited it.
                 is_different_path = job.icon_path.resolve() != cache_icon.resolve()
                 is_source_newer = cache_icon.exists() and job.icon_path.stat().st_mtime > cache_icon.stat().st_mtime
                 user_edited = getattr(job, 'icon_edited', False)
-                should_process = (badge_type is not None) or is_different_path or is_source_newer or user_edited
+                cache_not_exists = not cache_icon.exists()
+                should_process = is_different_path or is_source_newer or user_edited or cache_not_exists
 
                 if should_process:
                     print(f"  Icon: {job.icon_path} -> {cache_icon}")
@@ -318,10 +347,9 @@ class BatchBuilder(QThread):
                 patch_info = job.selected_cc_patch
                 print(f"  [CONTROLLER] {job.title_name}: Forced Patch -> {patch_info['display_name']}")
                 options["force_cc_patch"] = patch_info['path']
-                # If it's a generic patch (custom GCT), we usually still want the base InstantCC + the patch
-                # So we don't set 'no_gamepad_emu' unless the patch specifically says so (rare)
-                # But we might need 'options["galaxy_patch"] = "cc_patch"?
-                # Actually BuildEngine should handle 'force_cc_patch' by just using that GCT file.
+                # Pass requires_getexttype flag from patch metadata
+                options["requires_getexttype"] = patch_info.get('requires_getexttype', False)
+                print(f"  [CONTROLLER] GetExtTypePatcher: {'Required' if options['requires_getexttype'] else 'Not Required'}")
                 
             elif job.pad_option == "no_gamepad":
                 # Profile 1: 미적용 (No GamePad)

@@ -14,11 +14,11 @@ import re
 
 class CCPatchManager:
     """Manages GCT patches for Wii games."""
-    
+
     def __init__(self, project_root: Path = None, bundle_root: Path = None):
         """
         Initialize patch manager.
-        
+
         Args:
             project_root: Project root directory (for development)
             bundle_root: Bundle root directory (for packaged EXE)
@@ -27,6 +27,7 @@ class CCPatchManager:
         self.bundle_root = bundle_root or self.project_root
         self._cache: Dict[str, List[dict]] = {}
         self._scanned = False
+        self._force_cc_cache = None  # Cache for force_cc games from DB
     
     @property
     def patches_dir(self) -> Path:
@@ -42,6 +43,50 @@ class CCPatchManager:
         path = self.patches_dir / "Generic"
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    def _load_force_cc_from_db(self) -> set:
+        """
+        Load list of games that require force_cc from compatibility database.
+        Returns a set of game IDs that have force_cc=1.
+        """
+        if self._force_cc_cache is not None:
+            return self._force_cc_cache
+
+        force_cc_games = set()
+
+        # Try to load from database
+        db_path = self.bundle_root / "resources" / "compatibility.db"
+        if not db_path.exists():
+            db_path = self.project_root / "resources" / "compatibility.db"
+
+        if db_path.exists():
+            try:
+                import sqlite3
+                conn = sqlite3.connect(str(db_path))
+                cursor = conn.cursor()
+                cursor.execute("SELECT game_id FROM games WHERE force_cc = 1")
+                for row in cursor.fetchall():
+                    if row[0]:
+                        force_cc_games.add(row[0])
+                conn.close()
+                print(f"[CCPatch] Loaded {len(force_cc_games)} force_cc games from DB")
+            except Exception as e:
+                print(f"[CCPatch] Warning: Failed to load force_cc from DB: {e}")
+
+        # Fallback to hardcoded list if DB fails
+        if not force_cc_games:
+            force_cc_games = {
+                'ROUE5G', 'ROUJ5G', 'ROEP5G',  # Endless Ocean
+                'R9PE52', 'R9PJ52', 'R9PP52',  # Excite Truck
+                'R4QE01', 'R4QJ01', 'R4QP01', 'R4QK01',  # Mario Strikers Charged
+                'R5QE69', 'R5QJ69', 'R5QP69',  # MySims Agents
+                'RSGE78', 'RSGP78', 'RSGK78',  # The Simpsons Game
+                'RTOE70', 'RTOP70',  # Tornado Outbreak
+            }
+            print(f"[CCPatch] Using fallback force_cc list ({len(force_cc_games)} games)")
+
+        self._force_cc_cache = force_cc_games
+        return force_cc_games
     
     def _parse_gct_filename(self, gct_path: Path) -> Optional[dict]:
         """
@@ -81,24 +126,34 @@ class CCPatchManager:
                 patch_type = type_part.replace('-', '_')
                 display_name = type_part.replace('-', ' ').title()
 
+            # Check if this game requires GetExtTypePatcher (from DB)
+            force_cc_games = self._load_force_cc_from_db()
+            requires_getexttype = game_id in force_cc_games
+
             return {
                 'game_id': game_id,
                 'patch_type': patch_type,
                 'display_name': display_name,
                 'path': gct_path,
-                'filename': gct_path.name
+                'filename': gct_path.name,
+                'requires_getexttype': requires_getexttype
             }
 
         # Pattern 2: Just GAMEID (default CC patch)
         match = re.match(r'^([A-Z0-9]{4,6})$', filename)
         if match:
             game_id = match.group(1)
+            # Check if this game requires GetExtTypePatcher (from DB)
+            force_cc_games = self._load_force_cc_from_db()
+            requires_getexttype = game_id in force_cc_games
+
             return {
                 'game_id': game_id,
                 'patch_type': 'cc',
                 'display_name': 'Classic Controller',
                 'path': gct_path,
-                'filename': gct_path.name
+                'filename': gct_path.name,
+                'requires_getexttype': requires_getexttype
             }
 
         return None
@@ -144,7 +199,8 @@ class CCPatchManager:
                     'patch_type': 'generic',
                     'display_name': f"Generic: {display_name}",
                     'path': gct_file,
-                    'filename': gct_file.name
+                    'filename': gct_file.name,
+                    'requires_getexttype': False  # Generic patches don't require GetExtTypePatcher by default
                 }
                 self._cache['GENERIC'].append(patch_info)
         

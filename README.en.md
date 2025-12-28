@@ -12,7 +12,11 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 - ✅ **Accurate Metadata**: Reads game code directly from ISO/WBFS files
 - ✅ **Safe Processing**: Uses temporary folders to protect source files
 - ✅ **Multiple Format Support**: WBFS, ISO, NKIT, decrypted ISO (.iso.dec), GameCube (.gcm)
-- ✅ **Game-Specific GCT Patches**: Classic Controller patches available for supported games (optional)
+- ✅ **Unified GCT Patch System**:
+  - 200+ game-specific Classic Controller patches
+  - Auto-detection of force gamepad requirement (database-driven)
+  - Galaxy 1/2 gamepad patches (AllStars/Nvidia profiles)
+  - User-defined Generic patch support
 
 ### Batch Processing
 - 🚀 **Mass Injection**: Process multiple games simultaneously
@@ -22,10 +26,22 @@ Enhanced Wii Virtual Console injector for WiiU with batch processing support and
 - 🎮 **Gamepad Profiles**: 7 controller configurations including Galaxy patches
 
 ### Image & Metadata
-- 🖼️ **Smart Image Caching**: Persistent cache for faster subsequent builds
-- 🌐 **GameTDB Integration**: Automatic game title and cover art retrieval
-- 🔍 **Compatibility Database**: Built-in gamepad compatibility information
-- ✏️ **Easy Editing**: Edit game metadata, titles, and images through GUI
+- 🖼️ **Smart Image Caching**:
+  - Auto-caching by badge type (icon.png, icon_gct.png, icon_allstars.png)
+  - User-selected images preserved (retained across rebuilds)
+  - Persistent cache for faster subsequent builds
+- 🌐 **GameTDB Integration**:
+  - Auto-fetch game titles and cover art
+  - Re-download images feature in edit dialog
+  - Title auto-update on download (refreshes cache and DB)
+- 🔍 **Compatibility Database**:
+  - Built-in gamepad compatibility information
+  - Auto-detect and display GCT patch availability
+  - force_cc flag management
+- ✏️ **Easy Editing**:
+  - Edit game metadata, titles, and images through GUI
+  - ISO trim disable option (fixes save file issues)
+  - WBFS file auto-detection with limitations notice
 
 ## 📋 Requirements
 
@@ -80,11 +96,16 @@ python run.py
 2. Wait for automatic metadata and image download
 3. (Optional) Click **Edit** to customize:
    - Game title, images, or base ROM
+   - **Auto Download Images** button to fetch latest images/title from GameTDB
+   - **Disable ISO Trim** checkbox (for save file issue resolution)
+     - Some games require original disc size (approx. 4~8GB)
+     - WBFS files are already trimmed and cannot be restored
    - **✅ Trucha Bug Patch** (default: enabled)
      - Bypasses signature verification, required for modified games
    - **✅ C2W CPU Unlock Patch** (default: enabled, requires Ancast key)
      - Unlocks CPU from 729MHz to 1.215GHz
 4. Select gamepad profile from the dropdown
+   - Games with GCT patches are automatically indicated ("GCT Patch Available" label)
 5. Click **Start Build**
 
 #### Batch Build
@@ -102,6 +123,7 @@ Meta-Injector/
 │   ├── batch_window.py            # Main GUI (batch mode)
 │   ├── batch_builder.py           # Batch build engine
 │   ├── build_engine.py            # Core build logic
+│   ├── cc_patch_manager.py        # GCT patch management
 │   ├── game_info.py               # Game metadata extraction
 │   ├── game_tdb.py                # GameTDB integration
 │   ├── compatibility_db.py        # Compatibility database
@@ -112,28 +134,29 @@ Meta-Injector/
 │   └── utils.py                   # Utility functions
 │
 ├── core/                          # External tools
-│   ├── EXE/                       # Core executables
-│   │   ├── nfs2iso2nfs.exe        # NFS converter
-│   │   ├── jnustool.exe           # Base file downloader
-│   │   ├── nuspacker.exe          # WUP packager
-│   │   └── wbfs_file.exe          # WBFS converter
+│   ├── CCPatches/                 # GCT patch files
+│   │   ├── *.gct                  # Game-specific patches
+│   │   └── Generic/               # User-defined generic patches
 │   ├── WIT/                       # Wiimms ISO Tools
 │   │   ├── wit.exe                # Wii ISO Tool
 │   │   └── wstrt.exe              # String table tool
-│   ├── Galaxy1GamePad_v1.2/       # Super Mario Galaxy patches
-│   │   ├── *-AllStars.gct         # AllStars controller profile
-│   │   └── *-Nvidia.gct           # Nvidia Shield profile
+│   ├── JAR/                       # Base ROM files
+│   │   └── nuspacker.exe          # WUP packager
 │   └── NKIT/                      # NKit converter
 │       └── NKit.dll               # NKit library
 │
 ├── resources/                     # Application resources
-│   ├── images/                    # UI images
-│   │   ├── icon.ico               # App icon
-│   │   ├── icon.png               # Icon for UI
-│   │   ├── default_icon.png       # Fallback game icon
-│   │   ├── default_banner.png     # Fallback TV banner
-│   │   └── default_drc.png        # Fallback GamePad image
-│   └── wiitdb.txt                 # Game database (titles)
+│   ├── compatibility.db           # Game compatibility database (SQLite)
+│   ├── compatibility/             # JSON compatibility data
+│   │   ├── WIICompat.json         # Wii game compatibility
+│   │   ├── N64Compat.json         # N64 compatibility
+│   │   └── ...                    # Other platform compatibility
+│   └── images/                    # UI images
+│       ├── icon.ico               # App icon
+│       ├── icon.png               # Icon for UI
+│       ├── default_icon.png       # Fallback game icon
+│       ├── default_banner.png     # Fallback TV banner
+│       └── default_drc.png        # Fallback GamePad image
 │
 ├── run.py                         # Entry point script
 ├── build.py                       # PyInstaller build script
