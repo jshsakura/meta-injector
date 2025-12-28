@@ -1,0 +1,1972 @@
+{
+  "compatibility": [
+    {
+      "game_name": "2.68 MHz Demo (PD)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "2020 Super Baseball",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "3 Ninjas Kickback",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "7th Saga, The",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "AAAHH!!! Real Monsters",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Actraiser",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Actraiser 2",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested with Loadiine GX2"
+    },
+    {
+      "game_name": "Aero the Acro-Bat",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Aero the Acro-Bat 2",
+      "game_region": "USA",
+      "base_name": "Addams Family Values",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Black screen after main menu if Super Metroid/DKC is used."
+    },
+    {
+      "game_name": "Aero the Acro-Bat 2",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Aero the Acro-Bat 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Air Cavalry",
+      "game_region": "USA",
+      "base_name": "Addams Family Value",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Air Cavalry",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Exception type DSI"
+    },
+    {
+      "game_name": "Aladdin",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Alcahest",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Alien 3",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Alien vs Predator",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "The screen will start flashing randomly and making the game lag a bit, also tested injecting into DKC and KDL3, same result."
+    },
+    {
+      "game_name": "Animaniacs",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Asterix & Obelix",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Exception type ISI occurred!"
+    },
+    {
+      "game_name": "Axelay",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bahamut Lagoon",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Ball Bullet Gun",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Batman Returns",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "BattleTaods Double Dragon",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "BattleToads Battle Maniacs",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bike Daisuki! Hashiriya Damashii - Riders Spirit",
+      "game_region": "JPN",
+      "base_name": "Super Mario Kart",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Blue Brothers",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Boogerman: A Pick and Flick Adventure",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Brain Lord",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Brandish 2 - The Planet Buster",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Breath of Fire",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Breath of Fire 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Stuck in infinite loop at menu."
+    },
+    {
+      "game_name": "Breath of Fire: Ryuu no Senshi",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Brutal: Paws of Furry",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "BS Chrono Trigger Library",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor sound issues, incorrect Lavos scream; S-SMP related."
+    },
+    {
+      "game_name": "BS F-Zero Grand Prix 2",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "BS Radical Dreamers",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Slowdown issues, otherwise playable. Works with translation patch by demiforce, also saves."
+    },
+    {
+      "game_name": "BS The Legend of Zelda (Mottzilla)",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to blackscreen. This version is meant to run on original hardware."
+    },
+    {
+      "game_name": "BS The Legend of Zelda: Ancient Stone Tablets",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Chapters 1 to 4"
+    },
+    {
+      "game_name": "BS The Legend of Zelda: Ancient Stone Tablets (Fourth Quest)",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "BS The Legend of Zelda: Ancient Stone Tablets (Third Quest)",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Bubsy",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bubsy 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bushi Seiryūden: Futari no Yūsha",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Captain Commando",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Carrier Aces",
+      "game_region": "USA",
+      "base_name": "Addams Family Values",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Exception is Super Metroid is used."
+    },
+    {
+      "game_name": "Castlevania: Dracula X",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Chaos Speed - Fuusui Kairouki",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Chrono Trigger",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "ClayFighter",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Missing audio channels, no ADSR."
+    },
+    {
+      "game_name": "ClayFighter",
+      "game_region": "USA",
+      "base_name": "Super PUnch-Out",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Clock Tower",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Columns",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Congo's Caper",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Contra III - The Alien Wars",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Contra Spirits",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Cool Spot",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Cotton 100%",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Cybernator",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Darius Twin",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Slowdown in-game issues. Otherwise perfectly playable."
+    },
+    {
+      "game_name": "Darius Twin",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Didn't notice any slowdown not present in the original when injected into Super Metroid."
+    },
+    {
+      "game_name": "Dark Half",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Demon's Crest",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Der Langrisser",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "Dinowars - Kyouryuu Oukoku e no Daibouken",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Disney's Aladdin",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Do-Re-Mi Fantasy - Milon no Dokidoki Daibouken",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only tested RPX injection, english patch T+Eng_rpgone works perfectly, does not work on Super Metroid, only on DKC."
+    },
+    {
+      "game_name": "Dragon Quest 1+2",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patch works."
+    },
+    {
+      "game_name": "Dragon Quest V - Tenkuu no Hanayome",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Dragon Squadron - Danzarb",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works with translation patch applied."
+    },
+    {
+      "game_name": "E.V.O. Search for Eden",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Earthbound",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Earthbound",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "This is dumb, but it works."
+    },
+    {
+      "game_name": "Earthbound Halloween Hack",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Version 1.08"
+    },
+    {
+      "game_name": "Earthworm Jim 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Some sound effects are missing like voices and some weapon hit noises, but everything else works perfectly."
+    },
+    {
+      "game_name": "Emerald Dragon",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Famicom Tantei Club Part II",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Fatal Fury 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Feda - The Emblem of Justice",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "FIFA 98",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy II",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy II",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Some of the particle effects for the Magitek skills are wrong."
+    },
+    {
+      "game_name": "Final Fantasy Mystic Quest",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy V",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Final Fantasy VI",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Very minor GFX glitches."
+    },
+    {
+      "game_name": "Final Fight",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Flashback - The Quest for Identity",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Front Mission",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Front Mission: Gun Hazard",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "G.O.D.: Mezameyo to Yobu Koe ga Kikoe",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version"
+    },
+    {
+      "game_name": "Ganbare! Daiku no Gen-san",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen after the Irem intro logo, also tried various bases, either the game boots to a black screen or boot screen after Irem intro logo."
+    },
+    {
+      "game_name": "Gemfire",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Gokujou Parodius",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Slowdown in-game issues, otherwise playable."
+    },
+    {
+      "game_name": "Goof Troop",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Gradius III",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works when injected into Super Metroid."
+    },
+    {
+      "game_name": "Grump's Dream Course",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Rom hack of Japanese Kirby's Dream Course."
+    },
+    {
+      "game_name": "Gunple: Gunman's Proof",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Harvest Moon",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Hiouden - Legend of the Scarlet King",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "HyperZone",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Illusion of Gaia",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only minor issue is the selection box in the main menu before starting a game, it's black instead of see through. After you start the game, everything is very much playable, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Inspector Gadget",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "International Superstar Soccer Deluxe",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Jikkyou Oshaberi Parodious",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game fails to boot."
+    },
+    {
+      "game_name": "Joe and Mac",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Joe and Mac 2",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Jurassic Park",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Jurassic Park 2: That Chaos Continues",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Kaite Tsukutte Asoberu Dezaemon (English Patched)",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "English Patched Rom used (Aeon Genesis v1.0). Console doesn't crash, but game fails to load (black screen). Virtual Console menu still accessible."
+    },
+    {
+      "game_name": "Killer Instinct",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "King of Demons",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Kirby's Avalanche",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Krusty's Fun House",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Lemmings",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tiny GFX glitch with the aiming reticule, but it's barely noticable."
+    },
+    {
+      "game_name": "Lemmings 2 - The Tribes",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Live A Live",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Lock On",
+      "game_region": "USA",
+      "base_name": "Super Mario Kart",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Lufia II: The Rise of the Sinistrals",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Lufia: The Fortress of Doom",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Magical Pop'n",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Magical Quest Starring Mickey Mouse, The",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mahou Poipoi poitto!",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mario Paint",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Mouse input isn't emulated. The Joystick Hack works fine."
+    },
+    {
+      "game_name": "Marvelous: Mouhitotsu no Takarajima",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country, Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen. English patched version."
+    },
+    {
+      "game_name": "Mega Man 7",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mega Man X",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mega Man X2",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works only with RPX injection."
+    },
+    {
+      "game_name": "Metal Max Returns",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Micky to Donald - Magical Adventure 3",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patch +Eng1.ORGone works perfectly."
+    },
+    {
+      "game_name": "Mighty Morphin' Power Rangers",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mighty Morphin' Power Rangers: Fighting Edition",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Character GFX is glitchy, top energy bar scrolls across the screen, EUR version of the game suffers from the same issue. Tried different bases, all the same."
+    },
+    {
+      "game_name": "Mighty Morphin' Power Rangers: The Movie",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Miracle Girls",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mortal Kombat",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mr. Nutz",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "NBA Jam - Tournament Edition",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Nekketsu Tairiku Burning Heroes",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "New Super Mario Land",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Supports 4 players"
+    },
+    {
+      "game_name": "NHL 94",
+      "game_region": "USA",
+      "base_name": "Kirby Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Some buzzing sounds that randomly plays during gameplay but it seems that's supposed to be case for the actual game"
+    },
+    {
+      "game_name": "Ogre Battle: March of the Black Queen",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Out of this World",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Pac-In-Time",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Panel de Pon (English Translation)",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Parodius Da! - Shinwa Kara Owari E",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Pilotwings",
+      "game_region": "USA",
+      "base_name": "Super Mario Kart",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Rpx inejction only, if you try the VC injector tool the game will freeze during missions. Also injection on any noone dsp1 rom doesn't work."
+    },
+    {
+      "game_name": "Plok!",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Pocket Monster (also known as Picachu or Pokemon, bootleg game)",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Appears to work perfectly, there might be minor graphical glitches but I honestly don’t know"
+    },
+    {
+      "game_name": "Pocket Monster (also known as Picachu or Pokemon, bootleg game)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black Screen"
+    },
+    {
+      "game_name": "Pocket Monster (also known as Picachu or Pokemon, bootleg game)",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Infinite loop of the boot sound on the TV image. Requires holding the power button on the console"
+    },
+    {
+      "game_name": "Pocky & Rockey",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Pocky & Rocky",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Popeye - Ijiwaru Majo Sea Hag no Maki",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English translation ([T+Eng1.0_KingMike]) works perfectly."
+    },
+    {
+      "game_name": "Prehistorik Man",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Pretty solider Sailor Moon - Another Story",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "R-Type III: The Third Lightning",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Rampart",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Return of Double Dragon",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Road Runner's Death Valley Rally",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Robotrek",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes after Enix logo."
+    },
+    {
+      "game_name": "Rockman and Forte",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Secret of Evermore",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Some background music might not play in some areas but that's about it, otherwise runs perfectly."
+    },
+    {
+      "game_name": "Secret of Mana",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Seiken Densetsu 3",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Shadowrun",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Sim City",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Sim City 2000",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "SNES Burn-In Test",
+      "game_region": "USA",
+      "base_name": "Super Mario World",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Not tested yet."
+    },
+    {
+      "game_name": "Soul Blazer",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Space Invaders - The Original Game",
+      "game_region": "USA",
+      "base_name": "Super Mario World",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Sparkster",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Star Fox",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Swapping headers did boot ROM, no GSU/MARIO Chip 1 support."
+    },
+    {
+      "game_name": "Star Fox 2",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No GSU-2 SP1 support."
+    },
+    {
+      "game_name": "Star Ocean",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No S-DD1/ASIC chip support, 48 megabit ROM."
+    },
+    {
+      "game_name": "Street Fighter II Turbo - Hyper Fighting",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Street Fighter II: The World Warrior",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Street Racer",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Stunt Race FX",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Adventure Island",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Adventure Island 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Bomberman",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Perfectly playable."
+    },
+    {
+      "game_name": "Super Bomberman 2",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Slowdown in-game issues, otherwise perfectly playable."
+    },
+    {
+      "game_name": "Super Bomberman 3",
+      "game_region": "EUR",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Perfectly playable."
+    },
+    {
+      "game_name": "Super Bomberman 4",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Slowdown in-game issues, otherwise perfectly playable."
+    },
+    {
+      "game_name": "Super Castlevania IV",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Fire Pro Wrestling X Premium [Brian English Translation]",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, but the console doesn't crash so you can return to the home menu. Same outcome for DKC & Super Mario RPG bases (Maybe there's a base that works? Try it out if interested)."
+    },
+    {
+      "game_name": "Super Ghouls 'N Ghosts",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario All Stars + Super Mario World",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works with RPX injection and Loadiine GX2."
+    },
+    {
+      "game_name": "Super Mario All-Stars + Super Mario World",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario RPG: Legend of the Seven Stars",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only works with header-swapped with base ROM, does not work with rpx injection, only with ram injection."
+    },
+    {
+      "game_name": "Super Mario World",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario World",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Pixel perfect mode works"
+    },
+    {
+      "game_name": "Super Mario World",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario World - 30th Anniversary Edition (v3) (by Ladiesman217)",
+      "game_region": "USA",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Pixel perfect mode works"
+    },
+    {
+      "game_name": "Super Mario World 2: Yoshi's Island",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No GSU-2 SP1 support."
+    },
+    {
+      "game_name": "Super Mario World 2: Yoshi's Island",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game uses Co-proccesor SuperFX, not compatible with Virtual Console"
+    },
+    {
+      "game_name": "Super Metroid Eris",
+      "game_region": "USA",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Metroid: V I T A L I T Y",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super R-Type",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Star Wars",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Only issue with this game is the final trench run in the X-Wing stage, the gfx is glitched out, skill is not required here, just luck to complete the stage. Tried various bases, most boot to black screen, those that do work has this issue."
+    },
+    {
+      "game_name": "Super Star Wars - Return of the Jedi",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Star Wars - The Empire strikes Back",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Snow speeder stage, bottom half of the screen is black, looks like missing gfx layer, you don't know what your shooting at, to pass this stage, use password code to skip this level."
+    },
+    {
+      "game_name": "Super Street Fighter 2: The New Challengers",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "ROM boots, no controller input."
+    },
+    {
+      "game_name": "Super Turrican",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Turrican 2",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tactics Ogre: Let us Cling Together",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tactics Ogre: Let us Cling Together",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tales of Phantasia",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "48 megabit ROM"
+    },
+    {
+      "game_name": "Taz-Mania",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Taz-Mania",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "A bit slow in speed. This does not affect gameplay."
+    },
+    {
+      "game_name": "Teenage Mutant Ninja Turtles: Tournament Fighters",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Teenage Mutant Ninja Turtles: Turtles in Time",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tenchi Muyou! - Game Hen",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tengai Makyou Zero",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "40 Megabit ROM"
+    },
+    {
+      "game_name": "Terranigma",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game works but with no sound."
+    },
+    {
+      "game_name": "Tetris Attack",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tetris Battle Gaiden",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tetris Battle Gaiden",
+      "game_region": "JPN",
+      "base_name": "Earthbound",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Adventures of Hourai High",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Amazing Spider-Man Lethal Foes",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Firemen",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Flintstones - The Treasure of Sierra Madrock",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Great Circus Mystery Starring Mickey & Minnie",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The King of Dragons",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Missing audio channels, no ADSR"
+    },
+    {
+      "game_name": "The Legend of the Mystic Ninja",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Legend of Zelda: A Link to the Past",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Lion King",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Lost Vikings",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Lost Vikings 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Ninja Warriors",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "The Simpsons: Bart's Nightmare",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Missing audio channels, no ADSR."
+    },
+    {
+      "game_name": "Tiny Toon Adventures: Buster Busts Loose",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tom and Jerry",
+      "game_region": "EUR",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U upon restarting."
+    },
+    {
+      "game_name": "Toy Story",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Tunder Spirits",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Ultimate Mortal Kombat 3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Haven't tested with direct .rpx injection, use Wii U VC injector by Fix94."
+    },
+    {
+      "game_name": "Umihara Kawase",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Violinist of Hamelin",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English patched version."
+    },
+    {
+      "game_name": "Vortex",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No Super FX chip support."
+    },
+    {
+      "game_name": "Wario Woods",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Wild Guns",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Wolfenstein 3D",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Only tested rpx injection."
+    },
+    {
+      "game_name": "Wrecking Crew '98",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Zelda no Densetsu: Kamigami no Triforce",
+      "game_region": "JPN",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Zelda no Densetsu: Kamigami no Triforce",
+      "game_region": "JPN",
+      "base_name": "Kirby's Dream Land 3",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Is ALTTPR Patched. Don't select any character modifications or the game will crash."
+    },
+    {
+      "game_name": "Zombies Ate My Neighbors",
+      "game_region": "USA",
+      "base_name": "Super Metroid",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Zoop",
+      "game_region": "USA",
+      "base_name": "Donkey Kong Country",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    }
+  ]
+}

@@ -1,0 +1,3980 @@
+{
+  "compatibility": [
+    {
+      "game_name": "007: The World is not Enough",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Game Runs OK but has no sound , to fix the weapons seeing glitch use useViewportZScale = 1 on the ini but still no sound.."
+    },
+    {
+      "game_name": "40 Winks (Proto)",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "40 Winks (Proto)",
+      "game_region": "EUR",
+      "base_name": "Bomberman 64 US",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "40 Winks (Proto)",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "64 de Hakken!! Tamagotchi Minna de Tamagotchi World",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Game boots and sounds okay but is missing some textures not tested further since jap only game."
+    },
+    {
+      "game_name": "64 Hanafuda - Tenshi no Yakusoku",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game boots to black screen."
+    },
+    {
+      "game_name": "A Bug's Life",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "A Bug's Life",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "A Bug's Life (German)",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Must use PALadin V3.1 to patch rom with option /f to remove country check."
+    },
+    {
+      "game_name": "A Bug's Life (Italy)",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Must use PALadin V3.1 to patch rom with option /f to remove country check."
+    },
+    {
+      "game_name": "Aerofighters Assault",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Black screen on boot."
+    },
+    {
+      "game_name": "Aerogauge",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Tested on Loadiine Gx2"
+    },
+    {
+      "game_name": "Aerogauge",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine Gx2"
+    },
+    {
+      "game_name": "Aerogauge",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Freezes Wii U after finishing races or qualifying."
+    },
+    {
+      "game_name": "Aidyn Chronicles: The First Mage",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Seems to work perfect with the ini provided."
+    },
+    {
+      "game_name": "Air Boarder 64",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Air Boarder 64",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Armorines Project Swarm",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Black screen on boot."
+    },
+    {
+      "game_name": "Army Men: Air Combat",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Army Men: Sarge's Heroes",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Can't change to hi rez graphics but thats about it."
+    },
+    {
+      "game_name": "Army Men: Sarge's Heroes 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Asteroids Hyper 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "B3313 (Super Mario 64 Internal Plexus)",
+      "game_region": "USA",
+      "base_name": "1080 Snowboarding",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After booting up the game and seeing the splashscreen, the Wii U crashes on a black screen."
+    },
+    {
+      "game_name": "B3313 (Super Mario 64 Internal Plexus)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After booting up the game and seeing the splashscreen, the Wii U crashes on a black screen after hearing the coin sound."
+    },
+    {
+      "game_name": "B3313 (Super Mario 64 Internal Plexus)",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Title screen fully functional, but the console crashes after pressing start and attempting to pick a save file."
+    },
+    {
+      "game_name": "Bakuretsu Muteki Bangaioh",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various ini settings."
+    },
+    {
+      "game_name": "Bakuretsu Muteki Bangaioh",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various ini settings."
+    },
+    {
+      "game_name": "Banjo to Kazooie no Daibouken",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Playable."
+    },
+    {
+      "game_name": "Banjo to Kazooie no Daibouken 2",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Will get you some video and sound, button press doesn't do anything, most likely requires complex ini config settings to get to work."
+    },
+    {
+      "game_name": "Banjo-Dreamie",
+      "game_region": "USA",
+      "base_name": "Mario Kart 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Uses same ini config as Banjo-Kazooie USA."
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Bottom Screen Part will get out a little bit and cutscenes have some lag. Updated ini file to include RENDER options to make the screen centered instead of being off centered to the left."
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "EUR",
+      "base_name": "Paper Mario",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Some input lag, but works flawlessly. Updated ini file to include RENDER options to make the screen centered instead of being off centered to the left."
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Linear-sampled audio"
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Linear-sampled audio"
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use the following .ini file from here https://discord.com/channels/386898225161961493/461150523366834177/1003420207559221268 and change the Banjo-Kazooie rom's title ID to match the Japanese version. Everything will work perfectly!"
+    },
+    {
+      "game_name": "Banjo-Kazooie",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Another user mentioned needing to change the title ID of their rom to the Japanese version; mine didn't work unless I left the title ID unchanged."
+    },
+    {
+      "game_name": "Banjo-Kazooie - The Bear Waker",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works fine."
+    },
+    {
+      "game_name": "Banjo-Kazooie - The Bear Waker",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works fine."
+    },
+    {
+      "game_name": "Banjo-Tooie",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Works with ini, some music and slowdown on certain areas, pal version works with less slowdowns. Added Notes: Same issue as the EUR version below."
+    },
+    {
+      "game_name": "Banjo-Tooie",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Works with ini. Almost always full speed with very ocasional fps drops. To see the botton part of the subtitltes go to the settings screen and change screen scale, it will still be cut on the botton but you can read all the subtitles. Added Notes: There has been reports from a few people that this game crashes at the same spot in the game on level 5 and also random in game crashes, click https://discord.com/channels/386898225161961493/1308040315063635988/1308040575957729301 to read more info."
+    },
+    {
+      "game_name": "Banjo-Tooie",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen."
+    },
+    {
+      "game_name": "Bass Hunter 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Batman Beyond - Return of the Joker",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "BattleTanx",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot with and without an ini."
+    },
+    {
+      "game_name": "BattleTanx Global Assault",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot."
+    },
+    {
+      "game_name": "Beetle Adventures Racing",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor graphical glitch in Menus, Mount mayen track goes black when you press the Break(B) button but returns picture right after you let go of the button."
+    },
+    {
+      "game_name": "Beetle Adventures Racing",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Root menu renders black; car colors hard to differentiate; minor graphical issues in menus and race; control stick not responding properly (might need ini fixes)"
+    },
+    {
+      "game_name": "Big Mountain 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system crashes, tried various bases and config ini settings, same result."
+    },
+    {
+      "game_name": "Biohazard 2",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "FMV cutscenes show up in a strange way. Don't shoot too often or it will crash. If you go back to the game (Suspended point unavoidable), you will get very slow framerate. Only works fine if started for the first time."
+    },
+    {
+      "game_name": "Blast Corps",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Not even with jap header."
+    },
+    {
+      "game_name": "Blast Dozer",
+      "game_region": "JPN",
+      "base_name": "Mario Golf Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on loadiine v4."
+    },
+    {
+      "game_name": "Blast Dozer",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on loadiine v4."
+    },
+    {
+      "game_name": "Body Harvest",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game works fine but a 2 FPS at best."
+    },
+    {
+      "game_name": "Bomberman 64",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bomberman 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bomberman 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Minor graphical issues but nothing unplayable so far."
+    },
+    {
+      "game_name": "Bomberman Hero",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Provided ini provides minor render improvements, less artifacts around 2D sprites."
+    },
+    {
+      "game_name": "Bomberman: The Second attack",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Bomberman: The Second attack",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Brunswick Circuit Pro Bowling",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system crashes, tried various bases and config ini settings, same result."
+    },
+    {
+      "game_name": "Buck Bumble",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Bust-a-Move 2 - Arcade Edition",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Opening cutscene is slow, the rest is fine and plays perfectly"
+    },
+    {
+      "game_name": "Bust-a-Move 3 DX",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game works fine however the resolution is missing on the bottom of the screen, probably due to the EUR/PAL resolution is different for this game, basically this game is the same as Bust-A-Move 99 USA"
+    },
+    {
+      "game_name": "Bust-a-Move 3 DX",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Game works fine however the resolution is missing on the bottom of the screen, probably due to the EUR/PAL resolution is different for this game, basically this game is the same as Bust-A-Move 99 USA"
+    },
+    {
+      "game_name": "Bust-a-Move 3 DX",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Game works fine however the resolution is missing on the bottom of the screen, probably due to the EUR/PAL resolution is different for this game, basically this game is the same as Bust-A-Move 99 USA"
+    },
+    {
+      "game_name": "Bust-a-Move 99",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "California Speed",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, but can exit game, tried various ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "California Speed",
+      "game_region": "USA",
+      "base_name": " Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, but can exit game, tried various ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Carmageddon 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes after start race."
+    },
+    {
+      "game_name": "Castlevania",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Edit the header name and id with an hex editor to match castlevania 2, seems to play perfectly."
+    },
+    {
+      "game_name": "Castlevania Legacy of Darkness",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "It almost runs perfectly but the blur effect is glitched in some cutscenes and when you access the shop. The floor in Tower of Ruins also has missing textures in a few spots."
+    },
+    {
+      "game_name": "Castlevania Legacy of Darkness",
+      "game_region": "USA",
+      "base_name": "Excitebike 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "It almost runs perfectly but the blur effect is glitched in some cutscenes and when you access the shop. The floor in Tower of Ruins also has missing textures in a few spots."
+    },
+    {
+      "game_name": "Chameleon Twist",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Chameleon Twist (English Translation)",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini settings with this translation patch from http://www.romhacking.net/translations/2767/, game boots fine."
+    },
+    {
+      "game_name": "Chameleon Twist 2",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Shows severe graphical glitches and then crashes wiiu before main menu."
+    },
+    {
+      "game_name": "Charlie Blast's Territory",
+      "game_region": "JAP",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Chopper Attack",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Choro Q 64 II - Hacha Mecha Grand Prix Race",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "English translation patch also works."
+    },
+    {
+      "game_name": "Chou Snobow Kids",
+      "game_region": "JPN",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works on EUR region console."
+    },
+    {
+      "game_name": "Clayfighter 63 1/3",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It shows Nintendo logo at 1 FPS, then freezes Wii U after a few seconds."
+    },
+    {
+      "game_name": "Clayfighter 63 1/3 - Sculptor's Cut",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U."
+    },
+    {
+      "game_name": "Command & Conquer",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphic glitches on boot logo and in game menu, heavy graphic glitches when game starts, then crashes system, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Command & Conquer",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphic glitches on boot logo and in game menu, heavy graphic glitches when game starts, then crashes system, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Conker's Bad Fur Day",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot"
+    },
+    {
+      "game_name": "Conker's Bad Fur Day",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot"
+    },
+    {
+      "game_name": "Conker's Bad Fur Day",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Conker's Bad Fur Day",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sound, but no picture."
+    },
+    {
+      "game_name": "Cruis'n Exotica",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots up, but completely unplayable due to graphical glitches"
+    },
+    {
+      "game_name": "Cruis'n Exotica",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots up, but completely unplayable due to graphical glitches"
+    },
+    {
+      "game_name": "Cruis'n USA",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, able to exit back to main menu, tried different base roms and ini settings, still don't work, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Cruis'n USA",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, able to exit back to main menu, tried different base roms and ini settings, still don't work, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Cruis'n World",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, able to exit back to main menu, tried different base roms and ini settings, still don't work, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Custom Robo",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Custom Robo V2",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Dance Dance Revolution - Disney Dancing Museum",
+      "game_region": "JPN",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Perfect."
+    },
+    {
+      "game_name": "Dark Rift",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, you can go back to Home Menu."
+    },
+    {
+      "game_name": "Deadly Arts",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "You can hear Konami logo and sound, but no image, only black screen, you can exit to Wii U Menu though."
+    },
+    {
+      "game_name": "Densha De Go 64 (English Translation)",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Destruction Derby 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Use provided ini cfg settings, Missing gfx in game mode menu only, no car model in car select screen, stuttering audio, semi playable."
+    },
+    {
+      "game_name": "Diddy Kong Racing",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Use the config ini provided, game will boot, missing and messed up graphics, sound works but stutters, somewhat playable but unplayable."
+    },
+    {
+      "game_name": "Diddy Kong Racing",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Disney's Tarzan",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Nothing loads."
+    },
+    {
+      "game_name": "Donald Duck: Quack Attack",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Ocarina of Time",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Loads black screen. VC Menu and HOME Menu can still be triggered however."
+    },
+    {
+      "game_name": "Donkey Kong 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "JPN",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Donkey Kong 64 (Demo)(Kiosk)",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "Donkey Kong 64 (Demo)(Kiosk)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "DOOM 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Game doesn't work on EUR region console, use EUR version instead."
+    },
+    {
+      "game_name": "DOOM 64",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly, censored version with green blood."
+    },
+    {
+      "game_name": "Doraemon",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Doraemon 2",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen."
+    },
+    {
+      "game_name": "Doraemon 3",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen."
+    },
+    {
+      "game_name": "Doubutsu no Mori",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Dialog boxes and NPC names do not appear, otherwise it's playable. Black screen on entering character name if injected into SM64."
+    },
+    {
+      "game_name": "Doubutsu no Mori",
+      "game_region": "JPN",
+      "base_name": "Super Mario 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Dialog boxes and NPC names do not appear, otherwise it's playable. Black screen on entering character name if injected into SM64."
+    },
+    {
+      "game_name": "Dr. Mario 64",
+      "game_region": "USA",
+      "base_name": "1080 Snowboarding",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sound and graphics largely work, but mega vitamins do not display while in motion, rendering the game essentially unplayable."
+    },
+    {
+      "game_name": "Dual Heroes",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After Hudson logo, white screen and system freezes, tried various ini settings, all same results."
+    },
+    {
+      "game_name": "Dual Heroes",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After Hudson logo, white screen and system freezes, tried various ini settings, all same results."
+    },
+    {
+      "game_name": "Dual Heroes",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After Hudson logo, white screen and system freezes, tried various ini settings, all same results."
+    },
+    {
+      "game_name": "Duck Dodgers Starring Daffy Duck",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "When you dive deep in the water the screen goes all blue and you cant see anything."
+    },
+    {
+      "game_name": "Duke Nuken 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Duke Nuken 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "broken hud/weapons + hard crash on level start"
+    },
+    {
+      "game_name": "Duke Nuken Zero Hour",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game boots fine but freezes wiiu when starting levels."
+    },
+    {
+      "game_name": "Earthworm Jim 3D",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Excitebike 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Even with jap header Wii U freezes when starting races."
+    },
+    {
+      "game_name": "Excitebike 64",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Extreme G",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "The game loads fine, but races are at 1 FPS."
+    },
+    {
+      "game_name": "Extreme G",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game plays, but npcs move lightning quick. Graphics are not perfect. Colliding with wall reveals background elements."
+    },
+    {
+      "game_name": "Extreme G 2",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works nice and smoothly. Added MemPak config ini settings."
+    },
+    {
+      "game_name": "F-1 Pole Position 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "F-1 Pole Position 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "F-1 World Grand Prix",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Loads ok, but too glitchy during races to play.."
+    },
+    {
+      "game_name": "F-Zero DXP",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Region unknown for both game and base. Black screen"
+    },
+    {
+      "game_name": "F-Zero X",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Open the rom with an hex editor and replace CFZE for CFZJ and use the F-Zero X J config file already made by nintendo, seems to work perfectly."
+    },
+    {
+      "game_name": "F-Zero X",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfect"
+    },
+    {
+      "game_name": "F-Zero X Climax",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfect"
+    },
+    {
+      "game_name": "F-Zero X Climax",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfect"
+    },
+    {
+      "game_name": "F-Zero X Climax",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen"
+    },
+    {
+      "game_name": "F1 Racing Championship",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "F1 Racing Championship",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "FIFA - Road to World Cup 98",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into startup logo, then system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "FIFA - Road to World Cup 98",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into startup logo, then system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Fighter's Destiny",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. Freezes Wii U."
+    },
+    {
+      "game_name": "Fighter's Destiny 2",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Licensed to Nintendo Logo, then black screen. Freezes Wii U."
+    },
+    {
+      "game_name": "Fighting Force 64",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. I could go back to Home Menu..."
+    },
+    {
+      "game_name": "Five Nights At Freddy's 64 (homebrew port)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Change the header from ED.. to anything 4 digits long (i used FNAF) in a hex editor, or UWUVCI will crash immediately. Doesn't really matter though, because the game just freezes on a black screen. This rom is only known to work on console and ares emulator anyway, so its not shocking the wii u emu doesn't work. game from here https://www.youtube.com/watch?v=cSOmlyvK9gQ"
+    },
+    {
+      "game_name": "Five Nights At Freddy's 64 (homebrew port)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Change the header from ED.. to anything 4 digits long (i used FNAF) in a hex editor, or UWUVCI will crash immediately. Doesn't really matter though, because the game just freezes on a black screen. This rom is only known to work on console and ares emulator anyway, so its not shocking the wii u emu doesn't work. game from here https://www.youtube.com/watch?v=cSOmlyvK9gQ"
+    },
+    {
+      "game_name": "Flying Dragon",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Demo displays no background image. Menus past the title screen shows no image and no luck after fiddling with it blinded."
+    },
+    {
+      "game_name": "Forsaken 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. Have to power off."
+    },
+    {
+      "game_name": "Fushigi no Dungeon Furai no Siren 2 Oni Shuurai! Siren Shiro!",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Ganbare Goemon 1 - Neo Momoyama Bakufu no Odori",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great, this version is the only one which has an intro and ending dubbed in Japanese.."
+    },
+    {
+      "game_name": "Ganbare Goemon 2 - Derodero Douchuu Obake Tenkomori",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great, this version is the only one which has an intro sequence before every Impact Battle."
+    },
+    {
+      "game_name": "Ganbare Goemon 3 - Mononoke Sugoroku",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great."
+    },
+    {
+      "game_name": "Gauntlet Legends",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. Can exit."
+    },
+    {
+      "game_name": "Gex 3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Works almost perfectly but gex model is glitchy and you cant see parts of it but otherwise perfect."
+    },
+    {
+      "game_name": "Gex 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Works almost perfectly some minor graphical glitches."
+    },
+    {
+      "game_name": "Glover",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Glover",
+      "game_region": "USA",
+      "base_name": "1080 Snowboarding",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Glover",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, that's it."
+    },
+    {
+      "game_name": "Glover 2 (Proto)",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "Glover 2 (Proto)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "Glover 2 (Proto) (Early)",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "Glover 2 (Proto) (Early)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64 US",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tried various bases and config ini settings."
+    },
+    {
+      "game_name": "Goemon's Great Adventure",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use clean rom, save states only."
+    },
+    {
+      "game_name": "Goldeneye 007",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Corrupted textures, lag and crashes after loading a mission."
+    },
+    {
+      "game_name": "Goldeneye 007",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Corrupted textures, lag and crashes after loading a mission."
+    },
+    {
+      "game_name": "Goldeneye 007",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Around 15 fps and freezing randomly when shooting too much"
+    },
+    {
+      "game_name": "Goldeneye 007",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Around 15 fps and freezing randomly when shooting too much"
+    },
+    {
+      "game_name": "Goldeneye 007",
+      "game_region": "EUR",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, couldn't open VC menu. Don't think Home Menu worked either as I remember force-shutting the Wii U down."
+    },
+    {
+      "game_name": "GT64 - Championship Edition",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphic glitches, stuttering audio, when game starts, road graphics is missing, tap on touch screen freezes system, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "GT64 - Championship Edition",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphic glitches, stuttering audio, when game starts, road graphics is missing, tap on touch screen freezes system, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Harvest Moon 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Hercules: The Legendary Journeys",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "If you put UseTimer = 1 on the ini you can reach ingame but this game has rendering issues where only the farthest objeects are rendered and near objects disapear making the game unplayable sadly."
+    },
+    {
+      "game_name": "Hexen",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes after logo transitions."
+    },
+    {
+      "game_name": "Hey You Pikachu!",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 1,
+      "notes": "Some graphical glicthes, no sound and microphone not emulated so its not playable."
+    },
+    {
+      "game_name": "Hot Wheels - Turbo Racing",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "When game starts, road grpahics is missing. unplayable, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Hot Wheels - Turbo Racing",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "When game starts, road grpahics is missing. unplayable, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Hybrid Heaven",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly with just retracebyvsync=1 and mempak=1"
+    },
+    {
+      "game_name": "Hybrid Heaven",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Minor glitches at konami logo, invisible map, no high-res option on JAP version, you can save without memory card in JAP version. There is also a almost unnoticeable frame rate issue."
+    },
+    {
+      "game_name": "Hydro Thunder",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, but able to exit game, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Iggy's Reckin' Balls",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiive v4 tested."
+    },
+    {
+      "game_name": "Indiana Jones and the Infernal Machine",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Indy Racing 2000",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Menu images and descriptions are glitched but you can see your options clearly. Images of racers are not affected."
+    },
+    {
+      "game_name": "International Superstar Soccer 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works with the ini provided. Title menu screen gfx is messed up, after pressing Start, the rest of the menu's is fine. During game play some minor gfx glitch with the in game map. Other than that, it's very playable."
+    },
+    {
+      "game_name": "International Superstar Soccer 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Title screen is buggy and sound ingame stutters a little, the rest looks fine."
+    },
+    {
+      "game_name": "International Superstar Soccer 98",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works with the ini provided. Title menu screen gfx is messed up, after pressing Start, the rest of the menu's is fine."
+    },
+    {
+      "game_name": "International Track & Field 2000",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Nothing to report, works fine."
+    },
+    {
+      "game_name": "International Track & Field: Summer Games",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Seems to be working fine."
+    },
+    {
+      "game_name": "J.League Eleven Beat 1997",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Sound stuttering, must use ini with memcard options or game will not get past the main menu.."
+    },
+    {
+      "game_name": "Jeremy McGrath Supercross 2000",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Jeremy McGrath Supercross 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Jet Force Gemini",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Only sound no picture."
+    },
+    {
+      "game_name": "John Romero's Daikatana",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Hi rez doesnt work a tiny stuter on cutscenes."
+    },
+    {
+      "game_name": "Kaizo Mario 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen and system freezes after pressing start at the 3D Mario head screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Kaizo Mario 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen and system freezes after pressing start at the 3D Mario head screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Kaizo Mario 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White screen and system freezes after pressing start at the 3D Mario head screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Kaizo Mario 64 V1.1.1 & Hacktice (By OmegaEdge29 & Progji)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "I used the sm64 ini that uwuvci gave me and it works perfectly so far. I have not beaten the game 100% so there might be issues later on in the game."
+    },
+    {
+      "game_name": "KEK 64 - Illuminati of Time",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works."
+    },
+    {
+      "game_name": "Ken Griffey, Jr.'s Slugfest",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Nothing loads."
+    },
+    {
+      "game_name": "Killer Instinct Gold",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Intro graphics are messed up, however in game graphics are ok with some graphic glitches on the top of the screen and some random in game graphic glitces, kind of playable, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Kirby 64 - The Crystal Shards",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Knife Edge - Nose Gunner",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to startup logo, system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Knife Edge - Nose Gunner",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to startup logo, system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Kobe Bryant's NBA Courtside",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "LEGO Racers",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Alots of graphic glitches in the intro then game freezes."
+    },
+    {
+      "game_name": "LEGO Racers",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Alots of graphic glitches in the intro then game freezes."
+    },
+    {
+      "game_name": "Lode Runner 3-D",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor flickering in the hub and cursor is invisible."
+    },
+    {
+      "game_name": "Luigi's Mansion 64 (SM64 Rom Hack)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to white screen after the floating Mario head screen. This is the v1.3 rom hack by Mariocrash"
+    },
+    {
+      "game_name": "Mace - The Dark Age",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, I could go out to Home Menu."
+    },
+    {
+      "game_name": "Magical Tetris Challenge",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "The game is playable, but there is no background at all (Title screen, story mode, during gameplay. etc.)."
+    },
+    {
+      "game_name": "Major League Baseball featuring Ken Griffey Jr.",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system crashes, tried various bases and config ini settings, same result."
+    },
+    {
+      "game_name": "Mario Golf",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mario Kart 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Mario Kart 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Mario Kart 64",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64",
+      "base_region": "JPN",
+      "status": 2,
+      "notes": "weird audio?"
+    },
+    {
+      "game_name": "Mario Party",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Open mp ntsc rom and change the header to match mp2 header, runs perfect. Some are experiencing excessively annoying graphical glitches. It's technically playable but when shadows are flickering every time you hit a block or the UI is flickering at the start of every turn it ruins the experience"
+    },
+    {
+      "game_name": "Mario Party",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mario Party 2",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Small graphical glitches during the map overview before the turns are decided, and during pausing. Otherwise game pretty much plays perfectly. There is an original release by Nintendo of Mario Party 2 wich runs perfectly."
+    },
+    {
+      "game_name": "Mario Party 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64 ",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Tiny gfx glitchs when entering boards Loadiine V4 tested.There is an original release by Nintendo of mario party 2 which runs perfectly."
+    },
+    {
+      "game_name": "Mario Party 3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Open Mario Party 3 NTSC ROM and change the header to match Mario Party 2 header, then open Mario Party 2 ini by Nintendo and change backup type to 0 and backupsize to 2048, runs perfect."
+    },
+    {
+      "game_name": "Mario Party 3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Open Mario Party 3 NTSC ROM and change the header to match Mario Party 2 header, then open Mario Party 2 ini by Nintendo and change backup type to 0 and backupsize to 2048, runs perfect."
+    },
+    {
+      "game_name": "Mario Party 3",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "This uses the configurations provided in general-questions by Olinnae. Included below is the .ini file that should be used for the game. Download the INI https://discord.com/channels/386898225161961493/461150523366834177/999420789080203414. This INI is configured for Mario Party 3, and includes a link to the manual for the game on the Github. So far, there haven't been any bugs."
+    },
+    {
+      "game_name": "Mario Party 3",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Will have weird stuttering/graphical glitches without the ini file."
+    },
+    {
+      "game_name": "Mario Party 3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mario Tennis",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Mario Tennis",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Mario VS. Wario Ware",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Stuck on a black screen, but VC Menu is still openable."
+    },
+    {
+      "game_name": "Mario's Nightmare 64 (Super Mario 64 romhack)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game loads a black screen upon launching. Used Loadiine GX2."
+    },
+    {
+      "game_name": "Megaman 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Mickey no Racing Challenge USA",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Audio works but almost all graphics are missing. Unplayable."
+    },
+    {
+      "game_name": "Mickey's Speedway USA",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sound works but video is not displayable. Exceptions include the Rareware logo during the game's title screen, the blue background on the Rumble Pak screen, the statistics for the characters and part of the intro."
+    },
+    {
+      "game_name": "Mickey's Speedway USA",
+      "game_region": "USA",
+      "base_name": "Bomberman 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sound works but video is not displayable. Exceptions include the Rareware logo during the game's title screen, the blue background on the Rumble Pak screen, the statistics for the characters and part of the intro."
+    },
+    {
+      "game_name": "Mickey's Speedway USA",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Ocarina of Time",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sound works but video is not displayable. Exceptions include the Rareware logo during the game's title screen, the blue background on the Rumble Pak screen, the statistics for the characters and part of the intro."
+    },
+    {
+      "game_name": "Micro Machines 64 Turbo",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "On some tracks brightness slightly changes but that is about it."
+    },
+    {
+      "game_name": "Midway's Greatest Arcade Hits: Volume 1",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Only trivia works. Arcade games only load sound."
+    },
+    {
+      "game_name": "Milo's Astro Lanes",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Mischief Makers",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Mischief Makers",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor graphical errors."
+    },
+    {
+      "game_name": "Mission Impossible",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Monaco Grand Prix",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX 2."
+    },
+    {
+      "game_name": "Monaco Grand Prix",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX 2."
+    },
+    {
+      "game_name": "Monopoly",
+      "game_region": "USA",
+      "base_name": "Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes."
+    },
+    {
+      "game_name": "Monster Truck Madness 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Boots to black screen, however you need to wait for about 20 seconds for the game to load. Sound works, missing on screen txt, difficult to navigate through options menu, need to use Project64 to know what the menus are, game defaults to 3 CPU players, need to change to 0. Once race starts, gfx seems ok, missing part of the stop watch on the top left of the screen, game seems to be running at about 15FPS. Somewhat playable with issues."
+    },
+    {
+      "game_name": "Morita Shougi 64",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "There is audio stuttering however seems to be working fine."
+    },
+    {
+      "game_name": "Mortal Kombat 4",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. Have to power off."
+    },
+    {
+      "game_name": "Mortal Kombat Mythologies - Sub-Zero",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Mortal Kombat Mythologies - Sub-Zero",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Mortal Kombat Trilogy",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Mortal Kombat Trilogy",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried different ini settings, same result, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "MRC: Multi-Racing Championship",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Seems to be working fine."
+    },
+    {
+      "game_name": "MRC: Multi-Racing Championship",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Seems to be working fine."
+    },
+    {
+      "game_name": "Ms. Pac-Man Maze Madness",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Nothing loads."
+    },
+    {
+      "game_name": "Mystical Ninja Starring Goemon",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "If you activate controller pack in the settings the game gets stuck on an infinity loop and doesnt start use restore points."
+    },
+    {
+      "game_name": "Nagano Winter Olympics '98",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, can exit game, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Nagano Winter Olympics '98",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, can exit game, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Namco Museum 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Nothing loads."
+    },
+    {
+      "game_name": "NASCAR 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "After booting past the intro, pressing start, the main title menu screen is black. Randomly pressing the A button will eventually get into the game, game plays fine, exiting game back to title screen sometime freezes the system, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NASCAR 2000",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "After booting past the intro, pressing start, the main title menu screen is black. Randomly pressing the A button will eventually get into the game, game plays fine, exiting game back to title screen sometime freezes the system, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NASCAR 99",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "After booting past the intro, pressing start, the main title menu screen is black. Randomly pressing the A button will eventually get into the game, game plays fine, exiting game back to title screen sometime freezes the system, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NASCAR 99",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "After booting past the intro, pressing start, the main title menu screen is black. Randomly pressing the A button will eventually get into the game, game plays fine, exiting game back to title screen sometime freezes the system, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NBA Hangtime",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U"
+    },
+    {
+      "game_name": "NBA Showtime: NBA on NBC",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game boots fine, no sound, the intro game demo, game runs twice the speed and the crowd and players model are white and silver. After selecting your team to play, game feezes. Tried various VC bases and various ini settings, same problem."
+    },
+    {
+      "game_name": "Neon Genesis Evangelion",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Game boots, sound is working, however the intro, main menu, cut scenes and in game has missing gfx, kind of playable but game will eventually freeze. Tried various bases, same result."
+    },
+    {
+      "game_name": "New Tetris",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Menu loads fine, but we can't see the blocks falling."
+    },
+    {
+      "game_name": "NFL Blitz",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini settings to center game screen, without ini settings game screen is little off center, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NFL Blitz - Special Edition",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini settings to center game screen, without ini settings, game screen is little off center, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NFL Blitz 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini settings to center game screen, without ini settings, game screen is little off center, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NFL Blitz 2001",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini settings to center game screen, without ini settings, game screen is little off center, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "NHL Breakaway 98",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes after choosing Exhibition mode."
+    },
+    {
+      "game_name": "Nightmare Creatures",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Nuclear Strike 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Off Road Challenge",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to startup logo, system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Off Road Challenge",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to startup logo, system freezes, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Ogre Battle 64: Person of Lordly Caliber",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Change header to the JPN header, tested on Loadiine v4."
+    },
+    {
+      "game_name": "Oot Rando",
+      "game_region": "USA",
+      "base_name": "Ocarina of Time",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Region unknown. Graphical error when pausing/dying, resolves when the text boxes for each are gone."
+    },
+    {
+      "game_name": "Paper Mario",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Paper Mario",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "Paper Mario",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Game is in widescreen."
+    },
+    {
+      "game_name": "Paper Mario",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64",
+      "base_region": "JPN",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Paper Mario (Widescreen Patch)",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Widescreen Patch by GameMasterPic from https://www.youtube.com/watch?v=gtPN7KvpZZU. Drastic slowdown whenever the Star Rod is being used. Chapter 4 towards the end requires Watt for the mid boss and the lighting effect that Watt produces doesn’t work properly leaving you to guess the battle when trying to save Watt. Chapter 5 requires you to find enemies using Watt, but since Watt doesn't work, spamming the VC button will lighten up the map for a second. In one of the later chapters, there's a maze and some platforming required which where you're suppose to use Watt, but once again lighting issue making this chapter very hard to navigate if you don't already know how to solve it."
+    },
+    {
+      "game_name": "Paper Mario Multiplayer v1.0.1",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested with Loadiine GX2."
+    },
+    {
+      "game_name": "Paper Mario Multiplayer v1.1",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to the title screen fine, once you create your save and start the game, the graphics is all messed up, sound is still good though, unplayable, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Paper Mario: Master Quest (2020)",
+      "game_region": "EUR",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Paper Mario: Pro Mode (2018)",
+      "game_region": "EUR",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested. Both seem to have odd screen brightness flickering issues though. Not sure if that is due to something with the injector, with the base ROM (Paper Mario: Pro Mode uses the Expansion Pack but Rush 2 does not), or something that needs tweaked in the INI."
+    },
+    {
+      "game_name": "Paperboy",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor graphical glitches on boot up, perfect ingame."
+    },
+    {
+      "game_name": "Penny Racers",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried other bases and config.ini settings."
+    },
+    {
+      "game_name": "Penny Racers",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried other bases and config.ini settings."
+    },
+    {
+      "game_name": "Perfect Dark",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Requires the Japanese ROM header to work. Game stuters, but it is very playable."
+    },
+    {
+      "game_name": "Perfect Dark",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Requires the Japanese ROM header to work. Game stuters, but it is very playable."
+    },
+    {
+      "game_name": "Perfect Dark",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64 EU",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Game stuters, but it is very playable."
+    },
+    {
+      "game_name": "Pilotwings 64",
+      "game_region": "USA",
+      "base_name": "1080 Snowboarding",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't load."
+    },
+    {
+      "game_name": "Pilotwings 64",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't load."
+    },
+    {
+      "game_name": "Pocket Monsters Stadium Kin Gin (Pokémon Stadium 2)",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Very tiny GFX glitch around Pokémon HP boxes."
+    },
+    {
+      "game_name": "Pokémon Puzzle League",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Some GFX glitches, Loadiine v4 tested."
+    },
+    {
+      "game_name": "Pokémon Snap",
+      "game_region": "EUR",
+      "base_name": "Mario Kart 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "PAL versions either crash or not start at all even with the PAL ini made by Nintendo."
+    },
+    {
+      "game_name": "Pokémon Snap",
+      "game_region": "USA",
+      "base_name": "Mario Kart 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Red dot doesn't work, but pictures are recognized."
+    },
+    {
+      "game_name": "Pokémon Snap",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "N64 logo appears, then black screen."
+    },
+    {
+      "game_name": "Pokémon Snap",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Byteswapped ROM with Japanese header. Red dot doesn't work, but pictures are recognized."
+    },
+    {
+      "game_name": "Pokémon Snap",
+      "game_region": "JPN",
+      "base_name": "Pokémon Snap US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Checking for issues"
+    },
+    {
+      "game_name": "Pokémon Stadium",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Playable but it has some issues [Minor issues] The first caution screen is not displayed correctly. Menu graphics missing from the kids club when you first enter. Some Kids club minigames are missing effects. [Larger Problems] Illegal Move Checker is on the fritz randomly making moves purple along with trainer names. Photo Gallery will hardlock your Wii U if you try to view a picture."
+    },
+    {
+      "game_name": "Pokémon Stadium",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Playable but it has some issues [Minor issues] The first caution screen is not displayed correctly. Menu graphics missing from the kids club when you first enter. Some Kids club minigames are missing effects. [Larger Problems] Illegal Move Checker is on the fritz randomly making moves purple along with trainer names. Photo Gallery will hardlock your Wii U if you try to view a picture."
+    },
+    {
+      "game_name": "Pokémon Stadium 2",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Very tiny GFX glitch around Pokémon HP boxes."
+    },
+    {
+      "game_name": "Pokémon Stadium 2",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It worked, for some reason it crashes on championship (kids)"
+    },
+    {
+      "game_name": "Pokémon Stadium 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Polaris SnoCross",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Polaris SnoCross",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Polaris SnoCross",
+      "game_region": "USA",
+      "base_name": "Bomberman 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system hangs, tried several base roms, tested varios settings in the config ini file, same result. Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Premier Manager 64",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Puyo Puyo 4: Puyo Puyo~n Party",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Missing GFX, unplayable."
+    },
+    {
+      "game_name": "Puyo Puyo Sun 64",
+      "game_region": "JPN",
+      "base_name": "Super Mario 64 / Donkey Kong 64 EU",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2, has GFX issues, screen has small black outline squares like."
+    },
+    {
+      "game_name": "Puyo Puyo Sun 64",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "Tested on Loadiine GX2, has GFX issues, screen has small black outline squares like."
+    },
+    {
+      "game_name": "Puzzle Bobble 64",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Quake 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "It may randomly freeze when entering water or other liquids, besides that it works fine."
+    },
+    {
+      "game_name": "Quake 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly with this .ini file, changed ini to allow for mempak emulation works perfectly injected on Mario party 2. Spell graphics are glitched."
+    },
+    {
+      "game_name": "Quest 64",
+      "game_region": "USA",
+      "base_name": "Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Region unknown for base and game. Boots to black screen, system freezes, constantly asks for a memory pak."
+    },
+    {
+      "game_name": "Rakuga Kids",
+      "game_region": "EUR",
+      "base_name": "Mario Party 2 US",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great (NTSC Patch as well)."
+    },
+    {
+      "game_name": "Rakuga Kids",
+      "game_region": "JPN",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great."
+    },
+    {
+      "game_name": "Rampage - World Tour",
+      "game_region": "USA",
+      "base_name": "Bomberman 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "New ini provided fixes all or most issues the game had before"
+    },
+    {
+      "game_name": "Rampage 2 - Universal Tour",
+      "game_region": "USA",
+      "base_name": "Bomberman 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes on boot."
+    },
+    {
+      "game_name": "Rayman 2",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "The game starts then it suddenly freezes Wii U when hitting a button."
+    },
+    {
+      "game_name": "Re-Volt",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Re-Volt",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Re-Volt",
+      "game_region": "USA",
+      "base_name": "Bomberman 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Ready 2 Rumble Boxing",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes on boot."
+    },
+    {
+      "game_name": "Resident Evil 2",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. If someone knows a way to convert the INI file from Biohazard 2 (J) to the (E) or (U) version, please post it here."
+    },
+    {
+      "game_name": "Resident Evil 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Blank ini"
+    },
+    {
+      "game_name": "Resident Evil Archives: Resident Evil",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes on boot."
+    },
+    {
+      "game_name": "Ridge Racer 64",
+      "game_region": "USA",
+      "base_name": "Yoshi's Story",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Same audio issues as DK64, uses point-sampling for audio. UPDATED NOTES: Game uses EEPROM (16 Kbits) save, previous host used for this game does not support EEPROM save so your progress is NOT saved, instead use Yoshi's Story USA as the base. This game supports EEPROM save, inject with the ini config info provided."
+    },
+    {
+      "game_name": "Road Rash 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Game to Fast, Sound stutters"
+    },
+    {
+      "game_name": "Robotron 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Text is dimmed on the pause menu and HUD."
+    },
+    {
+      "game_name": "Rocket: Robot on Wheels",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Perfect with ini."
+    },
+    {
+      "game_name": "Rush 2 - Extreme Racing",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Rush 2 - Extreme Racing USA",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor graphic glitches, but playable, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "S.C.A.R.S.",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "GFX colour issues on level, no sound, somewhat playable."
+    },
+    {
+      "game_name": "San Francisco Rush - Extreme Racing",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor graphic glitches, graphics missing at car selection screen, black screen for a few moments before the race starts, playable, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "San Francisco Rush 2049",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No sound, graphic glitches, system freezes when race starts, adding ini settings will get black screen on boot and system freeze, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "San Francisco Rush 2049",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "No sound, graphic glitches, system freezes when race starts, adding ini settings will get black screen on boot and system freeze, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Scooby-Doo - Classic Creep Capers",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested and works fine. UPDATE: Game requires MemPak = 1 entry in the ini settings for game to save, updated ini settings."
+    },
+    {
+      "game_name": "Shadowgate 64: Trials of the Four Towers",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "The game works perfectly except any book you have if you try to read any page other than the first page the game will freeze sadly."
+    },
+    {
+      "game_name": "Shadowgate 64: Trials of the Four Towers",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "The game works perfectly except any book you have if you try to read any page other than the first page the game will freeze sadly."
+    },
+    {
+      "game_name": "Shadowgate 64: Trials of the Four Towers",
+      "game_region": "JPN",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "The game stops working after selecting New Game"
+    },
+    {
+      "game_name": "Shadowman",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes on startup. Have to power off."
+    },
+    {
+      "game_name": "sm64.z64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "After booting up the game and seeing the splashscreen, the Wii U crashes on a black screen."
+    },
+    {
+      "game_name": "Smash Remix",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Super Smash Bros. rom hack by Smash Remix Team. Game randomly crashes, still playable."
+    },
+    {
+      "game_name": "Smash Remix (0.9.7)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Only tested on Cemu to ascertain the injection working. This game required the expansion pack and will need more injections when updated to 0.9.8 and beyond."
+    },
+    {
+      "game_name": "Smash Remix (0.9.7)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "None"
+    },
+    {
+      "game_name": "Smash Remix (1.0.0)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Base doesn't seem to affect if it'll work or not."
+    },
+    {
+      "game_name": "Smash Remix (1.0.1)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Base doesn't seem to affect if it'll work or not."
+    },
+    {
+      "game_name": "Smash Remix (1.1.0)",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use a Hexidecimal editor to change the NALE code to NALJ, then use the ini posted  https://discord.com/channels/386898225161961493/461150523366834177/956241344702079036 Extra Notes: Hexadecimal editors are able to go into roms and change values within. In this case, changing a patched rom’s region code from NALE to NALJ is changing it from an English release(usually meant to represent the US) to Japan. The internal code and language of the game isn’t changed, it’s just the identifier that the console uses is. In this case, the .ini will recognize the rom as Japanese and will function. Otherwise, changing the region identifier is the only way to run the game on Wii U right now. Do not check Widescreen because it doesn't work. If you're having issues with a newer version of the mod, try tweaking the settings in the ini file. And lastly, it should be obviously, but use the ini file that's linked here and not the ini file that UWUVCI offers."
+    },
+    {
+      "game_name": "Smash Remix 1.5.2",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "The rom was was changed to NALJ using a hex edit and the NALJ0_SMASH_REMIX.ini was used. Wide screen was working and restore points. The Community Screen made was still missing."
+    },
+    {
+      "game_name": "Snobow Kids",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Seems to work great on F-Zero X."
+    },
+    {
+      "game_name": "Snowboard Kids",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Seems to work great on F-Zero X. Updated notes: System crashes when exiting the PAINT section of the Board Shop, game is still playable if you dont enter the PAINT section, although game will be difficult to complete. Tried various bases, some have same issue while other bases the games has missing gfx at the intro and the game is very slow, around 10fps."
+    },
+    {
+      "game_name": "Snowboard Kids 2",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Sonic Physics (SM64 Rom Hack)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to white screen after pressing start at Mario's head intro."
+    },
+    {
+      "game_name": "South Park",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Locks up on startup. Have to power off."
+    },
+    {
+      "game_name": "South Park Rally",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game is temporarily muted. Temporary softlock when a character is chosen until sound comes. Poor field vision on courses with the background graphic being dominant. Moving the cursor quickly or too much on character selection can freeze the Wii U."
+    },
+    {
+      "game_name": "South Park: Chef's Luv Shack",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't load. Can exit."
+    },
+    {
+      "game_name": "Space Invaders",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor audio issues, minor slow down on levels with 40+ enemies or objects on screen (back to speed when killing 2-5 enemies), minor graphical glitches: Shield, Time Stop, background ambien effects on Mars, none/little/unnoticeable in other planets. Save State recommended for saving. Mars is unbeatable in 2 Player mode in both Expert and Maniacal difficulties."
+    },
+    {
+      "game_name": "Space Station Silicon Valley",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Nothing loads but the VC menu can be opened."
+    },
+    {
+      "game_name": "Spamton in SM64",
+      "game_region": "USA",
+      "base_name": "DK64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Nothing loads but the VC menu can be opened."
+    },
+    {
+      "game_name": "Spider-Man",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Scrambled text and level loads/plays at less than 1 FPS."
+    },
+    {
+      "game_name": "Spider-Man 2000",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Text is scrambled, game does opening narration and freezes, I know it uses the same engine as the Tony Hawk games."
+    },
+    {
+      "game_name": "Star Fox 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works fine"
+    },
+    {
+      "game_name": "Star Fox 64",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works fine"
+    },
+    {
+      "game_name": "Star Soldier: Vanishing Earth",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Star Twins",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Audio works but almost all graphics are missing. Unplayable."
+    },
+    {
+      "game_name": "Star Wars Episode I: Battle for Naboo",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Star Wars Episode I: Racer",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into the first 2 startup game logos, then freezes Wii U. Tried several base roms, same issue. Loadiine GX2"
+    },
+    {
+      "game_name": "Star Wars: Rogue Squadron",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Star Wars: Shadows of the Empire",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "3D models dont show up ingame."
+    },
+    {
+      "game_name": "StarCraft 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Starshot: Space Circus Fever",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Stunt Racer 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Super Donkey Kong 64 (SM64 ROM Hack)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sits on a black screen upon bootup, still have access to home menu and VC menu. Loadiine GX2."
+    },
+    {
+      "game_name": "Super Donkey Kong 64 (SM64 ROM Hack)",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Sits on a black screen upon bootup, still have access to home menu and VC menu. Loadiine GX2."
+    },
+    {
+      "game_name": "Super Mario 64",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Additionnal requirements: I used the rom renamer from https://www.romhacking.net/utilities/791/ to change the country of the rom from USA to Japan with the header editor tool (in the tools tab) and then used the new beta release of UWUVCI AIO to do the rest (it chose me the right .ini config file."
+    },
+    {
+      "game_name": "Super Mario 64 - 60FPS + Widescreen V2",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Used the 60FPS with the Widescreen V2 mod by Kaze Emanuar. Works great with the dark filter disabled with Widescreen enabled by editing the FrameLayout.arc file."
+    },
+    {
+      "game_name": "Super Mario 64 3D World",
+      "game_region": "USA",
+      "base_name": "Mario Party 2",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Mario 64 Chaos Edition V1.3",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Whenever it tries to load a map it crashes, making the game IMPOSSIBLE to play."
+    },
+    {
+      "game_name": "Super Mario 64 Last Impact",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Title screen loads, then softlocks Wii U."
+    },
+    {
+      "game_name": "Super Mario 64 Maker v1.3",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen after the game title, tried various ini settings, same result, possible cause due to the size of the rom, it's 64mb, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Super Mario 64 Maker v1.3",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen after the game title, tried various ini settings, same result, possible cause due to the size of the rom, it's 64mb, tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Super Mario 64 Multiplayer v1.3",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen and freezes Wii U"
+    },
+    {
+      "game_name": "Super Mario 64 Multiplayer v1.3",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen, resetting via VC menu loads but crashes after choosing a file"
+    },
+    {
+      "game_name": "Super Mario 64 Multiplayer v1.3",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "You can hear “it’s me, Mario!” but all that shows on the TV and gamepad screen is a black screen."
+    },
+    {
+      "game_name": "Super Mario 64 Ocarina of Time",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64 US",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "System crashes after Mario head intro, missing voice over sound."
+    },
+    {
+      "game_name": "Super Mario 64 Ocarina of Time",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "System crashes after Mario head intro, missing voice over sound."
+    },
+    {
+      "game_name": "Super Mario 64 Ocarina of Time",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "System crashes after Mario head intro, missing voice over sound."
+    },
+    {
+      "game_name": "Super Mario 64 Shindou Edition",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great + Rumble features"
+    },
+    {
+      "game_name": "Super Mario 64 Shindou Edition",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great + Rumble features"
+    },
+    {
+      "game_name": "Super Mario 64 Shinning Stars 3",
+      "game_region": "EUR",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Using SmM4 ini file"
+    },
+    {
+      "game_name": "Super Mario 64 Splitscreen Multiplayer by Kaze Emanuar",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't even boot up, crashes the Wii U"
+    },
+    {
+      "game_name": "Super Mario 74",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Boots to white screen and system crash after pressing start at the Mario head screen."
+    },
+    {
+      "game_name": "Super Mario Odyssey 64 v3",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "This game is an SM64 mod by Kaze Emanuar made to replicate Cappy's abilities from the upcoming Super Mario Odyssey for Nintendo Switch."
+    },
+    {
+      "game_name": "Super Mario Odyssey 64 v4",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly."
+    },
+    {
+      "game_name": "Super Mario Odyssey 64 v5",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works perfectly."
+    },
+    {
+      "game_name": "Super Mario Star Road (Rom hack by SKELUX)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Splash Screen will work but after that the Wii U crashes."
+    },
+    {
+      "game_name": "Super Portal 64 (ROM hack by Kaze Emanuar)",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Super Mario 64 ROM hack by Kaze Emanuar."
+    },
+    {
+      "game_name": "Super Releasio 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Gets to title screen, and then goes black. Meme hack, can be found here: https://www.youtube.com/watch?v=wYxMhCXyTkA"
+    },
+    {
+      "game_name": "Super Releasio 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "JPN",
+      "status": 0,
+      "notes": "Gets to title screen, and then goes black. Meme hack, can be found here: https://www.youtube.com/watch?v=wYxMhCXyTkA"
+    },
+    {
+      "game_name": "Super Robot Spirits",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Missing GFX, unplayable."
+    },
+    {
+      "game_name": "Super Robot Taisen 64",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Open the ROM with an hex editor and replace gameid for the JPN gameid and use the Super Smash Bros. JPN config file already made by Nintendo, seems to work perfectly."
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Also works on EUR region console."
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Blank ini"
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "EUR",
+      "base_name": "Super Mario 64 JP/Donkey Kong 64 USA",
+      "base_region": "JPN",
+      "status": 0,
+      "notes": "It freeze after the cutscene"
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It freeze after the cutscene"
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "EUR",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Works perfectly fine with no gameplay or graphical issues until anything gets ko'd, in which case the game will freeze."
+    },
+    {
+      "game_name": "Super Smash Bros.",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use the ini made by Nintendo from the Wii VC and switch the rom header to Japanese."
+    },
+    {
+      "game_name": "Super Smash Bros. 19XX",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Tried various bases and config INI settings, system crashes after character selection screen, works fine using Wii N64 Emulators."
+    },
+    {
+      "game_name": "Superman 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U on boot."
+    },
+    {
+      "game_name": "Susume! Taisen Puzzle Dama Toukon! Marumata Chou",
+      "game_region": "JPN",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "The game launches but it's just a mess of color squares and it's the same during gameplay, sadly..."
+    },
+    {
+      "game_name": "Sydney 2000",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game freezes when selecting an event, at times you will get past the event selection screen, when event starts it freezes system. Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Sydney 2000",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game freezes when selecting an event, at times you will get past the event selection screen, when event starts it freezes system. Tested on Loadiine GX2"
+    },
+    {
+      "game_name": "Tarzan",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system crashes, tried various bases and config ini settings, same result."
+    },
+    {
+      "game_name": "Tedious Mario 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "SM64 Rom hack by Kaze Emanuar."
+    },
+    {
+      "game_name": "Tetris 64",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried other bases and ini settings, same result."
+    },
+    {
+      "game_name": "Tetrisphere",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes 2 seconds after launching."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask",
+      "game_region": "EUR",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested on PAL Wii U with Loadiine v4."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask",
+      "game_region": "JPN",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use same ini file as base rom, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask (Debug ROM)",
+      "game_region": "EUR",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine GX2. Anything that crashes on real N64 hardware will crash but otherwise stable. Frame buffer textures sometimes corrupt but this doesn't impact gameplay. Change the player on the GamePad to access the different debugging options."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask (GCN)",
+      "game_region": "USA",
+      "base_name": "Yoshi's Story",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Loadiine GX2. Crashes upon loading the file select screen."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask Master Quest",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use same ini file as base rom, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "The Legend of Zelda: Majora's Mask Randomiser (2019)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use same ini file as base rom, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "The Legend of Zelda: Nimpize Adventure (OoT ROM Hack)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Ocarina of Time",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen after the Nintendo logo, however system doesn't freeze and you can exit out of the game. Tried other bases, exact same results."
+    },
+    {
+      "game_name": "The Legend of Zelda: Ocarina of Time",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64 / Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4 tested."
+    },
+    {
+      "game_name": "The Legend of Zelda: Ocarina of Time (Debug ROM)",
+      "game_region": "EUR",
+      "base_name": "Sin and Punishment",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine GX2. Apply the subscreen fix patch first. Anything that crashes on actual N64 hardware will crash but otherwise stable. All debug functions seem to work. Change the player on the GamePad to access the different debugging options."
+    },
+    {
+      "game_name": "The Legend of Zelda: Ocarina of Time (Redux v2.2)",
+      "game_region": "USA",
+      "base_name": "Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "CopyDepthBuffer had to be switched off, otherwise the pause menu background went technicolor. Equipment menu model is blacked out either way. However, the game also crashes the entire system upon opening the first door inside the Deku Tree. Another custom configuration softlocks during Navi's flight before gameplay even begins."
+    },
+    {
+      "game_name": "The Legend of Zelda: Ocarina of Time (Redux v2.2)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "CopyDepthBuffer had to be switched off, otherwise the pause menu background went technicolor. Equipment menu model is blacked out either way. However, the game also crashes the entire system upon opening the first door inside the Deku Tree. Another custom configuration softlocks during Navi's flight before gameplay even begins."
+    },
+    {
+      "game_name": "The Legend of Zelda: Ocarina of Time Randomizer",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Ocarina of Time",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Using AmazingAmpharos's OoT-Randomizer."
+    },
+    {
+      "game_name": "The Legend of Zelda: The Missing Link",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Most of the HUD isn't shown."
+    },
+    {
+      "game_name": "The Legend of Zelda: The Missing Link",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game blackscreens. Automatically creates ini. Only tested on loadiine."
+    },
+    {
+      "game_name": "The Legend of Zelda: Zelda's Birthday (OoT ROM Hack)",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "It will load fine and play fine but the graphics will bug out (a lot) and the game will crash the entire Wii U commonly. I wouldn't recommend messing around with this one. Loadiine GX2."
+    },
+    {
+      "game_name": "The New Tetris",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game works fine however you will not be able to see the tetris pieces fall, you will eventually see it when it falls to the bottom of the screen, unplayable."
+    },
+    {
+      "game_name": "The New Tetris",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Game works fine however you will not be able to see the tetris pieces fall, you will eventually see it when it falls to the bottom of the screen, unplayable."
+    },
+    {
+      "game_name": "The Powerpuff Girls - Chemical X-Traction",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "GFX issues, missing/glitched character sprites, somewhat playable."
+    },
+    {
+      "game_name": "Tigger's Honey Hunt",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Missing some GFX layers on the main menu selection screen, colour of subtitle text looks darker than normal but still readable, very playable."
+    },
+    {
+      "game_name": "Tom and Jerry in Fists of Furry",
+      "game_region": "USA",
+      "base_name": "Excitebike 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Most items such as chairs and weapons are black, others like piles of hay are invisible; game otherwise works."
+    },
+    {
+      "game_name": "Tom Clancy's Rainbow Six",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor GFX glitches, controller pak emulation doesnt work, Loadiine v4 tested."
+    },
+    {
+      "game_name": "Tonic Trouble",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Title menu is distorted so we can't choose the language, but ingame seems perfect with the ini."
+    },
+    {
+      "game_name": "Tonic Trouble",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Title menu is distorted but ingame seems perfect with the ini."
+    },
+    {
+      "game_name": "Tony Hawk Pro Skater",
+      "game_region": "USA",
+      "base_name": "Pokémon Snap",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "It DOES boot. Text appears but is unreadable, as only a few characters appear. Progressing past boots into game intro, which runs horribly. Haven't managed to get past it."
+    },
+    {
+      "game_name": "Tony Hawk Pro Skater 2",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Top Gear Overdrive",
+      "game_region": "EUR",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Intro loads, system freezes when A button is pressed at the snowblind logo, if RamSize = 0x400000 is used, still black screen after pressing A but able to exit game without system freezing."
+    },
+    {
+      "game_name": "Top Gear Rally",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried various ini config settings, same results."
+    },
+    {
+      "game_name": "Top Gear Rally",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots to black screen, system freezes, tried various ini config settings, same results."
+    },
+    {
+      "game_name": "Toy Story 2",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Intro and up until the game starts, the gfx is kind of messed up, however game play is fine with some missing gfx, like battery meter, game has no sound, however still somewhat playable."
+    },
+    {
+      "game_name": "Transformers - Beast Wars Transmetals",
+      "game_region": "USA",
+      "base_name": "1080 Snowboarding",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Tsumi to Batsu - Sin & Punishment (English Translation)",
+      "game_region": "JPN",
+      "base_name": "Sin & Punishment",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Turok - Dinosaur Hunter",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Glitchy & randomly freezes ingame."
+    },
+    {
+      "game_name": "Turok - Dinosaur Hunter",
+      "game_region": "USA",
+      "base_name": " Mario Golf",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Glitchy & randomly freezes ingame."
+    },
+    {
+      "game_name": "Turok - Dinosaur Hunter",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Glitchy & randomly freezes ingame."
+    },
+    {
+      "game_name": "Turok 2: Seeds of Evil",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Turok 2: Seeds of Evil",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Turok 3: Shadow of Oblivion",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Turok 3: Shadow of Oblivion",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Turok Rage Wars",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Vigilante 8",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Vigilante 8 Second Offense",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Doesn't boot."
+    },
+    {
+      "game_name": "Virtual Chess 64",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Stuttering sound but game is playable, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Virtual Pro Wrestling 2: Ōdō Keishō",
+      "game_region": "JPN",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot but you can access the home menu to exit the game."
+    },
+    {
+      "game_name": "Waialae Country Club: True Golf Classics",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "EUR",
+      "status": 2,
+      "notes": "RetraceByVsync has to be turned on to reduce lag. Sky area is broken, but the game is still very playable."
+    },
+    {
+      "game_name": "Waluigi's Taco Stand",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Add \"RamSize = 0x800000\" under \"[RomOption]\" on the ini made by Nintendo. Will work on console too rather than just Loadiine."
+    },
+    {
+      "game_name": "Waluigi's Taco Stand 64",
+      "game_region": "USA",
+      "base_name": "Super Mario 64",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "SM64 rom hack by Kaze Emanuar."
+    },
+    {
+      "game_name": "War Gods",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor GFX issues, very playable."
+    },
+    {
+      "game_name": "Wave Race 64",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Loadiine v4.0 tested."
+    },
+    {
+      "game_name": "Wave Race 64 - Shindou Edition",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Works great, and with rumble pak features."
+    },
+    {
+      "game_name": "Wayne Gretzky's 3D Hockey",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested with Loadiine GX2."
+    },
+    {
+      "game_name": "Wayne Gretzky's 3D Hockey '98",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Tested with Loadiine GX2."
+    },
+    {
+      "game_name": "WCW Backstage Assault",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Black screen on boot. Have to power off."
+    },
+    {
+      "game_name": "WCW Mayhem",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Same as above."
+    },
+    {
+      "game_name": "WCW Nitro",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "See above."
+    },
+    {
+      "game_name": "WCW vs. nWo: World Tour (v1.1)",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "White flash crash after THQ logo."
+    },
+    {
+      "game_name": "WCW/nWo Revenge",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphical mess and menus can't be read."
+    },
+    {
+      "game_name": "Wetrix",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Ocarina of Time",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "<p>Minor graphical glitches.</p>        <p>Game crashes when water is dropped onto area.</p>"
+    },
+    {
+      "game_name": "Wetrix",
+      "game_region": "USA",
+      "base_name": "Sin and Punishment",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "Title screen works 100% but ingame stages has major glitches, including leftover text trails and in-displayable area."
+    },
+    {
+      "game_name": "Wild Choppers",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Working nicely"
+    },
+    {
+      "game_name": "WinBack - Covert Operations",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Minor GFX glitches, Loadiine v4.0 tested."
+    },
+    {
+      "game_name": "Wipeout 64",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes the Wii U on boot."
+    },
+    {
+      "game_name": "Wonder Project J 2 (English Translation)",
+      "game_region": "JPN",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Use ini config, tested with Loadiine GX2."
+    },
+    {
+      "game_name": "World Cup 98",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes Wii U."
+    },
+    {
+      "game_name": "World Driver Championship",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "World Driver Championship",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Worms Armageddon",
+      "game_region": "USA",
+      "base_name": "F-Zero X",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "Worms Armageddon",
+      "game_region": "USA",
+      "base_name": "Donkey Kong 64",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Boots into black screen, system hangs, tested on Loadiine GX2."
+    },
+    {
+      "game_name": "WWF Attitude",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 1,
+      "notes": "No sound."
+    },
+    {
+      "game_name": "WWF No Mercy",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphical mess and menus can't be read."
+    },
+    {
+      "game_name": "WWF War Zone",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Crashes past the Press Start screen."
+    },
+    {
+      "game_name": "WWF WrestleMania 2000",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Graphical mess and menus can't be read."
+    },
+    {
+      "game_name": "Xena: Warrior Princess: The Talisman of Fate",
+      "game_region": "USA",
+      "base_name": "Paper Mario",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Freezes the Wii U on boot."
+    },
+    {
+      "game_name": "Yoshi's Story",
+      "game_region": "USA",
+      "base_name": "Donkey Kong",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Requires Japanese ROM header, or it softlock after the Nintendo logo."
+    },
+    {
+      "game_name": "Yoshi's Story",
+      "game_region": "USA",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "Requires Japanese ROM header, or it softlock after the Nintendo logo."
+    },
+    {
+      "game_name": "Yoshi's Story",
+      "game_region": "JPN",
+      "base_name": "Donkey Kong",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Yoshi's Story",
+      "game_region": "JPN",
+      "base_name": "Mario Golf",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "None"
+    },
+    {
+      "game_name": "Zelda 64: Dawn and Dusk (OoT Rom Hack)",
+      "game_region": "USA",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 2,
+      "notes": "v2.0 rom hack by Captain Seedy-Eye, 64DD ported by LuigiBlood. UPDATE: Using The Legend of Zelda: Majora's Mask as the base, it has been confirmed that the game can be completed 100%."
+    },
+    {
+      "game_name": "Zhipian Maliou",
+      "game_region": "CHN",
+      "base_name": "The Legend of Zelda: Majora's Mask",
+      "base_region": "USA",
+      "status": 0,
+      "notes": "Crashes shortly after title screen."
+    }
+  ]
+}

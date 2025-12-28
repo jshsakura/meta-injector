@@ -1,0 +1,52 @@
+{
+   "compatibility":[
+      {
+         "game_name":"Factory Infection",
+         "game_region":"JPN",
+         "base_name":"Goemon",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"Also works on EUR region console."
+      },
+      {
+         "game_name":"Hi no Tori Houou-hen",
+         "game_region":"JPN",
+         "base_name":"Ganbare Goemon! Karakuri Douchuu",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Metal Gear",
+         "game_region":"EUR",
+         "base_name":"Goemon",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"VC is in japanese, so I don't understand any configuration options or so."
+      },
+      {
+         "game_name":"Metal Gear 2: Solid Snake",
+         "game_region":"JPN",
+         "base_name":"Space Manbow",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"Also works with the English fan translation."
+      },
+      {
+         "game_name":"ROMU6",
+         "game_region":"JPN",
+         "base_name":"Goemon",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"None"
+      },
+      {
+         "game_name":"Vampire Killer",
+         "game_region":"JPN",
+         "base_name":"Goemon",
+         "base_region":"JPN",
+         "status":2,
+         "notes":"None"
+      }
+   ]
+}

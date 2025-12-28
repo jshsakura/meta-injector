@@ -1,3 +1,0 @@
-
-disc-type = Wii
-image-type = ISO
