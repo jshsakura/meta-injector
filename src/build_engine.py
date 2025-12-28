@@ -933,9 +933,12 @@ class BuildEngine:
                 else:
                     print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
 
-            # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
+            # Re-pack with --psel WHOLE and original disc size (UWUVCI no-trim mode)
+            # --disc-size ensures padding is added to match original Wii disc size (4.37GB)
+            # This is required for games like Super Paper Mario where save fails with trimmed ISO
             game_iso = self.paths.temp_source / "game.iso"
-            args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
+            WII_DISC_SIZE = 4699979776  # 4.37GB - standard Wii disc size
+            args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --disc-size {WII_DISC_SIZE} --iso'
             # Korean games: change encryption key from Korean Key to Standard Common Key
             if is_korean_game:
                 args += ' --common-key STANDARD'
