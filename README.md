@@ -148,4 +148,3 @@ Meta-Injector/
 
 ---
 **Wii U 홈브루 커뮤니티를 위해 ❤️를 담아 제작되었습니다.**
-*Version: 1.0.0-beta*
