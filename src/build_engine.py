@@ -822,28 +822,35 @@ class BuildEngine:
         # Convert WBFS to ISO if needed
         if str(game_path).lower().endswith('.wbfs'):
             self.update_progress(62, tr.get("progress_converting_wbfs"))
-            wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
-            # IMPORTANT: WBFS is already trimmed format and cannot be restored to full size!
-            # WBFS has already removed all empty space from the original disc.
-            # If no-trim mode is required, you must use an untrimmed ISO file.
 
             if disable_trimming:
-                print(f"[WBFS] WARNING: No-trim mode requested, but WBFS is already trimmed!")
-                print(f"[WBFS] Cannot restore to original disc size from WBFS.")
-                print(f"[WBFS] For no-trim mode, please use an untrimmed ISO file instead.")
-                print(f"[WBFS] Proceeding with trimmed conversion...")
+                # Use wbfs_file.exe to convert WBFS to full-size ISO (TeconMoon style)
+                # This preserves the original disc size, required for games with save issues
+                wbfs_file_exe = self.paths.temp_tools / "EXE" / "wbfs_file.exe"
+                print(f"[WBFS] No-trim mode: Converting to full-size ISO using wbfs_file.exe")
+                args = f'"{game_path}" convert "{pre_iso}"'
 
-            # WBFS → ISO conversion (always trimmed)
-            args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
+                if not self.run_tool(wbfs_file_exe, args, timeout=1800, show_output=True):
+                    error_msg = f"WBFS conversion failed (wbfs_file.exe)\n"
+                    error_msg += f"Error: {self.last_tool_error}\n"
+                    error_msg += f"\nPossible causes:\n"
+                    error_msg += f"- Corrupted WBFS file\n"
+                    error_msg += f"- Invalid WBFS format\n"
+                    error_msg += f"- Insufficient disk space (full-size ISO requires ~4.7GB)"
+                    raise RuntimeError(error_msg)
+            else:
+                # Use WIT for trimmed conversion (faster, smaller output)
+                wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
+                args = f'copy --source "{game_path}" --dest "{pre_iso}" -I'
 
-            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                error_msg = f"WBFS conversion failed\n"
-                error_msg += f"WIT error: {self.last_tool_error}\n"
-                error_msg += f"\nPossible causes:\n"
-                error_msg += f"- Corrupted WBFS file\n"
-                error_msg += f"- Invalid WBFS format\n"
-                error_msg += f"- Insufficient disk space"
-                raise RuntimeError(error_msg)
+                if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+                    error_msg = f"WBFS conversion failed\n"
+                    error_msg += f"WIT error: {self.last_tool_error}\n"
+                    error_msg += f"\nPossible causes:\n"
+                    error_msg += f"- Corrupted WBFS file\n"
+                    error_msg += f"- Invalid WBFS format\n"
+                    error_msg += f"- Insufficient disk space"
+                    raise RuntimeError(error_msg)
         else:
             # Copy ISO to pre.iso
             self.update_progress(62, tr.get("progress_copying_iso"))
@@ -1277,17 +1284,38 @@ class BuildEngine:
             cache_banner = options.get("cache_banner_path")
             cache_drc = options.get("cache_drc_path")
 
+            # Default images for fallback
+            from .resources import resources
+            default_icon = resources.resources_dir / "images" / "default_icon.png"
+            default_banner = resources.resources_dir / "images" / "default_banner.png"
+            default_drc = resources.resources_dir / "images" / "default_drc.png"
+
             if cache_icon and cache_icon.exists():
                 shutil.copy2(cache_icon, self.paths.temp_icon)
                 print(f"  ✓ Icon copied: {cache_icon} -> {self.paths.temp_icon}")
+            elif default_icon.exists():
+                shutil.copy2(default_icon, self.paths.temp_icon)
+                print(f"  ⚠ Icon fallback: using default image")
+            else:
+                print(f"  ✗ Icon: no cache and no default image!")
 
             if cache_banner and cache_banner.exists():
                 shutil.copy2(cache_banner, self.paths.temp_banner)
                 print(f"  ✓ Banner copied: {cache_banner} -> {self.paths.temp_banner}")
+            elif default_banner.exists():
+                shutil.copy2(default_banner, self.paths.temp_banner)
+                print(f"  ⚠ Banner fallback: using default image")
+            else:
+                print(f"  ✗ Banner: no cache and no default image!")
 
             if cache_drc and cache_drc.exists():
                 shutil.copy2(cache_drc, self.paths.temp_drc)
                 print(f"  ✓ DRC copied: {cache_drc} -> {self.paths.temp_drc}")
+            elif default_drc.exists():
+                shutil.copy2(default_drc, self.paths.temp_drc)
+                print(f"  ⚠ DRC fallback: using default image")
+            else:
+                print(f"  ✗ DRC: no cache and no default image!")
 
             # Copy core tools to temp (fresh copy for each build)
             print("[SETUP] Copying core tools...")

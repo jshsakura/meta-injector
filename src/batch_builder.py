@@ -1,4 +1,5 @@
 """Batch build system for multiple game files."""
+import shutil
 from pathlib import Path
 from typing import List, Dict, Optional
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -19,15 +20,109 @@ class BatchBuildJob:
         self.error_message = ""
         self.title_name = ""
         self.title_id = ""
+
+        # ═══════════════════════════════════════════════════════════════════════════
+        # IMAGE MANAGEMENT SYSTEM
+        # ═══════════════════════════════════════════════════════════════════════════
+        # Each image type (icon, banner, drc) has:
+        # 1. *_path: Current image path to use for build
+        # 2. *_source: Where the image comes from ("auto", "user", "default")
+        # 3. auto_*_path: Cached path of auto-downloaded image (for restore)
+        # 4. user_*_path: Original path of user-selected image
+        #
+        # When user selects custom image:
+        #   - user_*_path = user's file path
+        #   - *_source = "user"
+        #   - *_path = user's file path (will be processed to cache)
+        #
+        # When restoring to auto:
+        #   - *_source = "auto"
+        #   - *_path = auto_*_path (cached auto image)
+        # ═══════════════════════════════════════════════════════════════════════════
+
+        # Current image paths (used for build)
         self.icon_path: Optional[Path] = None
         self.banner_path: Optional[Path] = None
         self.drc_path: Optional[Path] = None
+
+        # Image source type: "auto" | "user" | "default"
+        self.icon_source = "auto"
+        self.banner_source = "auto"
+        self.drc_source = "auto"  # "auto" means generated from banner
+
+        # Auto-downloaded image paths (for restore to auto)
+        self.auto_icon_path: Optional[Path] = None
+        self.auto_banner_path: Optional[Path] = None
+        self.auto_drc_path: Optional[Path] = None
+
+        # User-selected original image paths
+        self.user_icon_path: Optional[Path] = None
+        self.user_banner_path: Optional[Path] = None
+        self.user_drc_path: Optional[Path] = None
+
+        # Flags to force reprocessing
+        self.icon_edited = False
+        self.banner_edited = False
+        self.drc_edited = False
+
         self.gamepad_compatibility = ""  # Gamepad support info from DB
         self.host_game = ""  # Host game name from DB
         self.pad_option = "wiimote"  # wiimote, horizontal_wiimote, or gamepad
         self.selected_cc_patch: Optional[dict] = None  # User selected CC patch override
         self.has_output_conflict = False  # Mark if output path conflicts with another job
         self.no_trim = False  # Don't trim ISO (fixes save issues for some games like Super Paper Mario)
+
+    def set_user_icon(self, path: Path):
+        """Set user-selected icon image."""
+        self.user_icon_path = path
+        self.icon_path = path
+        self.icon_source = "user"
+        self.icon_edited = True
+
+    def set_user_banner(self, path: Path):
+        """Set user-selected banner image."""
+        self.user_banner_path = path
+        self.banner_path = path
+        self.banner_source = "user"
+        self.banner_edited = True
+
+    def set_user_drc(self, path: Path):
+        """Set user-selected DRC (GamePad) image."""
+        self.user_drc_path = path
+        self.drc_path = path
+        self.drc_source = "user"
+        self.drc_edited = True
+
+    def restore_auto_icon(self):
+        """Restore icon to auto-downloaded image."""
+        if self.auto_icon_path and self.auto_icon_path.exists():
+            self.icon_path = self.auto_icon_path
+            self.icon_source = "auto"
+            self.icon_edited = True  # Force reprocessing to apply badge
+            return True
+        return False
+
+    def restore_auto_banner(self):
+        """Restore banner to auto-downloaded image."""
+        if self.auto_banner_path and self.auto_banner_path.exists():
+            self.banner_path = self.auto_banner_path
+            self.banner_source = "auto"
+            self.banner_edited = True
+            return True
+        return False
+
+    def restore_auto_drc(self):
+        """Restore DRC to auto-generated image (from banner)."""
+        if self.auto_drc_path and self.auto_drc_path.exists():
+            self.drc_path = self.auto_drc_path
+            self.drc_source = "auto"
+            self.drc_edited = True
+            return True
+        return False
+
+    def has_auto_images(self) -> bool:
+        """Check if auto-downloaded images exist."""
+        return bool(self.auto_icon_path and self.auto_icon_path.exists())
 
 
 class BatchBuilder(QThread):
@@ -117,8 +212,10 @@ class BatchBuilder(QThread):
         self.all_finished.emit(success_count, total)
 
     def download_icons(self, job: BatchBuildJob, game_id: str):
-        """Download icon and banner for game."""
-        cucholix_id = game_id[:4] if len(game_id) >= 4 else game_id
+        """Download icon and banner for game to permanent cache."""
+        # Use permanent cache directory (not temp - survives across builds)
+        cache_dir = paths.images_cache / game_id
+        cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Try different ID variations
         id_variations = [
@@ -134,16 +231,25 @@ class BatchBuilder(QThread):
                 # Download icon
                 icon_response = requests.get(icon_url, timeout=5)
                 if icon_response.status_code == 200:
-                    icon_path = paths.temp_source / f"icon_{game_id}.png"
+                    icon_path = cache_dir / "icon.png"
                     icon_path.write_bytes(icon_response.content)
                     job.icon_path = icon_path
+                    job.auto_icon_path = icon_path
+                    job.icon_source = "auto"
 
                     # Download banner
                     banner_response = requests.get(banner_url, timeout=5)
                     if banner_response.status_code == 200:
-                        banner_path = paths.temp_source / f"banner_{game_id}.png"
+                        banner_path = cache_dir / "banner.png"
                         banner_path.write_bytes(banner_response.content)
                         job.banner_path = banner_path
+                        job.auto_banner_path = banner_path
+                        job.banner_source = "auto"
+
+                        # DRC from banner
+                        job.drc_path = banner_path
+                        job.auto_drc_path = banner_path
+                        job.drc_source = "auto"
 
                     break  # Found icons, stop trying
             except:
@@ -219,12 +325,15 @@ class BatchBuilder(QThread):
 
                 cache_icon.parent.mkdir(parents=True, exist_ok=True)
 
-                # Determine source icon path
-                # If job.icon_path is already in cache, use base icon.png as source
-                # This prevents re-reading badged variants when changing pad options
+                # Determine source icon path based on source type
                 cache_dir = paths.images_cache / game_id
                 source_icon_path = job.icon_path
-                if job.icon_path.parent == cache_dir:
+
+                # For user images, use the original user path
+                if job.icon_source == "user" and job.user_icon_path and job.user_icon_path.exists():
+                    source_icon_path = job.user_icon_path
+                    print(f"  [USER] Using user-selected icon: {source_icon_path}")
+                elif job.icon_path.parent == cache_dir:
                     # Icon is already cached, use base icon.png as source
                     base_icon = cache_dir / "icon.png"
                     if base_icon.exists():
@@ -232,8 +341,6 @@ class BatchBuilder(QThread):
                         print(f"  [CACHE] Using base icon as source: {base_icon}")
 
                 # Process if: different path, source is newer, OR user edited the image
-                # NOTE: Do NOT reprocess just because badge_type is set - that would overwrite user-selected icons!
-                # Only reprocess if the source image changed or user explicitly edited it.
                 is_different_path = source_icon_path.resolve() != cache_icon.resolve()
                 is_source_newer = cache_icon.exists() and source_icon_path.stat().st_mtime > cache_icon.stat().st_mtime
                 user_edited = getattr(job, 'icon_edited', False)
@@ -246,15 +353,20 @@ class BatchBuilder(QThread):
                         print(f"  Adding {badge_type} badge to icon")
                     if user_edited:
                         print(f"  (User edited)")
-                    image_processor.process_icon(source_icon_path, cache_icon, badge_type=badge_type)
-                    if cache_icon.exists():
+                    success = image_processor.process_icon(source_icon_path, cache_icon, badge_type=badge_type)
+                    if success and cache_icon.exists():
                         print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
                         # Reset edited flag after processing
-                        if hasattr(job, 'icon_edited'):
-                            job.icon_edited = False
+                        job.icon_edited = False
                     else:
-                        print(f"  ✗ Icon processing failed!")
-                        cache_icon = None
+                        # Fallback: copy original file directly to cache
+                        print(f"  [FALLBACK] Icon processing failed, copying original...")
+                        try:
+                            shutil.copy2(source_icon_path, cache_icon)
+                            print(f"  ✓ Icon copied directly: {cache_icon}")
+                        except Exception as e:
+                            print(f"  ✗ Icon copy failed: {e}")
+                            cache_icon = None
                 else:
                     print(f"  [CACHE] Icon already cached: {cache_icon}")
             else:
@@ -264,60 +376,85 @@ class BatchBuilder(QThread):
                 cache_banner = paths.images_cache / game_id / "banner.png"
                 cache_banner.parent.mkdir(parents=True, exist_ok=True)
 
+                # Determine source banner path based on source type
+                source_banner_path = job.banner_path
+                if job.banner_source == "user" and job.user_banner_path and job.user_banner_path.exists():
+                    source_banner_path = job.user_banner_path
+                    print(f"  [USER] Using user-selected banner: {source_banner_path}")
+
                 # Process if: different path, source is newer, user edited, OR cache doesn't exist
-                is_different_path = job.banner_path.resolve() != cache_banner.resolve()
-                is_source_newer = cache_banner.exists() and job.banner_path.stat().st_mtime > cache_banner.stat().st_mtime
+                is_different_path = source_banner_path.resolve() != cache_banner.resolve()
+                is_source_newer = cache_banner.exists() and source_banner_path.stat().st_mtime > cache_banner.stat().st_mtime
                 user_edited = getattr(job, 'banner_edited', False)
                 cache_not_exists = not cache_banner.exists()
                 should_process_banner = is_different_path or is_source_newer or user_edited or cache_not_exists
 
                 if should_process_banner:
                     if user_edited:
-                        print(f"  Banner: {job.banner_path} (User edited)")
+                        print(f"  Banner: {source_banner_path} (User edited)")
                     elif is_source_newer and not is_different_path:
-                        print(f"  Banner: {job.banner_path} (source newer than cache)")
+                        print(f"  Banner: {source_banner_path} (source newer than cache)")
                     else:
-                        print(f"  Banner: {job.banner_path} -> {cache_banner}")
-                    image_processor.process_banner(job.banner_path, cache_banner)
-                    if cache_banner.exists():
+                        print(f"  Banner: {source_banner_path} -> {cache_banner}")
+                    success = image_processor.process_banner(source_banner_path, cache_banner)
+                    if success and cache_banner.exists():
                         print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
-                        # Reset edited flag after processing
-                        if hasattr(job, 'banner_edited'):
-                            job.banner_edited = False
+                        job.banner_edited = False
                     else:
-                        print(f"  ✗ Banner processing failed!")
-                        cache_banner = None
+                        # Fallback: copy original file directly to cache
+                        print(f"  [FALLBACK] Banner processing failed, copying original...")
+                        try:
+                            shutil.copy2(source_banner_path, cache_banner)
+                            print(f"  ✓ Banner copied directly: {cache_banner}")
+                        except Exception as e:
+                            print(f"  ✗ Banner copy failed: {e}")
+                            cache_banner = None
                 else:
                     print(f"  [CACHE] Banner already cached: {cache_banner}")
             else:
                 print(f"  ✗ Banner not found: {job.banner_path}")
 
             # Use separate DRC if available, otherwise generate from banner
-            if job.drc_path and job.drc_path.exists():
-                cache_drc = paths.images_cache / game_id / "drc.png"
-                cache_drc.parent.mkdir(parents=True, exist_ok=True)
+            cache_drc = paths.images_cache / game_id / "drc.png"
+            cache_drc.parent.mkdir(parents=True, exist_ok=True)
 
-                # Only process if not already in cache
-                if job.drc_path.resolve() != cache_drc.resolve():
-                    print(f"  DRC: {job.drc_path} -> {cache_drc}")
-                    image_processor.process_drc(job.drc_path, cache_drc)
-                else:
-                    print(f"  [CACHE] DRC already cached: {cache_drc}")
+            # Determine source DRC path based on source type
+            source_drc_path = None
+            if job.drc_source == "user" and job.user_drc_path and job.user_drc_path.exists():
+                source_drc_path = job.user_drc_path
+                print(f"  [USER] Using user-selected DRC: {source_drc_path}")
+            elif job.drc_path and job.drc_path.exists():
+                source_drc_path = job.drc_path
             elif job.banner_path and job.banner_path.exists():
-                cache_drc = paths.images_cache / game_id / "drc.png"
-                cache_drc.parent.mkdir(parents=True, exist_ok=True)
+                # Generate DRC from banner
+                source_drc_path = job.banner_path
+                print(f"  [AUTO] Generating DRC from banner")
 
-                # Only process if source is different
-                if job.banner_path.resolve() != cache_drc.resolve():
-                    print(f"  DRC: {job.banner_path} -> {cache_drc}")
-                    image_processor.process_drc(job.banner_path, cache_drc)
+            if source_drc_path:
+                user_edited = getattr(job, 'drc_edited', False)
+                is_different_path = source_drc_path.resolve() != cache_drc.resolve()
+                cache_not_exists = not cache_drc.exists()
+                should_process_drc = is_different_path or user_edited or cache_not_exists
+
+                if should_process_drc:
+                    print(f"  DRC: {source_drc_path} -> {cache_drc}")
+                    success = image_processor.process_drc(source_drc_path, cache_drc)
+                    if success and cache_drc.exists():
+                        print(f"  ✓ DRC cached: {cache_drc.stat().st_size} bytes")
+                        job.drc_edited = False
+                    else:
+                        # Fallback: copy original file directly to cache
+                        print(f"  [FALLBACK] DRC processing failed, copying original...")
+                        try:
+                            shutil.copy2(source_drc_path, cache_drc)
+                            print(f"  ✓ DRC copied directly: {cache_drc}")
+                        except Exception as e:
+                            print(f"  ✗ DRC copy failed: {e}")
+                            cache_drc = None
                 else:
                     print(f"  [CACHE] DRC already cached: {cache_drc}")
-
-            if cache_drc and cache_drc.exists():
-                print(f"  ✓ DRC cached: {cache_drc.stat().st_size} bytes")
             else:
-                print(f"  ✗ DRC processing failed!")
+                print(f"  ✗ No DRC source available")
                 cache_drc = None
 
             # Create BuildEngine (it will clean temp directories)

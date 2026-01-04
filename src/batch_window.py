@@ -252,12 +252,21 @@ class GameLoaderThread(QThread):
 
         if cached_icon.exists() and cached_banner.exists():
             print(f"  [CACHE] Found cached images for {game_id}")
+            # Set current paths
             job.icon_path = cached_icon
             job.banner_path = cached_banner
             if cached_drc.exists():
                 job.drc_path = cached_drc
             else:
                 job.drc_path = cached_banner  # Use banner as DRC
+
+            # Save auto paths for restore functionality
+            job.auto_icon_path = cached_icon
+            job.auto_banner_path = cached_banner
+            job.auto_drc_path = cached_drc if cached_drc.exists() else cached_banner
+            job.icon_source = "auto"
+            job.banner_source = "auto"
+            job.drc_source = "auto"
 
             # Check if we have cached titles
             cached_ko_file = cache_dir / "title_ko.txt"
@@ -341,11 +350,20 @@ class GameLoaderThread(QThread):
                 icon_path = cache_dir / "icon.png"
                 shutil.copy(local_icon, icon_path)
                 job.icon_path = icon_path
+                job.auto_icon_path = icon_path
+                job.icon_source = "auto"
 
                 # Copy banner
                 banner_path = cache_dir / "banner.png"
                 shutil.copy(local_banner, banner_path)
                 job.banner_path = banner_path
+                job.auto_banner_path = banner_path
+                job.banner_source = "auto"
+
+                # DRC from banner
+                job.drc_path = banner_path
+                job.auto_drc_path = banner_path
+                job.drc_source = "auto"
 
                 # Fetch title from GameTDB only if not already in DB
                 if not (hasattr(job, 'has_korean_title') and job.has_korean_title):
@@ -414,12 +432,16 @@ class GameLoaderThread(QThread):
                         banner_path = cache_dir / "banner.png"
                         banner_img.save(banner_path)
                         job.banner_path = banner_path
+                        job.auto_banner_path = banner_path
+                        job.banner_source = "auto"
 
                         # Resize for DRC (854x480)
                         drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
                         drc_path = cache_dir / "drc.png"
                         drc_img.save(drc_path)
                         job.drc_path = drc_path
+                        job.auto_drc_path = drc_path
+                        job.drc_source = "auto"
 
                     # Download cover and crop top portion for icon
                     req = urllib.request.Request(
@@ -443,6 +465,8 @@ class GameLoaderThread(QThread):
                         icon_path = cache_dir / "icon.png"
                         icon_img.save(icon_path)
                         job.icon_path = icon_path
+                        job.auto_icon_path = icon_path
+                        job.icon_source = "auto"
 
                     print(f"  [OK] Downloaded from GameTDB for {try_id} ({region})")
                     download_success = True
@@ -472,18 +496,24 @@ class GameLoaderThread(QThread):
                             icon_path = cache_dir / "icon.png"
                             icon_img.save(icon_path)
                             job.icon_path = icon_path
+                            job.auto_icon_path = icon_path
+                            job.icon_source = "auto"
 
                             # Resize for banner (1280x720)
                             banner_img = img.resize((1280, 720), Image.Resampling.LANCZOS)
                             banner_path = cache_dir / "banner.png"
                             banner_img.save(banner_path)
                             job.banner_path = banner_path
+                            job.auto_banner_path = banner_path
+                            job.banner_source = "auto"
 
                             # Resize for DRC (854x480)
                             drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
                             drc_path = cache_dir / "drc.png"
                             drc_img.save(drc_path)
                             job.drc_path = drc_path
+                            job.auto_drc_path = drc_path
+                            job.drc_source = "auto"
 
                             print(f"  [OK] Downloaded cover from GameTDB for {try_id} ({region})")
                             download_success = True
@@ -511,6 +541,8 @@ class GameLoaderThread(QThread):
                         icon_path = cache_dir / "icon.png"
                         icon_path.write_bytes(icon_data)
                         job.icon_path = icon_path
+                        job.auto_icon_path = icon_path
+                        job.icon_source = "auto"
 
                     # Download banner
                     req = urllib.request.Request(
@@ -522,6 +554,8 @@ class GameLoaderThread(QThread):
                         banner_path = cache_dir / "banner.png"
                         banner_path.write_bytes(banner_data)
                         job.banner_path = banner_path
+                        job.auto_banner_path = banner_path
+                        job.banner_source = "auto"
 
                         # Resize banner for DRC (854x480)
                         banner_img = Image.open(io.BytesIO(banner_data))
@@ -529,6 +563,8 @@ class GameLoaderThread(QThread):
                         drc_path = cache_dir / "drc.png"
                         drc_img.save(drc_path)
                         job.drc_path = drc_path
+                        job.auto_drc_path = drc_path
+                        job.drc_source = "auto"
 
                     print(f"  [OK] Downloaded from UWUVCI for {try_id}")
                     download_success = True
@@ -570,16 +606,22 @@ class GameLoaderThread(QThread):
                 icon_path = cache_dir / "icon.png"
                 shutil.copy(default_icon, icon_path)
                 job.icon_path = icon_path
+                job.auto_icon_path = icon_path
+                job.icon_source = "default"
 
             if default_banner.exists():
                 banner_path = cache_dir / "banner.png"
                 shutil.copy(default_banner, banner_path)
                 job.banner_path = banner_path
+                job.auto_banner_path = banner_path
+                job.banner_source = "default"
 
             if default_drc.exists():
                 drc_path = cache_dir / "drc.png"
                 shutil.copy(default_drc, drc_path)
                 job.drc_path = drc_path
+                job.auto_drc_path = drc_path
+                job.drc_source = "default"
 
             # Save titles to cache (using DB title as fallback)
             try:
@@ -1068,13 +1110,21 @@ class EditGameDialog(QDialog):
         icon_label_text = "아이콘 (클릭하여 변경)" if tr.current_language == "ko" else "Icon (Click to change)"
         icon_layout.addWidget(QLabel(icon_label_text))
         self.icon_preview = QLabel()
-        self.icon_preview.setFixedSize(192, 192)
+        self.icon_preview.setFixedSize(144, 144)
         self.icon_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.icon_preview.setAlignment(Qt.AlignCenter)
         # Icon will be loaded after UI setup
         self.icon_preview.mousePressEvent = lambda e: self.change_icon()
         self.icon_preview.setCursor(Qt.PointingHandCursor)
         icon_layout.addWidget(self.icon_preview)
+
+        # Restore auto icon button
+        restore_icon_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
+        self.restore_icon_btn = QPushButton(restore_icon_text)
+        self.restore_icon_btn.setEnabled(self.job.icon_source == "user" and self.job.has_auto_images())
+        self.restore_icon_btn.clicked.connect(self.restore_auto_icon)
+        self.restore_icon_btn.setStyleSheet("font-size: 10px; padding: 3px;")
+        icon_layout.addWidget(self.restore_icon_btn)
 
         # Add button to download images from online (below icon)
         download_btn_text = "이미지 자동 다운로드" if tr.current_language == "ko" else "Auto Download Images"
@@ -1104,17 +1154,17 @@ class EditGameDialog(QDialog):
 
         # Banner preview (1280x720 original, display scaled)
         banner_layout = QVBoxLayout()
-        banner_label_text = "배너 / DRC (클릭하여 변경)" if tr.current_language == "ko" else "Banner / DRC (Click to change)"
+        banner_label_text = "배너 (클릭하여 변경)" if tr.current_language == "ko" else "Banner (Click to change)"
         banner_layout.addWidget(QLabel(banner_label_text))
         self.banner_preview = QLabel()
-        self.banner_preview.setFixedSize(384, 216)
+        self.banner_preview.setFixedSize(256, 144)
         self.banner_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.banner_preview.setAlignment(Qt.AlignCenter)
         if self.job.banner_path and self.job.banner_path.exists():
             print(f"[DEBUG] Loading banner from: {self.job.banner_path}")
             pixmap = QPixmap(str(self.job.banner_path))
             if not pixmap.isNull():
-                self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
                 print(f"[ERROR] Failed to load banner pixmap from: {self.job.banner_path}")
                 no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
@@ -1126,9 +1176,51 @@ class EditGameDialog(QDialog):
         self.banner_preview.mousePressEvent = lambda e: self.change_banner()
         self.banner_preview.setCursor(Qt.PointingHandCursor)
         banner_layout.addWidget(self.banner_preview)
-        banner_layout.addStretch()  # Push content to top
+
+        # Restore auto banner button
+        restore_banner_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
+        self.restore_banner_btn = QPushButton(restore_banner_text)
+        self.restore_banner_btn.setEnabled(self.job.banner_source == "user" and self.job.has_auto_images())
+        self.restore_banner_btn.clicked.connect(self.restore_auto_banner)
+        self.restore_banner_btn.setStyleSheet("font-size: 10px; padding: 3px;")
+        banner_layout.addWidget(self.restore_banner_btn)
+        banner_layout.addStretch()
 
         images_layout.addLayout(banner_layout)
+
+        # DRC preview (854x480 original, display scaled)
+        drc_layout = QVBoxLayout()
+        drc_label_text = "게임패드 (클릭하여 변경)" if tr.current_language == "ko" else "GamePad (Click to change)"
+        drc_layout.addWidget(QLabel(drc_label_text))
+        self.drc_preview = QLabel()
+        self.drc_preview.setFixedSize(256, 144)  # 16:9 ratio, same height as banner
+        self.drc_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
+        self.drc_preview.setAlignment(Qt.AlignCenter)
+        if self.job.drc_path and self.job.drc_path.exists():
+            print(f"[DEBUG] Loading DRC from: {self.job.drc_path}")
+            pixmap = QPixmap(str(self.job.drc_path))
+            if not pixmap.isNull():
+                self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            else:
+                no_image_text = "로드 실패" if tr.current_language == "ko" else "Load failed"
+                self.drc_preview.setText(no_image_text)
+        else:
+            no_image_text = "없음" if tr.current_language == "ko" else "None"
+            self.drc_preview.setText(no_image_text)
+        self.drc_preview.mousePressEvent = lambda e: self.change_drc()
+        self.drc_preview.setCursor(Qt.PointingHandCursor)
+        drc_layout.addWidget(self.drc_preview)
+
+        # Restore auto DRC button
+        restore_drc_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
+        self.restore_drc_btn = QPushButton(restore_drc_text)
+        self.restore_drc_btn.setEnabled(self.job.drc_source == "user" and self.job.auto_drc_path and self.job.auto_drc_path.exists())
+        self.restore_drc_btn.clicked.connect(self.restore_auto_drc)
+        self.restore_drc_btn.setStyleSheet("font-size: 10px; padding: 3px;")
+        drc_layout.addWidget(self.restore_drc_btn)
+        drc_layout.addStretch()
+
+        images_layout.addLayout(drc_layout)
 
         layout.addLayout(images_layout)
 
@@ -1174,21 +1266,13 @@ class EditGameDialog(QDialog):
         # Don't Trim checkbox (fixes save issues for some games like Super Paper Mario)
         notrim_layout = QHBoxLayout()
 
-        # Check if game file is WBFS (already trimmed, cannot restore to full size)
+        # Check if game file is WBFS
         is_wbfs = self.job.game_path.suffix.lower() == '.wbfs'
 
-        if is_wbfs:
-            # WBFS files cannot use no-trim mode
-            notrim_label = "ISO 트림 비활성화 (WBFS는 해당 없음)" if tr.current_language == "ko" else "Don't Trim ISO (N/A for WBFS)"
-            self.notrim_check = QCheckBox(notrim_label)
-            self.notrim_check.setEnabled(False)
-            self.notrim_check.setChecked(False)
-            self.job.no_trim = False  # Force disable for WBFS
-        else:
-            # ISO files can use no-trim mode
-            notrim_label = "ISO 트림 비활성화" if tr.current_language == "ko" else "Don't Trim ISO"
-            self.notrim_check = QCheckBox(notrim_label)
-            self.notrim_check.setChecked(self.job.no_trim)
+        # Both ISO and WBFS can use no-trim mode (WBFS uses wbfs_file.exe for full-size conversion)
+        notrim_label = "빌드 시 ISO 트림 비활성화" if tr.current_language == "ko" else "Disable ISO Trimming on Build"
+        self.notrim_check = QCheckBox(notrim_label)
+        self.notrim_check.setChecked(self.job.no_trim)
 
         notrim_layout.addWidget(self.notrim_check)
         notrim_layout.addStretch()
@@ -1197,9 +1281,9 @@ class EditGameDialog(QDialog):
         # Add info box below checkbox
         if is_wbfs:
             if tr.current_language == "ko":
-                info_text = "<b>참고:</b> WBFS는 이미 트림된 포맷으로 원본 크기 복원이 불가능합니다. 원본 크기가 필요한 경우 ISO 파일을 사용하세요."
+                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. WBFS의 경우 wbfs_file.exe를 사용하여 원본 크기로 변환합니다.<br><br><b>주의:</b> Gecko 코드를 바이너리에 패치하는 방식은 일부 게임(예: 슈퍼 페이퍼 마리오)에서 세이브 충돌을 일으킬 수 있습니다. 이 경우 패치된 환경에 맞는 별도의 세이브 파일을 생성하여 사용해야 합니다."
             else:
-                info_text = "<b>Note:</b> WBFS is already trimmed and cannot be restored to original size. Use ISO if you need original size."
+                info_text = "<b>Note:</b> Some games require original disc size (about 4~8GB) for save files. For WBFS, wbfs_file.exe will be used to restore original size.<br><br><b>Warning:</b> Gecko code binary patching may cause save corruption in some games (e.g., Super Paper Mario). In such cases, you need to create a new save file for the patched version."
         else:
             if tr.current_language == "ko":
                 info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. 트림 비활성화 시 파일 크기가 증가합니다.<br><br><b>주의:</b> Gecko 코드를 바이너리에 패치하는 방식은 일부 게임(예: 슈퍼 페이퍼 마리오)에서 세이브 충돌을 일으킬 수 있습니다. 이 경우 패치된 환경에 맞는 별도의 세이브 파일을 생성하여 사용해야 합니다."
@@ -1279,7 +1363,7 @@ class EditGameDialog(QDialog):
             if not pixmap.isNull():
                 # Scale maintaining aspect ratio, but let QLabel handle the display
                 # Don't create canvas, just scale the image
-                self.icon_preview.setPixmap(pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                self.icon_preview.setPixmap(pixmap.scaled(144, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
                 print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
                 no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
@@ -1298,14 +1382,33 @@ class EditGameDialog(QDialog):
             "Images (*.png *.jpg *.jpeg);;All Files (*.*)"
         )
         if file_path:
-            self.job.icon_path = Path(file_path)
-            self.job.icon_edited = True  # Mark as user-edited to force reprocessing
-            print(f"[USER EDIT] Icon changed to: {file_path}")
+            try:
+                from .image_utils import ImageProcessor
+
+                # Create user image path in cache directory
+                cache_dir = paths.images_cache / self.job.title_id
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                resized_path = cache_dir / "user_icon.png"
+
+                # Resize to 128x128 (icon size)
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (128, 128), keep_aspect=False):
+                    self.job.set_user_icon(resized_path)
+                    print(f"[USER EDIT] Icon resized and saved to: {resized_path}")
+                else:
+                    # Fallback: use original if resize fails
+                    self.job.set_user_icon(Path(file_path))
+                    print(f"[USER EDIT] Icon resize failed, using original: {file_path}")
+            except Exception as e:
+                print(f"[ERROR] Failed to process icon: {e}")
+                self.job.set_user_icon(Path(file_path))
+
             # Update icon preview
             self.load_initial_icon()
+            # Enable restore button if auto image exists
+            self.update_restore_buttons()
 
     def change_banner(self):
-        """Change banner image and DRC image."""
+        """Change banner image."""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "배너 이미지 선택" if tr.current_language == "ko" else "Select Banner Image",
@@ -1313,29 +1416,115 @@ class EditGameDialog(QDialog):
             "Images (*.png *.jpg *.jpeg);;All Files (*.*)"
         )
         if file_path:
-            self.job.banner_path = Path(file_path)
-            self.job.banner_edited = True  # Mark as user-edited to force reprocessing
-            print(f"[USER EDIT] Banner changed to: {file_path}")
-
-            # Update banner preview
-            pixmap = QPixmap(file_path)
-            self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-
-            # Also update DRC image (same as banner)
             try:
-                from PIL import Image
-                cache_dir = paths.images_cache / self.job.game_id
-                cache_dir.mkdir(parents=True, exist_ok=True)
+                from .image_utils import ImageProcessor
 
-                # Save DRC image (resized banner)
-                banner_img = Image.open(file_path)
-                drc_img = banner_img.resize((854, 480), Image.Resampling.LANCZOS)
-                drc_path = cache_dir / "drc.png"
-                drc_img.save(drc_path)
-                self.job.drc_path = drc_path
-                print(f"[USER EDIT] DRC updated to: {drc_path}")
+                # Create user image path in cache directory
+                cache_dir = paths.images_cache / self.job.title_id
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                resized_path = cache_dir / "user_banner.png"
+
+                # Resize to 1280x720 (banner size)
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (1280, 720), keep_aspect=False):
+                    self.job.set_user_banner(resized_path)
+                    print(f"[USER EDIT] Banner resized and saved to: {resized_path}")
+                    # Update banner preview with resized image
+                    pixmap = QPixmap(str(resized_path))
+                else:
+                    # Fallback: use original if resize fails
+                    self.job.set_user_banner(Path(file_path))
+                    print(f"[USER EDIT] Banner resize failed, using original: {file_path}")
+                    pixmap = QPixmap(file_path)
             except Exception as e:
-                print(f"[ERROR] Failed to update DRC image: {e}")
+                print(f"[ERROR] Failed to process banner: {e}")
+                self.job.set_user_banner(Path(file_path))
+                pixmap = QPixmap(file_path)
+
+            self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            # Enable restore button if auto image exists
+            self.update_restore_buttons()
+
+    def change_drc(self):
+        """Change DRC (GamePad) image separately."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "게임패드 이미지 선택" if tr.current_language == "ko" else "Select GamePad Image",
+            "",
+            "Images (*.png *.jpg *.jpeg);;All Files (*.*)"
+        )
+        if file_path:
+            try:
+                from .image_utils import ImageProcessor
+
+                # Create user image path in cache directory
+                cache_dir = paths.images_cache / self.job.title_id
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                resized_path = cache_dir / "user_drc.png"
+
+                # Resize to 854x480 (GamePad screen size)
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (854, 480), keep_aspect=False):
+                    self.job.set_user_drc(resized_path)
+                    print(f"[USER EDIT] DRC resized and saved to: {resized_path}")
+                    pixmap = QPixmap(str(resized_path))
+                else:
+                    # Fallback: use original if resize fails
+                    self.job.set_user_drc(Path(file_path))
+                    print(f"[USER EDIT] DRC resize failed, using original: {file_path}")
+                    pixmap = QPixmap(file_path)
+            except Exception as e:
+                print(f"[ERROR] Failed to process DRC: {e}")
+                self.job.set_user_drc(Path(file_path))
+                pixmap = QPixmap(file_path)
+
+            self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            # Enable restore button
+            self.update_restore_buttons()
+
+    def restore_auto_icon(self):
+        """Restore icon to auto-downloaded image."""
+        if self.job.restore_auto_icon():
+            print(f"[RESTORE] Icon restored to auto: {self.job.icon_path}")
+            self.load_initial_icon()
+            self.update_restore_buttons()
+
+    def restore_auto_banner(self):
+        """Restore banner to auto-downloaded image."""
+        if self.job.restore_auto_banner():
+            print(f"[RESTORE] Banner restored to auto: {self.job.banner_path}")
+            pixmap = QPixmap(str(self.job.banner_path))
+            self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.update_restore_buttons()
+
+    def restore_auto_drc(self):
+        """Restore DRC to auto-generated image."""
+        if self.job.restore_auto_drc():
+            print(f"[RESTORE] DRC restored to auto: {self.job.drc_path}")
+            pixmap = QPixmap(str(self.job.drc_path))
+            self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.update_restore_buttons()
+
+    def update_restore_buttons(self):
+        """Update restore button states based on image sources."""
+        # Icon restore - enabled only if user changed and auto exists
+        self.restore_icon_btn.setEnabled(
+            self.job.icon_source == "user" and
+            self.job.auto_icon_path and
+            self.job.auto_icon_path.exists()
+        )
+        # Banner restore
+        self.restore_banner_btn.setEnabled(
+            self.job.banner_source == "user" and
+            self.job.auto_banner_path and
+            self.job.auto_banner_path.exists()
+        )
+        # DRC restore
+        self.restore_drc_btn.setEnabled(
+            self.job.drc_source == "user" and
+            self.job.auto_drc_path and
+            self.job.auto_drc_path.exists()
+        )
 
     def add_badges_overlay_large(self, pixmap: QPixmap, job: BatchBuildJob) -> QPixmap:
         """Add badge overlays to larger pixmap (for edit dialog - 192x192)."""
@@ -1505,12 +1694,16 @@ class EditGameDialog(QDialog):
                         banner_path = cache_dir / "banner.png"
                         banner_img.save(banner_path)
                         self.job.banner_path = banner_path
+                        self.job.auto_banner_path = banner_path
+                        self.job.banner_source = "auto"
 
                         # DRC (854x480)
                         drc_img = img.resize((854, 480), Image.Resampling.LANCZOS)
                         drc_path = cache_dir / "drc.png"
                         drc_img.save(drc_path)
                         self.job.drc_path = drc_path
+                        self.job.auto_drc_path = drc_path
+                        self.job.drc_source = "auto"
 
                     progress.setValue(50)
                     QApplication.processEvents()
@@ -1562,6 +1755,8 @@ class EditGameDialog(QDialog):
                 icon_path = cache_dir / "icon.png"
                 downloaded_icon.save(icon_path)
                 self.job.icon_path = icon_path
+                self.job.auto_icon_path = icon_path
+                self.job.icon_source = "auto"
                 self.job.icon_edited = True  # Force reprocessing on next build
                 print(f"  [SAVE] Saved new icon to: {icon_path}")
 
@@ -1577,7 +1772,14 @@ class EditGameDialog(QDialog):
 
             if self.job.banner_path and self.job.banner_path.exists():
                 pixmap = QPixmap(str(self.job.banner_path))
-                self.banner_preview.setPixmap(pixmap.scaled(384, 216, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            if self.job.drc_path and self.job.drc_path.exists():
+                pixmap = QPixmap(str(self.job.drc_path))
+                self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+            # Update restore button states
+            self.update_restore_buttons()
 
             # Update title input with new title
             self.title_input.setText(self.job.title_name)
@@ -3914,28 +4116,29 @@ class BatchWindow(QMainWindow):
         with open(settings_path, 'r') as f:
             settings = json.load(f)
 
-        common_key = settings.get('common_key', '')
+        # Key names must match save() in SettingsDialog (wii_u_common_key, title_key_*)
+        common_key = settings.get('wii_u_common_key', '')
         if not common_key:
             error_msg = "Common Key가 설정되지 않았습니다" if tr.current_language == "ko" else "Common Key not set"
             show_message(self, "warning", tr.get("error"), error_msg)
             return
 
-        # Get title keys
+        # Get title keys (key names match SettingsDialog.save())
         title_keys = {}
-        if settings.get('rhythm_heaven_key'):
-            title_keys['Rhythm Heaven Fever (USA)'] = settings['rhythm_heaven_key']
-        if settings.get('xenoblade_key'):
-            title_keys['Xenoblade Chronicles (USA)'] = settings['xenoblade_key']
-        if settings.get('galaxy2_key'):
-            title_keys['Super Mario Galaxy 2 (EUR)'] = settings['galaxy2_key']
+        if settings.get('title_key_rhythm_heaven'):
+            title_keys['Rhythm Heaven Fever (USA)'] = settings['title_key_rhythm_heaven']
+        if settings.get('title_key_xenoblade'):
+            title_keys['Xenoblade Chronicles (USA)'] = settings['title_key_xenoblade']
+        if settings.get('title_key_galaxy2'):
+            title_keys['Super Mario Galaxy 2 (EUR)'] = settings['title_key_galaxy2']
 
         if not title_keys:
             error_msg = "Title Key가 설정되지 않았습니다" if tr.current_language == "ko" else "No Title Key set"
             show_message(self, "warning", tr.get("error"), error_msg)
             return
 
-        # Get output directory
-        output_dir = settings.get('output_dir', '')
+        # Get output directory (key name matches SettingsDialog.save())
+        output_dir = settings.get('output_directory', '')
         if output_dir:
             output_path = Path(output_dir)
         else:
@@ -4267,11 +4470,10 @@ class BatchWindow(QMainWindow):
             )
             if file_path:
                 from pathlib import Path
-                icon_path = Path(file_path)
-                job.icon_path = icon_path
-                job.icon_edited = True  # Force reprocessing - user explicitly changed the image
+                # Use set_user_icon method to properly track source
+                job.set_user_icon(Path(file_path))
                 self.update_icon_preview(row, job)
-                print(f"[USER EDIT] Icon updated for {job.game_path.name}: {icon_path}")
+                print(f"[USER EDIT] Icon updated for {job.game_path.name}: {file_path}")
 
         elif column == 2:  # Banner column
             file_path, _ = QFileDialog.getOpenFileName(
@@ -4282,8 +4484,7 @@ class BatchWindow(QMainWindow):
             )
             if file_path:
                 from pathlib import Path
-                banner_path = Path(file_path)
-                job.banner_path = banner_path
-                job.banner_edited = True  # Force reprocessing - user explicitly changed the image
+                # Use set_user_banner method to properly track source
+                job.set_user_banner(Path(file_path))
                 self.update_icon_preview(row, job)
-                print(f"[USER EDIT] Banner updated for {job.game_path.name}: {banner_path}")
+                print(f"[USER EDIT] Banner updated for {job.game_path.name}: {file_path}")
