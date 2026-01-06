@@ -1389,8 +1389,8 @@ class EditGameDialog(QDialog):
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_icon.png"
 
-                # Resize to 128x128 (icon size)
-                if ImageProcessor.resize_image(Path(file_path), resized_path, (128, 128), keep_aspect=False):
+                # Resize to 128x128 (icon size) - keep aspect ratio to avoid distortion
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (128, 128), keep_aspect=True):
                     self.job.set_user_icon(resized_path)
                     print(f"[USER EDIT] Icon resized and saved to: {resized_path}")
                 else:
@@ -1423,8 +1423,8 @@ class EditGameDialog(QDialog):
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_banner.png"
 
-                # Resize to 1280x720 (banner size)
-                if ImageProcessor.resize_image(Path(file_path), resized_path, (1280, 720), keep_aspect=False):
+                # Resize to 1280x720 (banner size) - keep aspect ratio to avoid distortion
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (1280, 720), keep_aspect=True):
                     self.job.set_user_banner(resized_path)
                     print(f"[USER EDIT] Banner resized and saved to: {resized_path}")
                     # Update banner preview with resized image
@@ -1461,8 +1461,8 @@ class EditGameDialog(QDialog):
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_drc.png"
 
-                # Resize to 854x480 (GamePad screen size)
-                if ImageProcessor.resize_image(Path(file_path), resized_path, (854, 480), keep_aspect=False):
+                # Resize to 854x480 (GamePad screen size) - keep aspect ratio to avoid distortion
+                if ImageProcessor.resize_image(Path(file_path), resized_path, (854, 480), keep_aspect=True):
                     self.job.set_user_drc(resized_path)
                     print(f"[USER EDIT] DRC resized and saved to: {resized_path}")
                     pixmap = QPixmap(str(resized_path))
