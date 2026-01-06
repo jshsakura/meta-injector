@@ -1022,7 +1022,6 @@ class SimpleKeysDialog(QDialog):
 
         settings_file = Path.home() / ".meta_injector_settings.json"
         print(f"[DEBUG] Saving settings to: {settings_file}")
-        print(f"[DEBUG] Settings: {settings}")
 
         try:
             with open(settings_file, 'w', encoding='utf-8') as f:
