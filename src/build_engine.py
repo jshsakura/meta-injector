@@ -1,16 +1,17 @@
-"""
+﻿"""
 Meta-Injector Build Engine
 Based on TeconMoon + UWUVCI logic for robust Wii game packaging.
 """
 import os
 import random
 import shutil
+import struct
 import subprocess
 import sys
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, Dict, List, Tuple
 from .translations import tr
 
 
@@ -44,6 +45,9 @@ class BuildEngine:
         self.diag_dol_after = 0
         self.diag_nfs_args = None
         self.diag_pad_option = None
+        self.diag_no_trim = False  # Track no-trim mode
+        self.diag_iso_size = 0  # Track final ISO size
+        self.diag_update_preserved = False  # Track UPDATE partition preservation
 
     def stop(self):
         """Request build to stop."""
@@ -598,7 +602,7 @@ class BuildEngine:
             if dest.exists():
                 dest.unlink()
             shutil.move(str(tga_file), str(dest))
-            print(f"✓ Moved {tga_file.name} to meta/ (size: {dest.stat().st_size} bytes)")
+            print(f"??Moved {tga_file.name} to meta/ (size: {dest.stat().st_size} bytes)")
 
         # Clean up temp directory
         shutil.rmtree(temp_img_dir)
@@ -611,7 +615,7 @@ class BuildEngine:
                 print(f"[ERROR] Required TGA file missing: {tga_name}")
                 return False
 
-        print("✓ Images converted to TGA successfully")
+        print("??Images converted to TGA successfully")
         return True
 
     def apply_getexttype_patch(self, extract_dir: Path) -> bool:
@@ -654,7 +658,7 @@ class BuildEngine:
             print("[GetExtType] Pattern not found or patch failed (non-fatal)")
             return True  # Continue anyway
 
-        print("✓ GetExtType patch applied successfully")
+        print("??GetExtType patch applied successfully")
         self.getexttype_patch_applied = True
         return True
 
@@ -779,7 +783,7 @@ class BuildEngine:
         self.diag_dol_after = dol_size_after
         print(f"[GCT] main.dol size after patch: {dol_size_after} bytes")
         if dol_size_after > dol_size_before:
-            print(f"[GCT] ✓ main.dol increased by {dol_size_after - dol_size_before} bytes (GCT injected)")
+            print(f"[GCT] ??main.dol increased by {dol_size_after - dol_size_before} bytes (GCT injected)")
         else:
             print(f"[GCT] WARNING: main.dol size unchanged! Patch may not have been applied.")
 
@@ -797,10 +801,232 @@ class BuildEngine:
         else:
             display_name = patch_type.title()
         
-        print(f"✓ GCT {display_name} patch applied successfully")
+        print(f"??GCT {display_name} patch applied successfully")
         self.galaxy_patch_applied = True
         self.galaxy_variant = galaxy_variant  # Track variant for final report
         return True
+
+    # =========================================================================
+    # Wii Partition Table Handling (for UPDATE partition preservation)
+    # =========================================================================
+
+    def parse_partition_table(self, iso_path: Path) -> Dict:
+        """
+        Parse Wii disc partition table to find UPDATE partition info.
+
+        Wii Disc Structure:
+        - 0x40000: Partition table (4 partition table entries)
+        - Each table entry: count (4 bytes) + offset to entries (4 bytes)
+        - Each partition entry: offset (4 bytes, >>2) + type (4 bytes)
+        - Type: 0=DATA, 1=UPDATE, 2=CHANNEL
+
+        Returns dict with partition info including UPDATE partition offset/size.
+        """
+        result = {
+            'partitions': [],
+            'update_partition': None,
+            'data_partition': None,
+            'partition_table_raw': None,  # Raw bytes from 0x40000
+        }
+
+        try:
+            with open(iso_path, 'rb') as f:
+                # Read partition table header at 0x40000
+                f.seek(0x40000)
+                partition_table_raw = f.read(0x20)  # 32 bytes for 4 table entries
+                result['partition_table_raw'] = partition_table_raw
+
+                # Parse 4 partition tables
+                for table_idx in range(4):
+                    table_offset = table_idx * 8
+                    num_partitions = struct.unpack('>I', partition_table_raw[table_offset:table_offset+4])[0]
+                    entries_offset = struct.unpack('>I', partition_table_raw[table_offset+4:table_offset+8])[0] << 2
+
+                    if num_partitions == 0:
+                        continue
+
+                    # Read partition entries
+                    f.seek(entries_offset)
+                    for part_idx in range(num_partitions):
+                        entry_data = f.read(8)
+                        part_offset = struct.unpack('>I', entry_data[0:4])[0] << 2
+                        part_type = struct.unpack('>I', entry_data[4:8])[0]
+
+                        partition_info = {
+                            'table_index': table_idx,
+                            'partition_index': part_idx,
+                            'offset': part_offset,
+                            'type': part_type,
+                            'type_name': {0: 'DATA', 1: 'UPDATE', 2: 'CHANNEL'}.get(part_type, f'UNKNOWN({part_type})'),
+                            'entries_offset': entries_offset,  # Where this entry is stored
+                        }
+                        result['partitions'].append(partition_info)
+
+                        if part_type == 0:  # DATA
+                            result['data_partition'] = partition_info
+                        elif part_type == 1:  # UPDATE
+                            result['update_partition'] = partition_info
+
+                # Calculate UPDATE partition size (from its offset to end of disc or next partition)
+                if result['update_partition']:
+                    update_offset = result['update_partition']['offset']
+                    f.seek(0, 2)  # End of file
+                    file_size = f.tell()
+
+                    # Find next partition after UPDATE (if any)
+                    next_offset = file_size
+                    for p in result['partitions']:
+                        if p['offset'] > update_offset and p['offset'] < next_offset:
+                            next_offset = p['offset']
+
+                    result['update_partition']['size'] = next_offset - update_offset
+                    result['update_partition']['end_offset'] = next_offset
+
+                print(f"[PARTITION] Found {len(result['partitions'])} partitions:")
+                for p in result['partitions']:
+                    print(f"  - {p['type_name']}: offset=0x{p['offset']:X}, table={p['table_index']}")
+                if result['update_partition']:
+                    print(f"  - UPDATE size: {result['update_partition']['size']:,} bytes")
+
+        except Exception as e:
+            print(f"[PARTITION] Error parsing partition table: {e}")
+
+        return result
+
+    def extract_update_partition(self, iso_path: Path, output_path: Path, partition_info: Dict) -> bool:
+        """
+        Extract UPDATE partition raw data from ISO.
+        """
+        try:
+            offset = partition_info['offset']
+            size = partition_info['size']
+
+            print(f"[PARTITION] Extracting UPDATE partition...")
+            print(f"  Offset: 0x{offset:X} ({offset:,} bytes)")
+            print(f"  Size: {size:,} bytes ({size / (1024*1024):.1f} MB)")
+
+            with open(iso_path, 'rb') as src:
+                src.seek(offset)
+                with open(output_path, 'wb') as dst:
+                    # Read/write in chunks to handle large partitions
+                    remaining = size
+                    chunk_size = 1024 * 1024 * 10  # 10MB chunks
+                    while remaining > 0:
+                        read_size = min(chunk_size, remaining)
+                        data = src.read(read_size)
+                        if not data:
+                            break
+                        dst.write(data)
+                        remaining -= len(data)
+
+            actual_size = output_path.stat().st_size
+            print(f"[PARTITION] UPDATE partition extracted: {actual_size:,} bytes")
+            return actual_size == size
+
+        except Exception as e:
+            print(f"[PARTITION] Error extracting UPDATE partition: {e}")
+            return False
+
+    def rebuild_iso_with_update_partition(self, data_iso_path: Path, update_bin_path: Path,
+                                          output_path: Path, original_partition_info: Dict,
+                                          target_size: int = 4_699_979_776) -> bool:
+        """
+        Rebuild full ISO by combining patched DATA partition with preserved UPDATE partition.
+
+        Strategy:
+        1. Copy patched DATA ISO (contains rebuilt DATA partition)
+        2. Pad to original UPDATE partition offset
+        3. Inject UPDATE partition at original offset
+        4. Pad to target size (4.7GB)
+        5. Restore partition table
+        """
+        try:
+            update_offset = original_partition_info['update_partition']['offset']
+            update_size = original_partition_info['update_partition']['size']
+            partition_table_raw = original_partition_info['partition_table_raw']
+
+            print(f"[REBUILD] Starting precision ISO rebuild...")
+            print(f"  Target UPDATE offset: 0x{update_offset:X}")
+            print(f"  Target size: {target_size:,} bytes")
+
+            # Step 1: Copy patched DATA ISO as base
+            shutil.copy(data_iso_path, output_path)
+            current_size = output_path.stat().st_size
+            print(f"[REBUILD] Base DATA ISO: {current_size:,} bytes")
+
+            # Step 2: Check if DATA partition exceeds UPDATE offset
+            if current_size > update_offset:
+                print(f"[REBUILD] WARNING: Patched DATA ({current_size:,}) exceeds UPDATE offset ({update_offset:,})")
+                print(f"[REBUILD] Cannot preserve exact UPDATE offset - will append UPDATE after DATA")
+                # Adjust UPDATE offset to after DATA partition (with alignment)
+                update_offset = ((current_size + 0x7FFF) // 0x8000) * 0x8000  # Align to 32KB
+                print(f"[REBUILD] Adjusted UPDATE offset: 0x{update_offset:X}")
+
+            with open(output_path, 'r+b') as f:
+                # Step 3: Pad from current position to UPDATE offset
+                if current_size < update_offset:
+                    padding_size = update_offset - current_size
+                    print(f"[REBUILD] Padding {padding_size:,} bytes to reach UPDATE offset")
+                    f.seek(current_size)
+                    # Write padding in chunks
+                    chunk_size = 1024 * 1024 * 10  # 10MB
+                    remaining = padding_size
+                    while remaining > 0:
+                        write_size = min(chunk_size, remaining)
+                        f.write(b'\x00' * write_size)
+                        remaining -= write_size
+
+                # Step 4: Inject UPDATE partition
+                print(f"[REBUILD] Injecting UPDATE partition at 0x{update_offset:X}")
+                f.seek(update_offset)
+                with open(update_bin_path, 'rb') as update_f:
+                    chunk_size = 1024 * 1024 * 10  # 10MB
+                    while True:
+                        data = update_f.read(chunk_size)
+                        if not data:
+                            break
+                        f.write(data)
+
+                current_size = f.tell()
+
+                # Step 5: Pad to target size (4.7GB)
+                if current_size < target_size:
+                    final_padding = target_size - current_size
+                    print(f"[REBUILD] Final padding: {final_padding:,} bytes to reach {target_size:,}")
+                    remaining = final_padding
+                    while remaining > 0:
+                        write_size = min(chunk_size, remaining)
+                        f.write(b'\x00' * write_size)
+                        remaining -= write_size
+
+                # Step 6: Restore partition table at 0x40000
+                # We need to update the partition entry to point to our UPDATE offset
+                print(f"[REBUILD] Restoring partition table...")
+                f.seek(0x40000)
+                f.write(partition_table_raw)
+
+                # Update UPDATE partition entry offset if it was adjusted
+                if original_partition_info['update_partition']['offset'] != update_offset:
+                    # Find and update the UPDATE partition entry
+                    entries_offset = original_partition_info['update_partition']['entries_offset']
+                    part_idx = original_partition_info['update_partition']['partition_index']
+                    entry_offset = entries_offset + (part_idx * 8)
+
+                    print(f"[REBUILD] Updating UPDATE partition entry at 0x{entry_offset:X}")
+                    f.seek(entry_offset)
+                    # Write new offset (shifted right by 2 bits)
+                    f.write(struct.pack('>I', update_offset >> 2))
+
+            final_size = output_path.stat().st_size
+            print(f"[REBUILD] Final ISO size: {final_size:,} bytes ({final_size / (1024*1024*1024):.2f} GB)")
+
+            return final_size >= target_size * 0.95  # Allow 5% tolerance
+
+        except Exception as e:
+            print(f"[REBUILD] Error rebuilding ISO: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
 
     def process_game_file(self, game_path: Path, disable_trimming: bool = False, galaxy_patch: str = None, force_cc_patch: bool = False, custom_gct_path: Optional[Path] = None) -> Path:
         """
@@ -816,6 +1042,9 @@ class BuildEngine:
         print(f"\n[DEBUG] process_game_file called with galaxy_patch: {galaxy_patch}, force_cc_patch: {force_cc_patch}, custom_gct: {custom_gct_path}\n")
         self.update_progress(60, tr.get("progress_processing_game"))
 
+        # Track no-trim mode for final report
+        self.diag_no_trim = disable_trimming
+
         # Always copy/convert to pre.iso first (UWUVCI style)
         pre_iso = self.paths.temp_source / "pre.iso"
 
@@ -826,9 +1055,10 @@ class BuildEngine:
             if disable_trimming:
                 # Use wbfs_file.exe to convert WBFS to full-size ISO (TeconMoon style)
                 # This preserves the original disc size, required for games with save issues
+                # -1 flag is CRITICAL: forces 1:1 copy preserving exact ISO layout (no trimming)
                 wbfs_file_exe = self.paths.temp_tools / "EXE" / "wbfs_file.exe"
-                print(f"[WBFS] No-trim mode: Converting to full-size ISO using wbfs_file.exe")
-                args = f'"{game_path}" convert "{pre_iso}"'
+                print(f"[WBFS] No-trim mode: Converting to full-size ISO using wbfs_file.exe -1")
+                args = f'-1 "{game_path}" convert "{pre_iso}"'
 
                 if not self.run_tool(wbfs_file_exe, args, timeout=1800, show_output=True):
                     error_msg = f"WBFS conversion failed (wbfs_file.exe)\n"
@@ -934,80 +1164,136 @@ class BuildEngine:
 
             processed_path = game_iso
         else:
-            # No trim: extract data only, then repack with --psel WHOLE
-            self.update_progress(65, tr.get("progress_preparing_iso"))
+            # No trim mode (TeconMoon style)
+            # If no patches needed, use original ISO directly
+            needs_patching = force_cc_patch or galaxy_patch or custom_gct_path
 
-            # Extract
-            args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel data -vv1'
-            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                error_msg = f"WIT extract failed (no-trim mode)\n"
-                error_msg += f"WIT error: {self.last_tool_error}\n"
-                error_msg += f"\nPossible causes:\n"
-                error_msg += f"- Corrupted ISO file\n"
-                error_msg += f"- Unsupported disc format\n"
-                error_msg += f"- Insufficient disk space"
-                raise RuntimeError(error_msg)
+            if needs_patching:
+                # Patches needed - use UPDATE partition preservation strategy
+                # This is critical for games like Super Paper Mario that verify partition structure
+                self.update_progress(63, tr.get("progress_preparing_iso"))
+                print(f"[NO-TRIM] Patches required - using UPDATE partition preservation strategy")
 
-            # Apply GetExtType patch for forced CC detection (before Galaxy patch)
-            if force_cc_patch:
-                self.apply_getexttype_patch(extract_dir)
+                # Step 1: Parse partition table and extract UPDATE partition from original ISO
+                print(f"[NO-TRIM] Step 1: Analyzing original ISO partition structure...")
+                partition_info = self.parse_partition_table(pre_iso)
 
-            # Read game ID from extracted disc (needed for patches and Korean key fix)
-            disc_header = extract_dir / "sys" / "boot.bin"
-            game_id = ""
-            is_korean_game = False
-            if disc_header.exists():
-                with open(disc_header, 'rb') as f:
-                    game_id = f.read(6).decode('ascii', errors='ignore')
-                # Check if Korean game (4th character is 'K')
-                if len(game_id) >= 4 and game_id[3] == 'K':
-                    is_korean_game = True
-                    print(f"[KOREAN] Detected Korean game: {game_id}")
+                update_bin_path = self.paths.temp_source / "update_partition.bin"
+                has_update_partition = False
 
-            # Apply Galaxy patch or Custom Generic patch
-            if galaxy_patch or custom_gct_path:
-                if game_id:
-                    self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
+                if partition_info['update_partition']:
+                    print(f"[NO-TRIM] Step 2: Extracting UPDATE partition for preservation...")
+                    if self.extract_update_partition(pre_iso, update_bin_path, partition_info['update_partition']):
+                        has_update_partition = True
+                        print(f"[NO-TRIM] UPDATE partition preserved successfully")
+                    else:
+                        print(f"[NO-TRIM] WARNING: Failed to extract UPDATE partition")
                 else:
-                    print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
+                    print(f"[NO-TRIM] WARNING: No UPDATE partition found in original ISO")
 
-            # Re-pack with --psel WHOLE (UWUVCI no-trim mode)
-            # --psel WHOLE preserves original disc structure and padding
-            # This is required for games like Super Paper Mario where save fails with trimmed ISO
+                # Step 3: Extract DATA partition only for patching
+                print(f"[NO-TRIM] Step 3: Extracting DATA partition for patching...")
+                args = f'extract "{pre_iso}" --DEST "{extract_dir}" --psel data -ovv'
+                if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+                    error_msg = f"WIT extract failed (DATA partition)\n"
+                    error_msg += f"WIT error: {self.last_tool_error}\n"
+                    raise RuntimeError(error_msg)
+
+                # Step 4: Apply patches to extracted DATA partition
+                if force_cc_patch:
+                    self.apply_getexttype_patch(extract_dir)
+
+                # Read game ID from extracted disc
+                disc_header = extract_dir / "sys" / "boot.bin"
+                game_id = ""
+                is_korean_game = False
+                if disc_header.exists():
+                    with open(disc_header, 'rb') as f:
+                        game_id = f.read(6).decode('ascii', errors='ignore')
+                    if len(game_id) >= 4 and game_id[3] == 'K':
+                        is_korean_game = True
+                        print(f"[KOREAN] Detected Korean game: {game_id}")
+
+                if galaxy_patch or custom_gct_path:
+                    if game_id:
+                        self.apply_galaxy_patch(extract_dir, game_id, galaxy_patch, custom_gct_path)
+                    else:
+                        print("[GALAXY] Warning: Could not read game ID from disc, skipping Galaxy patch")
+
+                # Step 5: Rebuild DATA partition as trimmed ISO
+                print(f"[NO-TRIM] Step 4: Rebuilding patched DATA partition...")
+                patched_data_iso = self.paths.temp_source / "patched_data.iso"
+                args = f'copy "{extract_dir}" --DEST "{patched_data_iso}" -ovv --iso'
+                if is_korean_game:
+                    args += ' --common-key STANDARD'
+                    print(f"[KOREAN] Applying Common Key fix for Korean game")
+
+                if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+                    error_msg = f"WIT copy failed while rebuilding patched DATA\n"
+                    error_msg += f"Exit code: {self.last_tool_error}\n"
+                    raise RuntimeError(error_msg)
+
+                patched_size = patched_data_iso.stat().st_size
+                print(f"[NO-TRIM] Patched DATA ISO: {patched_size:,} bytes ({patched_size / (1024*1024):.1f} MB)")
+
+                # Step 6: Rebuild full ISO with UPDATE partition at original offset
+                game_iso = self.paths.temp_source / "game.iso"
+
+                if has_update_partition:
+                    print(f"[NO-TRIM] Step 5: Rebuilding full ISO with UPDATE partition preservation...")
+                    if self.rebuild_iso_with_update_partition(
+                        patched_data_iso, update_bin_path, game_iso, partition_info
+                    ):
+                        print(f"[NO-TRIM] ??Full ISO rebuilt with UPDATE partition preserved!")
+                    else:
+                        print(f"[NO-TRIM] WARNING: Failed to rebuild with UPDATE - using patched DATA only")
+                        shutil.copy(patched_data_iso, game_iso)
+                else:
+                    # No UPDATE partition to preserve - just use patched DATA with padding
+                    print(f"[NO-TRIM] Step 5: No UPDATE partition - padding to 4.7GB...")
+                    shutil.copy(patched_data_iso, game_iso)
+                    target_size = 4_699_979_776
+                    current_size = game_iso.stat().st_size
+                    if current_size < target_size:
+                        with open(game_iso, 'ab') as f:
+                            remaining = target_size - current_size
+                            chunk_size = 1024 * 1024 * 10
+                            while remaining > 0:
+                                write_size = min(chunk_size, remaining)
+                                f.write(b'\x00' * write_size)
+                                remaining -= write_size
+
+                # Cleanup temporary files
+                if patched_data_iso.exists():
+                    patched_data_iso.unlink()
+                if update_bin_path.exists():
+                    update_bin_path.unlink()
+
+                final_size = game_iso.stat().st_size
+                self.diag_iso_size = final_size
+                self.diag_update_preserved = has_update_partition
+                print(f"[NO-TRIM] Final ISO: {final_size:,} bytes ({final_size / (1024*1024*1024):.2f} GB)")
+
+                processed_path = game_iso
+                print(f"Game file processed (UPDATE Partition Preserved): {processed_path}")
+                return processed_path
+
+            # No patching needed - use original ISO directly (TeconMoon style)
+            print(f"[NO-TRIM] No patches needed, using original ISO directly")
             game_iso = self.paths.temp_source / "game.iso"
-            # NOTE: --disc-size removed because it causes errors with some WIT versions
-            # WIT will automatically use the original disc size when using --psel WHOLE
-            args = f'copy "{extract_dir}" --DEST "{game_iso}" -ovv --psel WHOLE --iso'
-            # Korean games: change encryption key from Korean Key to Standard Common Key
-            if is_korean_game:
-                args += ' --common-key STANDARD'
-                print(f"[KOREAN] Applying Common Key fix for Korean game")
-            if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
-                error_msg = f"WIT copy failed while repacking ISO (no-trim mode)\n"
-                error_msg += f"Exit code: {self.last_tool_error}\n\n"
-                error_msg += f"Command that failed:\n"
-                error_msg += f'  "{wit_exe}" {args}\n\n'
-                error_msg += f"Working directory: {self.paths.temp_source}\n"
-                error_msg += f"Extract directory: {extract_dir}\n"
-                error_msg += f"Output ISO: {game_iso}\n\n"
-                if galaxy_patch:
-                    error_msg += f"Galaxy patch applied: {galaxy_patch}\n"
-                    error_msg += f"This may be due to GCT patch compatibility issues.\n"
-                    error_msg += f"Try building without GCT patch first to verify the game works.\n\n"
-                error_msg += f"Possible causes:\n"
-                error_msg += f"- main.dol corrupted by GCT patch\n"
-                error_msg += f"- Insufficient disk space\n"
-                error_msg += f"- Invalid disc structure after patching\n"
-                error_msg += f"- File permission issues\n"
-                raise RuntimeError(error_msg)
-
+            shutil.copy(pre_iso, game_iso)
             processed_path = game_iso
+            self.diag_iso_size = processed_path.stat().st_size  # Track for final report
 
         # Clean up
         if extract_dir.exists():
             shutil.rmtree(extract_dir)
         if pre_iso.exists():
             pre_iso.unlink()
+
+        # Track final ISO size for diagnostic report
+        if processed_path.exists():
+            self.diag_iso_size = processed_path.stat().st_size
 
         print(f"Game file processed: {processed_path}")
         return processed_path
@@ -1043,7 +1329,7 @@ class BuildEngine:
         # Delete existing rvlt.* files in code directory
         for rvlt_file in code_dir.glob("rvlt.*"):
             rvlt_file.unlink()
-            print(f"✓ Deleted old file: {rvlt_file.name}")
+            print(f"??Deleted old file: {rvlt_file.name}")
 
         # Find and copy extracted files
         tmd_file = tiktmd_dir / "tmd.bin"
@@ -1069,13 +1355,13 @@ class BuildEngine:
         shutil.copy(tmd_file, code_dir / "rvlt.tmd")
         shutil.copy(tik_file, code_dir / "rvlt.tik")
 
-        print(f"✓ Copied {tmd_file} -> code/rvlt.tmd")
-        print(f"✓ Copied {tik_file} -> code/rvlt.tik")
+        print(f"??Copied {tmd_file} -> code/rvlt.tmd")
+        print(f"??Copied {tik_file} -> code/rvlt.tik")
 
         # Clean up temp directory
         shutil.rmtree(tiktmd_dir)
 
-        print("✓ TIK and TMD extracted and copied successfully")
+        print("??TIK and TMD extracted and copied successfully")
         return True
 
     def convert_iso_to_nfs(self, iso_path: Path, pad_option: str = "no_gamepad") -> bool:
@@ -1240,7 +1526,7 @@ class BuildEngine:
             print("Error: Final package incomplete")
             return False
 
-        print(f"✓ Final package created at: {final_output}")
+        print(f"??Final package created at: {final_output}")
         print(f"  Title ID: {title_id}")
         print(f"  Product Code: WUP-N-{product_code}")
         return True
@@ -1292,30 +1578,30 @@ class BuildEngine:
 
             if cache_icon and cache_icon.exists():
                 shutil.copy2(cache_icon, self.paths.temp_icon)
-                print(f"  ✓ Icon copied: {cache_icon} -> {self.paths.temp_icon}")
+                print(f"  ??Icon copied: {cache_icon} -> {self.paths.temp_icon}")
             elif default_icon.exists():
                 shutil.copy2(default_icon, self.paths.temp_icon)
-                print(f"  ⚠ Icon fallback: using default image")
+                print(f"  ??Icon fallback: using default image")
             else:
-                print(f"  ✗ Icon: no cache and no default image!")
+                print(f"  ??Icon: no cache and no default image!")
 
             if cache_banner and cache_banner.exists():
                 shutil.copy2(cache_banner, self.paths.temp_banner)
-                print(f"  ✓ Banner copied: {cache_banner} -> {self.paths.temp_banner}")
+                print(f"  ??Banner copied: {cache_banner} -> {self.paths.temp_banner}")
             elif default_banner.exists():
                 shutil.copy2(default_banner, self.paths.temp_banner)
-                print(f"  ⚠ Banner fallback: using default image")
+                print(f"  ??Banner fallback: using default image")
             else:
-                print(f"  ✗ Banner: no cache and no default image!")
+                print(f"  ??Banner: no cache and no default image!")
 
             if cache_drc and cache_drc.exists():
                 shutil.copy2(cache_drc, self.paths.temp_drc)
-                print(f"  ✓ DRC copied: {cache_drc} -> {self.paths.temp_drc}")
+                print(f"  ??DRC copied: {cache_drc} -> {self.paths.temp_drc}")
             elif default_drc.exists():
                 shutil.copy2(default_drc, self.paths.temp_drc)
-                print(f"  ⚠ DRC fallback: using default image")
+                print(f"  ??DRC fallback: using default image")
             else:
-                print(f"  ✗ DRC: no cache and no default image!")
+                print(f"  ??DRC: no cache and no default image!")
 
             # Copy core tools to temp (fresh copy for each build)
             print("[SETUP] Copying core tools...")
@@ -1440,7 +1726,7 @@ class BuildEngine:
 
             self.update_progress(100, tr.get("progress_build_successful"))
             print("\n" + "="*80)
-            print("✓ BUILD SUCCESSFUL!")
+            print("??BUILD SUCCESSFUL!")
             print("="*80)
             print(f"Title: {title_name}")
             print(f"Title ID: {self.generated_title_id}")
@@ -1474,13 +1760,35 @@ class BuildEngine:
                     'cc_patch': 'CC (Gamepad)'
                 }
                 variant_text = variant_map.get(self.galaxy_variant, self.galaxy_variant)
-                print(f"GCT Patch: ✓ Applied ({variant_text})")
+                print(f"GCT Patch: ??Applied ({variant_text})")
             else:
                 print(f"GCT Patch: - Not Applied")
 
             # Diagnostic summary
             print("-"*80)
             print("[ DIAGNOSTIC INFO ]")
+            # ISO Trimming info
+            if self.diag_no_trim:
+                iso_size_mb = self.diag_iso_size / (1024 * 1024)
+                iso_size_gb = self.diag_iso_size / (1024 * 1024 * 1024)
+                full_size = 4_699_979_776
+                is_full_size = self.diag_iso_size >= full_size * 0.95  # Allow 5% tolerance
+                print(f"  ISO Trim: ??DISABLED (No-Trim mode)")
+                print(f"  ISO Size: {self.diag_iso_size:,} bytes ({iso_size_gb:.2f} GB)")
+                if is_full_size:
+                    print(f"  Full Size: ??YES (4.7GB)")
+                else:
+                    print(f"  Full Size: ??NO")
+                # UPDATE partition preservation status
+                if self.diag_update_preserved:
+                    print(f"  UPDATE Partition: ??PRESERVED (offset maintained)")
+                else:
+                    print(f"  UPDATE Partition: - Not preserved")
+            else:
+                iso_size_mb = self.diag_iso_size / (1024 * 1024) if self.diag_iso_size else 0
+                print(f"  ISO Trim: ??ENABLED (Trimmed)")
+                if self.diag_iso_size:
+                    print(f"  ISO Size: {self.diag_iso_size:,} bytes ({iso_size_mb:.1f} MB)")
             if self.diag_gct_file:
                 print(f"  GCT File: {self.diag_gct_file}")
                 print(f"  GCT Size: {self.diag_gct_size} bytes")
@@ -1489,25 +1797,26 @@ class BuildEngine:
                 print(f"  main.dol After: {self.diag_dol_after} bytes")
                 dol_diff = self.diag_dol_after - self.diag_dol_before
                 if dol_diff > 0:
-                    print(f"  DOL Injection: ✓ +{dol_diff} bytes")
+                    print(f"  DOL Injection: ??+{dol_diff} bytes")
                 else:
-                    print(f"  DOL Injection: ✗ FAILED (size unchanged)")
+                    print(f"  DOL Injection: ??FAILED (size unchanged)")
             else:
                 print(f"  GCT File: Not used")
             if self.diag_nfs_args:
                 print(f"  NFS pad_option: {self.diag_pad_option}")
                 # Check if -instantcc is in args
                 has_instantcc = "-instantcc" in self.diag_nfs_args
-                print(f"  NFS -instantcc: {'✓ YES' if has_instantcc else '✗ NO'}")
+                print(f"  NFS -instantcc: {'??YES' if has_instantcc else '??NO'}")
             print("="*80 + "\n")
             return True
 
         except Exception as e:
             print(f"\n" + "="*80)
-            print("✗ BUILD FAILED")
+            print("??BUILD FAILED")
             print("="*80)
             print(f"Error: {e}")
             import traceback
             traceback.print_exc()
             print("="*80 + "\n")
             return False
+
