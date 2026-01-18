@@ -271,3 +271,33 @@ def get_cc_patch_manager(project_root: Path = None, bundle_root: Path = None) ->
     if _instance is None:
         _instance = CCPatchManager(project_root, bundle_root)
     return _instance
+
+
+if __name__ == "__main__":
+    # Test/Verification block
+    print("Running CCPatchManager verification...")
+    try:
+        manager = get_cc_patch_manager()
+        print(f"Project Root: {manager.project_root}")
+        print(f"Patches Dir: {manager.patches_dir}")
+        
+        # Scan patches
+        patches = manager.scan_patches(force=True)
+        
+        print("\n=== Detected Patches ===")
+        for game_id, patch_list in patches.items():
+            print(f"\nGame ID: {game_id}")
+            for patch in patch_list:
+                print(f"  - {patch['display_name']} ({patch['patch_type']})")
+                print(f"    File: {patch['filename']}")
+                print(f"    Requires GetExtType: {patch['requires_getexttype']}")
+        
+        print("\n=== Force CC Games (DB Check) ===")
+        force_cc = manager._load_force_cc_from_db()
+        print(f"Total Force CC Games: {len(force_cc)}")
+        if force_cc:
+            print(f"Sample: {list(force_cc)[:5]}")
+            
+    except Exception as e:
+        print(f"Error during verification: {e}")
+

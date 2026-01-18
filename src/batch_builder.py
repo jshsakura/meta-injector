@@ -355,7 +355,7 @@ class BatchBuilder(QThread):
                         print(f"  (User edited)")
                     success = image_processor.process_icon(source_icon_path, cache_icon, badge_type=badge_type)
                     if success and cache_icon.exists():
-                        print(f"  ✓ Icon cached: {cache_icon.stat().st_size} bytes")
+                        print(f"  [OK] Icon cached: {cache_icon.stat().st_size} bytes")
                         # Reset edited flag after processing
                         job.icon_edited = False
                     else:
@@ -363,14 +363,14 @@ class BatchBuilder(QThread):
                         print(f"  [FALLBACK] Icon processing failed, copying original...")
                         try:
                             shutil.copy2(source_icon_path, cache_icon)
-                            print(f"  ✓ Icon copied directly: {cache_icon}")
+                            print(f"  [OK] Icon copied directly: {cache_icon}")
                         except Exception as e:
-                            print(f"  ✗ Icon copy failed: {e}")
+                            print(f"  [FAIL] Icon copy failed: {e}")
                             cache_icon = None
                 else:
                     print(f"  [CACHE] Icon already cached: {cache_icon}")
             else:
-                print(f"  ✗ Icon not found: {job.icon_path}")
+                print(f"  [WARN] Icon not found: {job.icon_path}")
 
             if job.banner_path and job.banner_path.exists():
                 cache_banner = paths.images_cache / game_id / "banner.png"
@@ -398,21 +398,21 @@ class BatchBuilder(QThread):
                         print(f"  Banner: {source_banner_path} -> {cache_banner}")
                     success = image_processor.process_banner(source_banner_path, cache_banner)
                     if success and cache_banner.exists():
-                        print(f"  ✓ Banner cached: {cache_banner.stat().st_size} bytes")
+                        print(f"  [OK] Banner cached: {cache_banner.stat().st_size} bytes")
                         job.banner_edited = False
                     else:
                         # Fallback: copy original file directly to cache
                         print(f"  [FALLBACK] Banner processing failed, copying original...")
                         try:
                             shutil.copy2(source_banner_path, cache_banner)
-                            print(f"  ✓ Banner copied directly: {cache_banner}")
+                            print(f"  [OK] Banner copied directly: {cache_banner}")
                         except Exception as e:
-                            print(f"  ✗ Banner copy failed: {e}")
+                            print(f"  [FAIL] Banner copy failed: {e}")
                             cache_banner = None
                 else:
                     print(f"  [CACHE] Banner already cached: {cache_banner}")
             else:
-                print(f"  ✗ Banner not found: {job.banner_path}")
+                print(f"  [WARN] Banner not found: {job.banner_path}")
 
             # Use separate DRC if available, otherwise generate from banner
             cache_drc = paths.images_cache / game_id / "drc.png"
@@ -440,21 +440,21 @@ class BatchBuilder(QThread):
                     print(f"  DRC: {source_drc_path} -> {cache_drc}")
                     success = image_processor.process_drc(source_drc_path, cache_drc)
                     if success and cache_drc.exists():
-                        print(f"  ✓ DRC cached: {cache_drc.stat().st_size} bytes")
+                        print(f"  [OK] DRC cached: {cache_drc.stat().st_size} bytes")
                         job.drc_edited = False
                     else:
                         # Fallback: copy original file directly to cache
                         print(f"  [FALLBACK] DRC processing failed, copying original...")
                         try:
                             shutil.copy2(source_drc_path, cache_drc)
-                            print(f"  ✓ DRC copied directly: {cache_drc}")
+                            print(f"  [OK] DRC copied directly: {cache_drc}")
                         except Exception as e:
-                            print(f"  ✗ DRC copy failed: {e}")
+                            print(f"  [FAIL] DRC copy failed: {e}")
                             cache_drc = None
                 else:
                     print(f"  [CACHE] DRC already cached: {cache_drc}")
             else:
-                print(f"  ✗ No DRC source available")
+                print(f"  [WARN] No DRC source available")
                 cache_drc = None
 
             # Create BuildEngine (it will clean temp directories)

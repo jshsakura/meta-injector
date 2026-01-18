@@ -90,3 +90,11 @@ OLD/
 
 # Claude Code
 .claude/
+statusline.ps1
+settings.local.json
+
+# Log and temp files
+build_log.txt
+help_copy.txt
+verification_output.txt
+nul

@@ -1061,13 +1061,25 @@ class BuildEngine:
                 args = f'-1 "{game_path}" convert "{pre_iso}"'
 
                 if not self.run_tool(wbfs_file_exe, args, timeout=1800, show_output=True):
-                    error_msg = f"WBFS conversion failed (wbfs_file.exe)\n"
-                    error_msg += f"Error: {self.last_tool_error}\n"
-                    error_msg += f"\nPossible causes:\n"
-                    error_msg += f"- Corrupted WBFS file\n"
-                    error_msg += f"- Invalid WBFS format\n"
-                    error_msg += f"- Insufficient disk space (full-size ISO requires ~4.7GB)"
-                    raise RuntimeError(error_msg)
+                    print(f"[WBFS] WARNING: wbfs_file.exe failed. Attempting fallback to WIT...")
+                    
+                    # Fallback: Use WIT for conversion
+                    # We must use --psel DATA,UPDATE,CHANNEL to force preservation of all partitions 
+                    # (especially UPDATE which is needed for No-Trim logic)
+                    wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"
+                    args = f'copy --source "{game_path}" --dest "{pre_iso}" --iso --psel DATA,UPDATE,CHANNEL'
+                    
+                    print(f"[WBFS] Fallback: Converting using WIT (preserving all partitions)...")
+                    if not self.run_tool(wit_exe, args, timeout=1800, show_output=True):
+                        error_msg = f"WBFS conversion failed (both wbfs_file.exe and WIT)\n"
+                        error_msg += f"Error: {self.last_tool_error}\n"
+                        error_msg += f"\nPossible causes:\n"
+                        error_msg += f"- Corrupted WBFS file\n"
+                        error_msg += f"- Invalid WBFS format\n"
+                        error_msg += f"- Insufficient disk space (full-size ISO requires ~4.7GB)"
+                        raise RuntimeError(error_msg)
+                    
+                    print(f"[WBFS] Fallback conversion successful!")
             else:
                 # Use WIT for trimmed conversion (faster, smaller output)
                 wit_exe = self.paths.temp_tools / "WIT" / "wit.exe"

@@ -1,4 +1,5 @@
 """Batch build window - Simplified UI for mass injection."""
+import shutil
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
@@ -13,6 +14,7 @@ from .game_info import game_info_extractor
 from .compatibility_db import compatibility_db
 from .paths import paths
 from .translations import tr
+from .resources import resources
 
 
 def show_message(parent, msg_type, title, text, min_width=550):
@@ -121,10 +123,11 @@ class GameLoaderThread(QThread):
                         self.game_loaded.emit(job)
                         loaded_count += 1
             else:
-                # No icon download, just emit jobs
+                # Auto download disabled - use cache or default
                 for idx, job in jobs_to_process:
                     if self.should_stop:
                         break
+                    self.load_cached_or_default_images(job)
                     self.progress_updated.emit(idx + 1, total)
                     self.game_loaded.emit(job)
                     loaded_count += 1
@@ -137,6 +140,87 @@ class GameLoaderThread(QThread):
             traceback.print_exc()
             # Emit finished signal even on error to prevent UI freeze
             self.loading_finished.emit(0)
+
+    def _set_default_images(self, job: BatchBuildJob, cache_dir: Path, reason: str = ""):
+        """
+        Set default images for job when no cache/download available.
+
+        Args:
+            job: BatchBuildJob to set images for
+            cache_dir: Cache directory to copy default images to
+            reason: Reason for using defaults (for logging)
+        """
+        default_icon = resources.resources_dir / "images" / "default_icon.png"
+        default_banner = resources.resources_dir / "images" / "default_banner.png"
+        default_drc = resources.resources_dir / "images" / "default_drc.png"
+
+        print(f"  [DEFAULT] Setting default images{f' ({reason})' if reason else ''}")
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+        if default_icon.exists():
+            icon_path = cache_dir / "icon.png"
+            if not icon_path.exists():
+                shutil.copy(default_icon, icon_path)
+            job.icon_path = icon_path
+            job.auto_icon_path = icon_path
+            job.icon_source = "default"
+            print(f"    Icon: {icon_path}")
+        else:
+            print(f"  [ERROR] Default icon not found: {default_icon}")
+
+        if default_banner.exists():
+            banner_path = cache_dir / "banner.png"
+            if not banner_path.exists():
+                shutil.copy(default_banner, banner_path)
+            job.banner_path = banner_path
+            job.auto_banner_path = banner_path
+            job.banner_source = "default"
+            print(f"    Banner: {banner_path}")
+        else:
+            print(f"  [ERROR] Default banner not found: {default_banner}")
+
+        if default_drc.exists():
+            drc_path = cache_dir / "drc.png"
+            if not drc_path.exists():
+                shutil.copy(default_drc, drc_path)
+            job.drc_path = drc_path
+            job.auto_drc_path = drc_path
+            job.drc_source = "default"
+            print(f"    DRC: {drc_path}")
+        else:
+            print(f"  [ERROR] Default DRC not found: {default_drc}")
+
+    def load_cached_or_default_images(self, job: BatchBuildJob):
+        """Load images from cache, or set default if no cache exists."""
+        game_id = job.game_info.get('game_id', 'UNKNOWN')
+        cache_dir = paths.images_cache / game_id
+
+        cached_icon = cache_dir / "icon.png"
+        cached_banner = cache_dir / "banner.png"
+        cached_drc = cache_dir / "drc.png"
+
+        # Check if cached images exist (from previous download)
+        if cached_icon.exists() and cached_banner.exists():
+            print(f"  [CACHE] Using cached images for {game_id} (auto-download disabled)")
+            job.icon_path = cached_icon
+            job.auto_icon_path = cached_icon
+            job.icon_source = "auto"
+
+            job.banner_path = cached_banner
+            job.auto_banner_path = cached_banner
+            job.banner_source = "auto"
+
+            if cached_drc.exists():
+                job.drc_path = cached_drc
+                job.auto_drc_path = cached_drc
+            else:
+                job.drc_path = cached_banner
+                job.auto_drc_path = cached_banner
+            job.drc_source = "auto"
+            return
+
+        # No cache, use default images
+        self._set_default_images(job, cache_dir, reason=f"no cache for {game_id}")
 
     def prepare_job_metadata(self, job: BatchBuildJob):
         """Prepare job metadata from game info and DB."""
@@ -595,33 +679,7 @@ class GameLoaderThread(QThread):
 
         # If download failed, use default images
         if not download_success:
-            print(f"  [DEFAULT] Using default images for {game_id}")
-            default_icon = resources.resources_dir / "images" / "default_icon.png"
-            default_banner = resources.resources_dir / "images" / "default_banner.png"
-            default_drc = resources.resources_dir / "images" / "default_drc.png"
-
-            cache_dir.mkdir(parents=True, exist_ok=True)
-
-            if default_icon.exists():
-                icon_path = cache_dir / "icon.png"
-                shutil.copy(default_icon, icon_path)
-                job.icon_path = icon_path
-                job.auto_icon_path = icon_path
-                job.icon_source = "default"
-
-            if default_banner.exists():
-                banner_path = cache_dir / "banner.png"
-                shutil.copy(default_banner, banner_path)
-                job.banner_path = banner_path
-                job.auto_banner_path = banner_path
-                job.banner_source = "default"
-
-            if default_drc.exists():
-                drc_path = cache_dir / "drc.png"
-                shutil.copy(default_drc, drc_path)
-                job.drc_path = drc_path
-                job.auto_drc_path = drc_path
-                job.drc_source = "default"
+            self._set_default_images(job, cache_dir, reason=f"download failed for {game_id}")
 
             # Save titles to cache (using DB title as fallback)
             try:
@@ -791,6 +849,38 @@ class SimpleKeysDialog(QDialog):
         self.auto_icons_check.setChecked(True)
         layout.addWidget(self.auto_icons_check)
 
+        # Cache/Temp management section
+        layout.addSpacing(15)
+        cache_section_label = QLabel("<b>캐시 및 임시 파일 관리</b>" if tr.current_language == "ko" else "<b>Cache & Temp File Management</b>")
+        layout.addWidget(cache_section_label)
+
+        cache_btn_layout = QHBoxLayout()
+
+        # Clear temp files button
+        clear_temp_text = "임시 파일 삭제" if tr.current_language == "ko" else "Clear Temp Files"
+        self.clear_temp_btn = QPushButton(clear_temp_text)
+        self.clear_temp_btn.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
+        self.clear_temp_btn.clicked.connect(self.clear_temp_files)
+        self.clear_temp_btn.setToolTip(
+            "빌드 중 생성된 임시 파일을 삭제합니다" if tr.current_language == "ko"
+            else "Delete temporary files created during build"
+        )
+        cache_btn_layout.addWidget(self.clear_temp_btn)
+
+        # Clear image cache button
+        clear_cache_text = "이미지 캐시 삭제" if tr.current_language == "ko" else "Clear Image Cache"
+        self.clear_cache_btn = QPushButton(clear_cache_text)
+        self.clear_cache_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogDiscardButton))
+        self.clear_cache_btn.clicked.connect(self.clear_image_cache)
+        self.clear_cache_btn.setToolTip(
+            "다운로드된 게임 아이콘/배너 캐시를 삭제합니다" if tr.current_language == "ko"
+            else "Delete downloaded game icon/banner cache"
+        )
+        cache_btn_layout.addWidget(self.clear_cache_btn)
+
+        cache_btn_layout.addStretch()
+        layout.addLayout(cache_btn_layout)
+
         # Info box with improved design
         layout.addSpacing(15)
         if tr.current_language == "ko":
@@ -888,6 +978,153 @@ class SimpleKeysDialog(QDialog):
     def clear_output_dir(self):
         """Clear output directory setting to use default."""
         self.output_dir_input.clear()
+
+    def clear_temp_files(self):
+        """Clear temporary build files."""
+        import shutil
+
+        # Confirm with user
+        if tr.current_language == "ko":
+            msg = "빌드 중 생성된 임시 파일을 삭제합니다.\n\n삭제 대상:\n• 임시 빌드 파일 (TOOLDIR)\n• 베이스 캐시 (BASECACHE)\n\n계속하시겠습니까?"
+            title = "임시 파일 삭제"
+        else:
+            msg = "Delete temporary files created during build.\n\nWill delete:\n• Temp build files (TOOLDIR)\n• Base cache (BASECACHE)\n\nContinue?"
+            title = "Clear Temp Files"
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(msg)
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setWindowFlags(msg_box.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        ok_text = "삭제" if tr.current_language == "ko" else "Delete"
+        cancel_text = "취소" if tr.current_language == "ko" else "Cancel"
+        ok_btn = msg_box.addButton(ok_text, QMessageBox.AcceptRole)
+        cancel_btn = msg_box.addButton(cancel_text, QMessageBox.RejectRole)
+        msg_box.exec_()
+
+        if msg_box.clickedButton() != ok_btn:
+            return
+
+        deleted_size = 0
+        deleted_count = 0
+
+        try:
+            # Delete temp tools directory
+            if paths.temp_tools.exists():
+                for item in paths.temp_tools.iterdir():
+                    try:
+                        if item.is_dir():
+                            size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                            shutil.rmtree(item)
+                        else:
+                            size = item.stat().st_size
+                            item.unlink()
+                        deleted_size += size
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"[WARN] Failed to delete {item}: {e}")
+
+            # Delete base cache directory
+            if paths.base_cache.exists():
+                for item in paths.base_cache.iterdir():
+                    try:
+                        if item.is_dir():
+                            size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                            shutil.rmtree(item)
+                        else:
+                            size = item.stat().st_size
+                            item.unlink()
+                        deleted_size += size
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"[WARN] Failed to delete {item}: {e}")
+
+            # Format size
+            if deleted_size >= 1024 * 1024 * 1024:
+                size_str = f"{deleted_size / (1024*1024*1024):.2f} GB"
+            elif deleted_size >= 1024 * 1024:
+                size_str = f"{deleted_size / (1024*1024):.2f} MB"
+            elif deleted_size >= 1024:
+                size_str = f"{deleted_size / 1024:.2f} KB"
+            else:
+                size_str = f"{deleted_size} bytes"
+
+            if tr.current_language == "ko":
+                success_msg = f"임시 파일이 삭제되었습니다.\n\n삭제된 항목: {deleted_count}개\n확보된 공간: {size_str}"
+            else:
+                success_msg = f"Temp files deleted.\n\nDeleted items: {deleted_count}\nFreed space: {size_str}"
+
+            show_message(self, "info", title, success_msg)
+
+        except Exception as e:
+            error_msg = f"삭제 실패: {e}" if tr.current_language == "ko" else f"Delete failed: {e}"
+            show_message(self, "warning", title, error_msg)
+
+    def clear_image_cache(self):
+        """Clear downloaded image cache."""
+        import shutil
+
+        # Confirm with user
+        if tr.current_language == "ko":
+            msg = "다운로드된 게임 아이콘 및 배너 캐시를 삭제합니다.\n\n삭제 후 게임을 다시 추가하면 이미지가 자동으로 다시 다운로드됩니다.\n\n계속하시겠습니까?"
+            title = "이미지 캐시 삭제"
+        else:
+            msg = "Delete downloaded game icon and banner cache.\n\nImages will be re-downloaded when games are added again.\n\nContinue?"
+            title = "Clear Image Cache"
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(msg)
+        msg_box.setIcon(QMessageBox.Question)
+        msg_box.setWindowFlags(msg_box.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        ok_text = "삭제" if tr.current_language == "ko" else "Delete"
+        cancel_text = "취소" if tr.current_language == "ko" else "Cancel"
+        ok_btn = msg_box.addButton(ok_text, QMessageBox.AcceptRole)
+        cancel_btn = msg_box.addButton(cancel_text, QMessageBox.RejectRole)
+        msg_box.exec_()
+
+        if msg_box.clickedButton() != ok_btn:
+            return
+
+        deleted_size = 0
+        deleted_count = 0
+
+        try:
+            # Delete image cache directory
+            if paths.images_cache.exists():
+                for item in paths.images_cache.iterdir():
+                    try:
+                        if item.is_dir():
+                            size = sum(f.stat().st_size for f in item.rglob('*') if f.is_file())
+                            shutil.rmtree(item)
+                        else:
+                            size = item.stat().st_size
+                            item.unlink()
+                        deleted_size += size
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"[WARN] Failed to delete {item}: {e}")
+
+            # Format size
+            if deleted_size >= 1024 * 1024 * 1024:
+                size_str = f"{deleted_size / (1024*1024*1024):.2f} GB"
+            elif deleted_size >= 1024 * 1024:
+                size_str = f"{deleted_size / (1024*1024):.2f} MB"
+            elif deleted_size >= 1024:
+                size_str = f"{deleted_size / 1024:.2f} KB"
+            else:
+                size_str = f"{deleted_size} bytes"
+
+            if tr.current_language == "ko":
+                success_msg = f"이미지 캐시가 삭제되었습니다.\n\n삭제된 게임: {deleted_count}개\n확보된 공간: {size_str}"
+            else:
+                success_msg = f"Image cache deleted.\n\nDeleted games: {deleted_count}\nFreed space: {size_str}"
+
+            show_message(self, "info", title, success_msg)
+
+        except Exception as e:
+            error_msg = f"삭제 실패: {e}" if tr.current_language == "ko" else f"Delete failed: {e}"
+            show_message(self, "warning", title, error_msg)
 
     def update_compatibility_db(self):
         """Update compatibility database from UWUVCI repository."""
@@ -1120,7 +1357,7 @@ class EditGameDialog(QDialog):
         # Restore auto icon button
         restore_icon_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
         self.restore_icon_btn = QPushButton(restore_icon_text)
-        self.restore_icon_btn.setEnabled(self.job.icon_source == "user" and self.job.has_auto_images())
+        self.restore_icon_btn.setEnabled(bool(self.job.icon_source == "user" and self.job.has_auto_images()))
         self.restore_icon_btn.clicked.connect(self.restore_auto_icon)
         self.restore_icon_btn.setStyleSheet("font-size: 10px; padding: 3px;")
         icon_layout.addWidget(self.restore_icon_btn)
@@ -1159,17 +1396,30 @@ class EditGameDialog(QDialog):
         self.banner_preview.setFixedSize(256, 144)
         self.banner_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.banner_preview.setAlignment(Qt.AlignCenter)
+        banner_loaded = False
         if self.job.banner_path and self.job.banner_path.exists():
             print(f"[DEBUG] Loading banner from: {self.job.banner_path}")
             pixmap = QPixmap(str(self.job.banner_path))
             if not pixmap.isNull():
                 self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                banner_loaded = True
             else:
                 print(f"[ERROR] Failed to load banner pixmap from: {self.job.banner_path}")
-                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
-                self.banner_preview.setText(no_image_text)
         else:
             print(f"[DEBUG] Banner path not found or doesn't exist: {self.job.banner_path}")
+        # Use fallback image if no banner loaded
+        if not banner_loaded:
+            fallback_banner = resources.resources_dir / "images" / "default_banner.png"
+            print(f"[DEBUG] Fallback banner path: {fallback_banner}, exists: {fallback_banner.exists()}")
+            if fallback_banner.exists():
+                pixmap = QPixmap(str(fallback_banner))
+                if not pixmap.isNull():
+                    self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    print(f"[DEBUG] Using fallback banner: {fallback_banner}")
+                    banner_loaded = True
+                else:
+                    print(f"[ERROR] Failed to load fallback banner pixmap")
+        if not banner_loaded:
             no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
             self.banner_preview.setText(no_image_text)
         self.banner_preview.mousePressEvent = lambda e: self.change_banner()
@@ -1179,7 +1429,7 @@ class EditGameDialog(QDialog):
         # Restore auto banner button
         restore_banner_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
         self.restore_banner_btn = QPushButton(restore_banner_text)
-        self.restore_banner_btn.setEnabled(self.job.banner_source == "user" and self.job.has_auto_images())
+        self.restore_banner_btn.setEnabled(bool(self.job.banner_source == "user" and self.job.has_auto_images()))
         self.restore_banner_btn.clicked.connect(self.restore_auto_banner)
         self.restore_banner_btn.setStyleSheet("font-size: 10px; padding: 3px;")
         banner_layout.addWidget(self.restore_banner_btn)
@@ -1195,15 +1445,30 @@ class EditGameDialog(QDialog):
         self.drc_preview.setFixedSize(256, 144)  # 16:9 ratio, same height as banner
         self.drc_preview.setStyleSheet("border: 2px solid #ccc; background: #f0f0f0;")
         self.drc_preview.setAlignment(Qt.AlignCenter)
+        drc_loaded = False
         if self.job.drc_path and self.job.drc_path.exists():
             print(f"[DEBUG] Loading DRC from: {self.job.drc_path}")
             pixmap = QPixmap(str(self.job.drc_path))
             if not pixmap.isNull():
                 self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                drc_loaded = True
             else:
-                no_image_text = "로드 실패" if tr.current_language == "ko" else "Load failed"
-                self.drc_preview.setText(no_image_text)
+                print(f"[ERROR] Failed to load DRC pixmap from: {self.job.drc_path}")
         else:
+            print(f"[DEBUG] DRC path not found or doesn't exist: {self.job.drc_path}")
+        # Use fallback image if no DRC loaded
+        if not drc_loaded:
+            fallback_drc = resources.resources_dir / "images" / "default_drc.png"
+            print(f"[DEBUG] Fallback DRC path: {fallback_drc}, exists: {fallback_drc.exists()}")
+            if fallback_drc.exists():
+                pixmap = QPixmap(str(fallback_drc))
+                if not pixmap.isNull():
+                    self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    print(f"[DEBUG] Using fallback DRC: {fallback_drc}")
+                    drc_loaded = True
+                else:
+                    print(f"[ERROR] Failed to load fallback DRC pixmap")
+        if not drc_loaded:
             no_image_text = "없음" if tr.current_language == "ko" else "None"
             self.drc_preview.setText(no_image_text)
         self.drc_preview.mousePressEvent = lambda e: self.change_drc()
@@ -1213,7 +1478,7 @@ class EditGameDialog(QDialog):
         # Restore auto DRC button
         restore_drc_text = "다운로드 이미지로" if tr.current_language == "ko" else "Use Downloaded"
         self.restore_drc_btn = QPushButton(restore_drc_text)
-        self.restore_drc_btn.setEnabled(self.job.drc_source == "user" and self.job.auto_drc_path and self.job.auto_drc_path.exists())
+        self.restore_drc_btn.setEnabled(bool(self.job.drc_source == "user" and self.job.auto_drc_path and self.job.auto_drc_path.exists()))
         self.restore_drc_btn.clicked.connect(self.restore_auto_drc)
         self.restore_drc_btn.setStyleSheet("font-size: 10px; padding: 3px;")
         drc_layout.addWidget(self.restore_drc_btn)
@@ -1278,16 +1543,18 @@ class EditGameDialog(QDialog):
         layout.addLayout(notrim_layout)
 
         # Add info box below checkbox
-        if is_wbfs:
-            if tr.current_language == "ko":
-                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. WBFS의 경우 wbfs_file.exe를 사용하여 원본 크기로 변환합니다.<br><br><b>주의:</b> Gecko 코드를 바이너리에 패치하는 방식은 일부 게임(예: 슈퍼 페이퍼 마리오)에서 세이브 충돌을 일으킬 수 있습니다. 이 경우 패치된 환경에 맞는 별도의 세이브 파일을 생성하여 사용해야 합니다."
-            else:
-                info_text = "<b>Note:</b> Some games require original disc size (about 4~8GB) for save files. For WBFS, wbfs_file.exe will be used to restore original size.<br><br><b>Warning:</b> Gecko code binary patching may cause save corruption in some games (e.g., Super Paper Mario). In such cases, you need to create a new save file for the patched version."
+        if tr.current_language == "ko":
+            info_text = """<b>💿 ISO 트림 비활성화 안내</b><br><br>
+<b>트림(Trim)이란?</b> ISO의 빈 공간과 업데이트 파티션을 제거하여 용량을 줄이는 것입니다.<br><br>
+<b>• 활성화 시:</b> 원본 디스크 크기(4.7GB)를 유지합니다. 패치 적용 시에도 전체 구조를 보존하여 리빌드합니다.<br>
+<b>• 비활성화 시 (기본):</b> 불필요한 데이터를 제거하여 용량을 줄입니다.<br><br>
+<b>💡 언제 필요한가요?</b> 슈퍼 페이퍼 마리오 등 일부 게임은 원본 크기가 아니면 세이브가 안 됩니다."""
         else:
-            if tr.current_language == "ko":
-                info_text = "<b>참고:</b> 일부 게임은 세이브 파일 저장을 위해 원본 디스크 크기(약 4~8GB)가 필요합니다. 트림 비활성화 시 파일 크기가 증가합니다.<br><br><b>주의:</b> Gecko 코드를 바이너리에 패치하는 방식은 일부 게임(예: 슈퍼 페이퍼 마리오)에서 세이브 충돌을 일으킬 수 있습니다. 이 경우 패치된 환경에 맞는 별도의 세이브 파일을 생성하여 사용해야 합니다."
-            else:
-                info_text = "<b>Note:</b> Some games require original disc size (about 4~8GB) for save files. Disabling trim will increase file size."
+            info_text = """<b>💿 Disable ISO Trimming Guide</b><br><br>
+<b>What is Trim?</b> Removes empty space and update partition from ISO to reduce size.<br><br>
+<b>• Enabled:</b> Keeps original disc size (4.7GB). Preserves full structure even when applying patches.<br>
+<b>• Disabled (Default):</b> Removes unnecessary data to reduce size.<br><br>
+<b>💡 When needed?</b> Some games like Super Paper Mario won't save without original disc size."""
 
         info_box = QLabel(info_text)
         info_box.setWordWrap(True)
@@ -1356,21 +1623,44 @@ class EditGameDialog(QDialog):
 
     def load_initial_icon(self):
         """Load initial icon with badge overlays if needed."""
+        icon_loaded = False
         if self.job.icon_path and self.job.icon_path.exists():
             print(f"[DEBUG] Loading icon from: {self.job.icon_path}")
             pixmap = QPixmap(str(self.job.icon_path))
             if not pixmap.isNull():
-                # Scale maintaining aspect ratio, but let QLabel handle the display
-                # Don't create canvas, just scale the image
                 self.icon_preview.setPixmap(pixmap.scaled(144, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                icon_loaded = True
             else:
                 print(f"[ERROR] Failed to load icon pixmap from: {self.job.icon_path}")
-                no_image_text = "이미지 로드 실패" if tr.current_language == "ko" else "Failed to load image"
-                self.icon_preview.setText(no_image_text)
         else:
             print(f"[DEBUG] Icon path not found or doesn't exist: {self.job.icon_path}")
+
+        # Use fallback image if no icon loaded
+        if not icon_loaded:
+            fallback_icon = resources.resources_dir / "images" / "default_icon.png"
+            print(f"[DEBUG] Fallback icon path: {fallback_icon}, exists: {fallback_icon.exists()}")
+            if fallback_icon.exists():
+                pixmap = QPixmap(str(fallback_icon))
+                if not pixmap.isNull():
+                    self.icon_preview.setPixmap(pixmap.scaled(144, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    print(f"[DEBUG] Using fallback icon: {fallback_icon}")
+                    icon_loaded = True
+                else:
+                    print(f"[ERROR] Failed to load fallback icon pixmap")
+
+        if not icon_loaded:
             no_image_text = "이미지 없음\n클릭하여 선택" if tr.current_language == "ko" else "No Image\nClick to select"
             self.icon_preview.setText(no_image_text)
+
+    def _get_safe_cache_dir(self) -> Path:
+        """Get a safe cache directory path, with fallback for empty title_id."""
+        # Use title_id, fallback to game_id, then UNKNOWN
+        cache_id = self.job.title_id
+        if not cache_id:
+            cache_id = self.job.game_info.get('game_id', '') if self.job.game_info else ''
+        if not cache_id:
+            cache_id = "UNKNOWN"
+        return paths.images_cache / cache_id
 
     def change_icon(self):
         """Change icon image."""
@@ -1384,8 +1674,8 @@ class EditGameDialog(QDialog):
             try:
                 from .image_utils import ImageProcessor
 
-                # Create user image path in cache directory
-                cache_dir = paths.images_cache / self.job.title_id
+                # Create user image path in cache directory (with safe fallback)
+                cache_dir = self._get_safe_cache_dir()
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_icon.png"
 
@@ -1418,8 +1708,8 @@ class EditGameDialog(QDialog):
             try:
                 from .image_utils import ImageProcessor
 
-                # Create user image path in cache directory
-                cache_dir = paths.images_cache / self.job.title_id
+                # Create user image path in cache directory (with safe fallback)
+                cache_dir = self._get_safe_cache_dir()
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_banner.png"
 
@@ -1433,13 +1723,17 @@ class EditGameDialog(QDialog):
                     # Fallback: use original if resize fails
                     self.job.set_user_banner(Path(file_path))
                     print(f"[USER EDIT] Banner resize failed, using original: {file_path}")
-                    pixmap = QPixmap(file_path)
+                    pixmap = QPixmap(str(file_path))
             except Exception as e:
                 print(f"[ERROR] Failed to process banner: {e}")
                 self.job.set_user_banner(Path(file_path))
-                pixmap = QPixmap(file_path)
+                pixmap = QPixmap(str(file_path))
 
-            self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            # Check if pixmap loaded successfully before scaling
+            if not pixmap.isNull():
+                self.banner_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            else:
+                print(f"[WARN] Failed to load banner image: {file_path}")
 
             # Enable restore button if auto image exists
             self.update_restore_buttons()
@@ -1456,8 +1750,8 @@ class EditGameDialog(QDialog):
             try:
                 from .image_utils import ImageProcessor
 
-                # Create user image path in cache directory
-                cache_dir = paths.images_cache / self.job.title_id
+                # Create user image path in cache directory (with safe fallback)
+                cache_dir = self._get_safe_cache_dir()
                 cache_dir.mkdir(parents=True, exist_ok=True)
                 resized_path = cache_dir / "user_drc.png"
 
@@ -1470,13 +1764,17 @@ class EditGameDialog(QDialog):
                     # Fallback: use original if resize fails
                     self.job.set_user_drc(Path(file_path))
                     print(f"[USER EDIT] DRC resize failed, using original: {file_path}")
-                    pixmap = QPixmap(file_path)
+                    pixmap = QPixmap(str(file_path))
             except Exception as e:
                 print(f"[ERROR] Failed to process DRC: {e}")
                 self.job.set_user_drc(Path(file_path))
-                pixmap = QPixmap(file_path)
+                pixmap = QPixmap(str(file_path))
 
-            self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            # Check if pixmap loaded successfully before scaling
+            if not pixmap.isNull():
+                self.drc_preview.setPixmap(pixmap.scaled(256, 144, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            else:
+                print(f"[WARN] Failed to load DRC image: {file_path}")
 
             # Enable restore button
             self.update_restore_buttons()
@@ -1507,23 +1805,23 @@ class EditGameDialog(QDialog):
     def update_restore_buttons(self):
         """Update restore button states based on image sources."""
         # Icon restore - enabled only if user changed and auto exists
-        self.restore_icon_btn.setEnabled(
+        self.restore_icon_btn.setEnabled(bool(
             self.job.icon_source == "user" and
             self.job.auto_icon_path and
             self.job.auto_icon_path.exists()
-        )
+        ))
         # Banner restore
-        self.restore_banner_btn.setEnabled(
+        self.restore_banner_btn.setEnabled(bool(
             self.job.banner_source == "user" and
             self.job.auto_banner_path and
             self.job.auto_banner_path.exists()
-        )
+        ))
         # DRC restore
-        self.restore_drc_btn.setEnabled(
+        self.restore_drc_btn.setEnabled(bool(
             self.job.drc_source == "user" and
             self.job.auto_drc_path and
             self.job.auto_drc_path.exists()
-        )
+        ))
 
     def add_badges_overlay_large(self, pixmap: QPixmap, job: BatchBuildJob) -> QPixmap:
         """Add badge overlays to larger pixmap (for edit dialog - 192x192)."""
